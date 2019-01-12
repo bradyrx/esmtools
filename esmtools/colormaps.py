@@ -6,7 +6,7 @@ arrays and then one simple function to load them.
 
 """
 import numpy as np
-import .vis
+from .vis import *
 import pandas as pd
 import matplotlib.colors as color
 
