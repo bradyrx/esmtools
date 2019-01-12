@@ -23,3 +23,6 @@ from . import stats
 from . import colormaps
 from . import carbon
 from . import physics
+from . import conversions
+from . import ebus
+from . import mpas 
