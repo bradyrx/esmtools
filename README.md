@@ -17,6 +17,10 @@ Functions for the carbon cycle and carbonate chemistry.
 
 Load in a custom colormap (see below).
 
+`loadutils`
+
+Load in sample datasets or masks.
+
 `filtering`
 
 Functions for filtering output over space and time.
