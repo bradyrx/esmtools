@@ -18,7 +18,7 @@ Time Series
 `xr_corr` : Computes pearsonr between two time series accounting for
             autocorrelation.
 """
-import climpred.st as st
+import climpred.stats as st
 
 # --------------------------
 # AREA-WEIGHTING DEFINITIONS
