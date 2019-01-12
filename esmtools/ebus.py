@@ -105,4 +105,4 @@ def latitude_bounds(EBC):
         raise ValueError('\n' + 'Must select from the following EBUS strings:'
                          + '\n' + 'CalCS' + '\n' + 'CanCS' + '\n' + 'BenCS' +
                          '\n' + 'HumCS')
-return lat1, lat2
+    return lat1, lat2
