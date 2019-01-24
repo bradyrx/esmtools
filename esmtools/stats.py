@@ -19,13 +19,54 @@ Time Series
             autocorrelation.
 """
 import climpred.stats as st
+import numpy as np
+import xarray as xr
+from scipy.stats import linregress
+
+
+# --------------------------------------------#
+# HELPER FUNCTIONS
+# Should only be used internally by esmtools.
+# --------------------------------------------#
+def _check_xarray(x):
+    """
+    Check if the object being submitted to a given function is either a
+    Dataset or DataArray. This is important since `esmtools` is built as an
+    xarray wrapper.
+    TODO: Move this to a generalized util.py module with any other functions
+    that are being called in other submodules.
+    """
+    if not (isinstance(x, xr.DataArray) or isinstance(x, xr.Dataset)):
+        typecheck = type(x)
+        raise IOError(f"""The input data is not an xarray object (an xarray
+            DataArray or Dataset). esmtools is built to wrap xarray to make
+            use of its awesome features. Please input an xarray object and
+            retry the function.
+            Your input was of type: {typecheck}""")
+
+
+def _get_coords(da):
+    """
+    Simple function to retrieve dimensions from a given dataset/dataarray.
+    Currently returns as a list, but can add keyword to select tuple or
+    list if desired for any reason.
+    """
+    return list(da.coords)
+
+
+def _get_dims(da):
+    """
+    Simple function to retrieve dimensions from a given dataset/datarray.
+    Currently returns as a list, but can add keyword to select tuple or
+    list if desired for any reason.
+    """
+    return list(da.dims)
+
 
 # --------------------------
 # AREA-WEIGHTING DEFINITIONS
 # --------------------------
-
-
-def xr_cos_weight(ds, lat_coord='lat', lon_coord='lon', one_dimensional=True):
+def xr_cos_weight(da, lat_coord='lat', lon_coord='lon', one_dimensional=True):
     """
     Area-weights data on a regular (e.g. 360x180) grid that does not come with
     cell areas. Uses cosine-weighting.
@@ -48,9 +89,25 @@ def xr_cos_weight(ds, lat_coord='lat', lon_coord='lon', one_dimensional=True):
     --------
     import esmtools as et
     da_aw = et.stats.reg_aw(SST)
-    """    
-    return st.xr_cos_weight(ds, lat_coord=lat_coord, lon_coord=lon_coord,
-                            one_dimensional=one_dimensional)
+    """
+    _check_xarray(da)
+    non_spatial = [i for i in _get_dims(da) if i not in [lat_coord, lon_coord]]
+    filter_dict = {}
+    while len(non_spatial) > 0:
+        filter_dict.update({non_spatial[0]: 0})
+        non_spatial.pop(0)
+    if one_dimensional:
+        lon, lat = np.meshgrid(da[lon_coord], da[lat_coord])
+    else:
+        lat = da[lat_coord]
+    # NaN out land to not go into area-weighting
+    lat = lat.astype('float')
+    nan_mask = np.asarray(da.isel(filter_dict).isnull())
+    lat[nan_mask] = np.nan
+    cos_lat = np.cos(np.deg2rad(lat))
+    aw_da = (da * cos_lat).sum(lat_coord).sum(lon_coord) / \
+        np.nansum(cos_lat)
+    return aw_da
 
 
 def xr_area_weight(da, area_coord='area'):
@@ -74,14 +131,34 @@ def xr_area_weight(da, area_coord='area'):
     -------
     aw_da : Area-weighted DataArray
     """
-    return st.xr_area_weight(da, area_coord=area_coord)
+    _check_xarray(da)
+    area = da[area_coord]
+    # Mask the area coordinate in case you've got a bunch of NaNs, e.g. a mask
+    # or land.
+    dimlist = _get_dims(da)
+    # Pull out coordinates that aren't spatial. Time, ensemble members, etc.
+    non_spatial = [i for i in dimlist if i not in _get_dims(area)]
+    filter_dict = {}
+    while len(non_spatial) > 0:
+        filter_dict.update({non_spatial[0]: 0})
+        non_spatial.pop(0)
+    masked_area = area.where(da.isel(filter_dict).notnull())
+    # Compute area-weighting.
+    dimlist = _get_dims(masked_area)
+    aw_da = da * masked_area
+    # Sum over arbitrary number of dimensions.
+    while len(dimlist) > 0:
+        print(f'Summing over {dimlist[0]}')
+        aw_da = aw_da.sum(dimlist[0])
+        dimlist.pop(0)
+    # Finish area-weighting by dividing by sum of area coordinate.
+    aw_da = aw_da / masked_area.sum()
+    return aw_da
 
 
 # -----------
 # TIME SERIES
 # -----------
-
-
 def xr_smooth_series(da, dim, length, center=True):
     """
     Returns a smoothed version of the input timeseries.
@@ -101,7 +178,8 @@ def xr_smooth_series(da, dim, length, center=True):
     -------
     smoothed : smoothed DataArray object
     """
-    return st.xr_smooth_series(da, dim, length, center=center)
+    _check_xarray(da)
+    return da.rolling({dim: length}, center=center).mean()
 
 
 def xr_linregress(da, dim='time', compact=True):
@@ -124,7 +202,23 @@ def xr_linregress(da, dim='time', compact=True):
         computed over. If compact is False, these five parameters are
         returned separately.
     """
-    return st.xr_linregress(da, dim=dim, compact=compact)
+    _check_xarray(da)
+    results = xr.apply_ufunc(linregress, da[dim], da,
+                             input_core_dims=[[dim], [dim]],
+                             output_core_dims=[[], [], [], [], []],
+                             vectorize=True, dask='parallelized')
+    # Force into a cleaner dataset. The above function returns a dataset
+    # with no clear labeling.
+    ds = xr.Dataset()
+    labels = ['slope', 'intercept', 'rvalue', 'pvalue', 'stderr']
+    for i, l in enumerate(labels):
+        results[i].name = l
+        ds = xr.merge([ds, results[i]])
+    if compact:
+        return ds
+    else:
+        return ds['slope'], ds['intercept'], ds['rvalue'], ds['pvalue'], \
+               ds['stderr']
 
 
 def xr_corr(x, y, dim='time', lag=0, two_sided=True, return_p=False):
