@@ -4,7 +4,7 @@ A toolbox for functions related to Earth System Model analysis, with a focus on 
 
 ## Installation
 ```shell
-pip install git+https://github.com/bradyrx/esmtools --process-dependency-links
+pip install git+https://github.com/bradyrx/esmtools
 ```
 
 ## Modules
