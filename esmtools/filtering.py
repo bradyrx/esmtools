@@ -75,8 +75,8 @@ def extract_region(ds, xgrid, ygrid, coords, lat_dim='nlat', lon_dim='nlon'):
     """
     print("NOTE: Make sure your coordinates are in order [x0, x1, y0, y1]")
     x0, x1, y0, y1 = coords
-    a, c = _find_indices(lon, lat, x0, y0)
-    b, d = _find_indices(lon, lat, x1, y1)
+    a, c = _find_indices(xgrid, ygrid, x0, y0)
+    b, d = _find_indices(xgrid, ygrid, x1, y1)
     subset_data = ds.isel(nlat=slice(a, b), nlon=slice(c, d))
     return subset_data
 
