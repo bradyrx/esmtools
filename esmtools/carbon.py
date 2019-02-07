@@ -105,6 +105,18 @@ def potential_pco2(t_insitu, pco2_insitu):
     Calculate potential pco2 in the inner ocean. Requires the first index of
     depth to be at the surface.
 
+    Input
+    -----
+    t_insitu : xr object
+        SST with depth [C or K]
+    pco2_insitu : xr object
+        pCO2 with depth [ppm]
+
+    Output
+    ------
+    pco2_potential : xr object
+        potential pco2 with depth
+
     Reference:
     - Sarmiento, Jorge Louis, and Nicolas Gruber. Ocean Biogeochemical Dynamics.
         Princeton, NJ: Princeton Univ. Press, 2006., p.421, eq. (10:3:1)
