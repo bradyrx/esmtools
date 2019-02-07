@@ -1,24 +1,4 @@
-"""
-Objects dealing with anything visualization.
-
-Color
------
-- `discrete_cmap` : Create a discrete colorbar for the visualization.
-
-Figures
--------
-- `outer_legend` : Add a legend in the upper right outside of the figure.
-- `savefig` : Matplotlib savefig command with all the right features.
-
-Mapping
--------
-- `add_box` : Add a box to highlight an area in a Cartopy plot.
-- `deseam` : Get rid of the seam that occurs around the Prime Meridian.
-- `make_cartopy` : Create a global Cartopy projection.
-- `meshgrid` : Take a 1D lon/lat grid and save as a meshgrid in the dataset.
-- `quick_pcolor` : Plot a pcolormesh map with a colorbar on a cartopy
-                   projection.
-"""
+"""Objects dealing with anything visualization."""
 import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
@@ -104,7 +84,7 @@ def discrete_cmap(levels, base_cmap):
     base = plt.cm.get_cmap(base_cmap)
     color_list = base(np.linspace(0, 1, levels))
     cmap_name = base.name + str(levels)
-    return LinearSegmentedColormap.from_list(cmap_name, color_list, levels) 
+    return LinearSegmentedColormap.from_list(cmap_name, color_list, levels)
 
 
 def make_cartopy(projection=ccrs.Robinson(), land_color='k',
@@ -145,7 +125,7 @@ def make_cartopy(projection=ccrs.Robinson(), land_color='k',
     if grid_lines:
         gl = ax.gridlines(draw_labels=False, color=grid_color)
     else:
-        gl = None # still need to return object
+        gl = None  # still need to return object
     ax.add_feature(cfeature.LAND, facecolor=land_color)
     if not frameon:
         ax.outline_patch.set_edgecolor('white')
@@ -301,7 +281,7 @@ def quick_pcolor(da, lon='lon', lat='lat', cyclic=True, add_colorbar=True,
 
 def global_subplot_colorbar(p_obj, axs, fig, **kwargs):
     """Creates one colorbar for all subplots.
-    
+
     Args:
         p_obj (obj): a single plot object, e.g. p_obj = plt.pcolormesh().
         axs (axes): collective axes object.
@@ -313,5 +293,5 @@ def global_subplot_colorbar(p_obj, axs, fig, **kwargs):
         By passing `orientation='horizontal'`, it will be plotted at the
         bottom of the figure.
     """
-    cb = fig.colorbar(p_obj, ax=axes.ravel().tolist(), **kwargs)
+    cb = fig.colorbar(p_obj, ax=axs.ravel().tolist(), **kwargs)
     return cb
