@@ -297,3 +297,21 @@ def quick_pcolor(da, lon='lon', lat='lat', cyclic=True, add_colorbar=True,
     if add_colorbar:
         cb = plt.colorbar(p, orientation='horizontal', pad=0.05, fraction=0.05)
     return p, ax, cb, gl
+
+
+def global_subplot_colorbar(p_obj, axs, fig, **kwargs):
+    """Creates one colorbar for all subplots.
+    
+    Args:
+        p_obj (obj): a single plot object, e.g. p_obj = plt.pcolormesh().
+        axs (axes): collective axes object.
+        fig (figure): figure object.
+        **kwargs: arguments to be passed to plt.colorbar().
+
+    Returns:
+        Colorbar object and adds the colorbar to the side of the current fig.
+        By passing `orientation='horizontal'`, it will be plotted at the
+        bottom of the figure.
+    """
+    cb = fig.colorbar(p_obj, ax=axes.ravel().tolist(), **kwargs)
+    return cb
