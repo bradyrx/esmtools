@@ -68,7 +68,7 @@ def schmidt(t):
     return Sc
 
 
-def temp_decomp_takahashi(ds, time_dim='time'):
+def temp_decomp_takahashi(ds, time_dim='time', temperature='tos', pco2='spco2'):
     """
     Decompose spco2 into thermal and non-thermal component.
 
@@ -93,22 +93,23 @@ def temp_decomp_takahashi(ds, time_dim='time'):
 
     """
     fac = 0.0432
-    tos_mean = ds['tos'].mean(time_dim)
-    tos_diff = ds['tos'] - tos_mean
-    thermal = ds['spco2'].mean(time_dim) * (np.exp(tos_diff * fac))
-    non_thermal = ds['spco2'] * (np.exp(tos_diff * -fac))
+    tos_mean = ds[temperature].mean(time_dim)
+    tos_diff = ds[temperature] - tos_mean
+    thermal = ds[temperature].mean(time_dim) * (np.exp(tos_diff * fac))
+    non_thermal = ds[pco2] * (np.exp(tos_diff * -fac))
     return thermal, non_thermal
 
 
 def potential_pco2(t_insitu, pco2_insitu):
     """
-    Calculate potential pco2 in the inner ocean.
+    Calculate potential pco2 in the inner ocean. Requires the first index of
+    depth to be at the surface.
 
     Reference:
     - Sarmiento, Jorge Louis, and Nicolas Gruber. Ocean Biogeochemical Dynamics.
         Princeton, NJ: Princeton Univ. Press, 2006., p.421, eq. (10:3:1)
 
     """
-    t_sfc = t_insitu.sel(depth=6)
+    t_sfc = t_insitu.isel(depth=0)
     pco2_potential = pco2_insitu * (1 + 0.0423 * (t_sfc - t_insitu))
     return pco2_potential
