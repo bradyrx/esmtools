@@ -95,7 +95,7 @@ def temp_decomp_takahashi(ds, time_dim='time', temperature='tos', pco2='spco2'):
     fac = 0.0432
     tos_mean = ds[temperature].mean(time_dim)
     tos_diff = ds[temperature] - tos_mean
-    thermal = ds[temperature].mean(time_dim) * (np.exp(tos_diff * fac))
+    thermal = ds[pco2].mean(time_dim) * (np.exp(tos_diff * fac))
     non_thermal = ds[pco2] * (np.exp(tos_diff * -fac))
     return thermal, non_thermal
 
