@@ -1,12 +1,8 @@
-"""
-Objects dealing with the carbon cycle and carbonate chemistry.
-
-Seawater Chemistry
-------------------
-`co2_sol` : Compute the solubility of CO2 in seawater based on temperature and salinity.
-`schmidt` : Computes the Schmidt number for CO2.
-"""
 import numpy as np
+import xarray as xr
+import warnings
+
+from .stats import linregress
 
 
 def co2_sol(t, s):
@@ -38,8 +34,8 @@ def co2_sol(t, s):
     log_t = np.log(t)
     d0 = b[2] * t_sq + b[1] * t + b[0]
     # Compute solubility in mol.kg^{-1}.atm^{-1}
-    ff = np.exp( a[0] + a[1] * t_inv + a[2] * log_t + \
-        a[3] * t_sq + d0 * s )
+    ff = np.exp(a[0] + a[1] * t_inv + a[2] * log_t +
+                a[3] * t_sq + d0 * s)
     return ff
 
 
@@ -125,3 +121,133 @@ def potential_pco2(t_insitu, pco2_insitu):
     t_sfc = t_insitu.isel(depth=0)
     pco2_potential = pco2_insitu * (1 + 0.0423 * (t_sfc - t_insitu))
     return pco2_potential
+
+
+def spco2_sensitivity(ds):
+    """Generate sensitivities in spco2 for changes in other variables.
+
+    * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
+        “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
+        the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
+        (2007). https://doi.org/10/fpv2wt.
+    * Gruber and Sarmiento, 2005
+
+    Args:
+        ds (xr.Dataset): containing cmorized variables:
+                            spco2 [ppm]: pCO2,ocean at ocean surface
+                            talkos[mmol m-3]: Alkalinity at ocean surface
+                            dissicos[mmol m-3]: DIC at ocean surface
+                            tos [C] : temperature at ocean surface
+                            sos [psu] : salinity at ocean surface
+
+    Returns:
+        sensitivity (xr.Dataset):
+
+    """
+    def _check_variables(ds):
+        requiredVars = ['spco2', 'tos', 'sos', 'talkos', 'dissicos']
+        if not all(i in ds.data_vars for i in requiredVars):
+            missingVars = [i for i in requiredVars if i not in ds.data_vars]
+            raise ValueError(f"""Missing variables needed for calculation:
+            {missingVars}""")
+
+    _check_variables(ds)
+    # Sensitivities are based on the time-mean for each field. This computes
+    # sensitivities at each grid cell.
+    # TODO: Add keyword for sliding mean, as in N year chunks of time to
+    # account for trends.
+    DIC = ds['dissicos'].mean('time')
+    ALK = ds['talkos'].mean('time')
+    SALT = ds['sos'].mean('time')
+    pCO2 = ds['spco2'].mean('time')
+
+    buffer_factor = dict()
+    buffer_factor['ALK'] = -ALK**2 / ((2 * DIC - ALK) * (ALK - DIC))
+    buffer_factor['DIC'] = (3*ALK*DIC - 2*DIC**2) / \
+                           ((2 * DIC - ALK) * (ALK - DIC))
+    # Compute sensitivities
+    sensitivity = dict()
+    sensitivity['tos'] = 0.0423
+    sensitivity['sos'] = 1 / SALT
+    sensitivity['talkos'] = (1 / ALK) * buffer_factor['ALK']
+    sensitivity['dissicos'] = (1 / DIC) * buffer_factor['DIC']
+    sensitivity = xr.Dataset(sensitivity) * pCO2
+    return sensitivity
+
+
+# TODO: adapt for CESM and MPI output.
+def spco2_decomposition_index(ds_terms, index, plot=False, **plot_kwargs):
+    """Decompose oceanic surface pco2 in a first order Taylor-expansion.
+
+    Reference:
+    * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
+        “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
+        the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
+        (2007). https://doi.org/10/fpv2wt.
+
+    Args:
+        ds (xr.Dataset): containing cmorized variables:
+                            spco2 [ppm]: pCO2,ocean at ocean surface
+                            talkos[mmol m-3]: Alkalinity at ocean surface
+                            dissicos[mmol m-3]: DIC at ocean surface
+                            tos [C] : temperature at ocean surface
+                            sos [psu] : salinity at ocean surface
+        index (xr.object): Any timeseries.
+        plot (bool): quick plot. Defaults to False.
+        **plot_kwargs (type): `**plot_kwargs`.
+
+    Returns:
+        terms_in_pCO2_units (xr.Dataset): terms of spco2 decomposition,
+                                          if `not plot`
+
+    """
+    warnings.warn("""Make sure your terms and index are detrended and
+    deseasonalized for the most accurate results.""")
+
+    pco2_sensitivity = spco2_sensitivity(ds_terms)
+    ds_terms_anomaly = ds_terms - ds_terms.mean('time')
+
+    def regression_against_index(ds, index, psig=None):
+        terms = dict()
+        for term in ds.data_vars:
+            if term != 'spco2':
+                print('Progress ...', term)
+                reg = linregress(index, ds[term], psig=psig)
+                terms[term] = reg['slope']
+        terms = xr.Dataset(terms)
+        return terms
+
+    terms = regression_against_index(ds_terms_anomaly, index)
+    terms_in_pCO2_units = terms * pco2_sensitivity
+    if plot:
+        terms_in_pCO2_units.to_array().plot(
+            col='variable', cmap='RdBu_r', robust=True, **plot_kwargs)
+    else:
+        return terms_in_pCO2_units
+
+
+def spco2_decomposition(ds_terms):
+    """Decompose oceanic surface pco2 in a first order Taylor-expansion.
+
+    Reference:
+    * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
+        “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
+        the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
+        (2007). https://doi.org/10/fpv2wt.
+
+    Args:
+        ds_terms (xr.Dataset): containing cmorized variables:
+                               spco2 [ppm]: pCO2,ocean at ocean surface
+                               talkos[mmol m-3]: Alkalinity at ocean surface
+                               dissicos[mmol m-3]: DIC at ocean surface
+                               tos [C] : temperature at ocean surface
+                               sos [psu] : salinity at ocean surface
+
+    Returns:
+        terms_in_pCO2_units (xr.Dataset): terms of spco2 decomposition
+
+    """
+    pco2_sensitivity = spco2_sensitivity(ds_terms)
+    ds_terms_anomaly = ds_terms - ds_terms.mean('time')
+    terms_in_pCO2_units = pco2_sensitivity * ds_terms_anomaly
+    return terms_in_pCO2_units
