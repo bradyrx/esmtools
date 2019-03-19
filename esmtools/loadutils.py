@@ -1,7 +1,7 @@
 """Contains functions for loading sample datasets and region masks."""
 
 import os as _os
-from xarray.core.pycompat import urlretrieve as _urlretrieve
+from urllib.request import urlretrieve as _urlretrieve
 from xarray.backends.api import open_dataset as _open_dataset
 import hashlib
 
