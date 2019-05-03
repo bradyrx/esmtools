@@ -2,6 +2,10 @@
 
 A toolbox for functions related to Earth System Model analysis, with a focus on biogeochemical oceanography.
 
+**Note**: This is more of a personal package with functions I use commonly. It doesn't have any testing (as of now) or documentation, and isn't supposed to function as a full analysis package.
+
+Please check out [`climpred`](https://github.com/bradyrx/climpred) for a package in development made for analysis of climate prediction ensembles.
+
 ## Installation
 ```shell
 pip install git+https://github.com/bradyrx/esmtools
