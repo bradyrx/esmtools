@@ -1,7 +1,6 @@
 from . import filtering
 from . import vis
 from . import stats
-from . import colormaps
 from . import carbon
 from . import physics
 from . import conversions
