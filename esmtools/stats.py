@@ -1,27 +1,8 @@
-"""
-Stats module. This serves as a wrapper for the most desired functions
-from climpred.
-
-Area-weighting
-------------
-`xr_cos_weight`: Area-weights output or observations without grid cell area
-                 information using cosine weighting.
-`xr_area_weight`: Area-weights output with grid cell area information.
-
-Time Series
------------
-`xr_smooth_series` : Returns a smoothed time series.
-`xr_linregress` : Returns results of linear regression over input dataarray.
-`xr_rm_poly` : Returns time series with polynomial fit removed.
-`xr_rm_trend` : Returns detrended (first order) time series.
-`xr_autocorr` : Calculates the autocorrelation of time series over some lag.
-`xr_corr` : Computes pearsonr between two time series accounting for
-            autocorrelation.
-"""
+# Need to require climpred after it's registered on PyPI.
 import climpred.stats as st
 import numpy as np
 import xarray as xr
-from scipy.stats import linregress
+from scipy.stats import linregress as lreg
 
 
 # --------------------------------------------#
@@ -66,7 +47,7 @@ def _get_dims(da):
 # --------------------------
 # AREA-WEIGHTING DEFINITIONS
 # --------------------------
-def xr_cos_weight(da, lat_coord='lat', lon_coord='lon', one_dimensional=True):
+def cos_weight(da, lat_coord='lat', lon_coord='lon', one_dimensional=True):
     """
     Area-weights data on a regular (e.g. 360x180) grid that does not come with
     cell areas. Uses cosine-weighting.
@@ -110,7 +91,7 @@ def xr_cos_weight(da, lat_coord='lat', lon_coord='lon', one_dimensional=True):
     return aw_da
 
 
-def xr_area_weight(da, area_coord='area'):
+def area_weight(da, area_coord='area'):
     """
     Returns an area-weighted time series from the input xarray dataarray. This
     automatically figures out spatial dimensions vs. other dimensions. I.e.,
@@ -159,7 +140,7 @@ def xr_area_weight(da, area_coord='area'):
 # -----------
 # TIME SERIES
 # -----------
-def xr_smooth_series(da, dim, length, center=True):
+def smooth_series(da, dim, length, center=True):
     """
     Returns a smoothed version of the input timeseries.
     NOTE: Currently explicitly writing `xr` as a prefix for xarray-specific
@@ -182,7 +163,7 @@ def xr_smooth_series(da, dim, length, center=True):
     return da.rolling({dim: length}, center=center).mean()
 
 
-def xr_linregress(da, dim='time', compact=True):
+def linregress(da, dim='time', compact=True):
     """
     Computes the least-squares linear regression of a dataarray over some
     dimension (typically time).
@@ -203,7 +184,7 @@ def xr_linregress(da, dim='time', compact=True):
         returned separately.
     """
     _check_xarray(da)
-    results = xr.apply_ufunc(linregress, da[dim], da,
+    results = xr.apply_ufunc(lreg, da[dim], da,
                              input_core_dims=[[dim], [dim]],
                              output_core_dims=[[], [], [], [], []],
                              vectorize=True, dask='parallelized')
@@ -221,10 +202,10 @@ def xr_linregress(da, dim='time', compact=True):
                ds['stderr']
 
 
-def xr_corr(x, y, dim='time', lag=0, two_sided=True, return_p=False):
+def corr(x, y, dim='time', lag=0, two_sided=True, return_p=False):
     """
     Computes the Pearson product-momment coefficient of linear correlation.
-    (See xr_autocorr for autocorrelation/lag for one time series)
+    (See autocorr for autocorrelation/lag for one time series)
     This version calculates the effective degrees of freedom, accounting
     for autocorrelation within each time series that could fluff the
     significance of the correlation.
@@ -262,11 +243,11 @@ def xr_corr(x, y, dim='time', lag=0, two_sided=True, return_p=False):
     fluxes in Eastern Boundary Upwelling Systems, Biogeosciences Discuss.,
     https://doi.org/10.5194/bg-2018-415, in review, 2018.
     """
-    return st.xr_corr(x, y, dim=dim, lag=lag, two_sided=two_sided,
+    return st.corr(x, y, dim=dim, lag=lag, two_sided=two_sided,
                       return_p=return_p)
 
 
-def xr_rm_poly(da, order, dim='time'):
+def rm_poly(da, order, dim='time'):
     """
     Returns xarray object with nth-order fit removed from every time series.
     Input
@@ -276,7 +257,7 @@ def xr_rm_poly(da, order, dim='time'):
         detrended
     order : int
         Order of polynomial fit to be removed. If 1, this is functionally
-        the same as calling `xr_rm_trend`
+        the same as calling `rm_trend`
     dim : str (default 'time')
         Dimension over which to remove the polynomial fit.
     Returns
@@ -284,17 +265,17 @@ def xr_rm_poly(da, order, dim='time'):
     detrended_ts : xarray DataArray
         DataArray with detrended time series.
     """
-    return st.xr_rm_poly(da, order, dim=dim)
+    return st.rm_poly(da, order, dim=dim)
 
 
-def xr_rm_trend(da, dim='time'):
+def rm_trend(da, dim='time'):
     """
-    Calls xr_rm_poly with an order 1 argument.
+    Calls rm_poly with an order 1 argument.
     """
-    return st.xr_rm_trend(da, dim=dim)
+    return st.rm_trend(da, dim=dim)
 
 
-def xr_autocorr(ds, lag=1, dim='time', return_p=False):
+def autocorr(ds, lag=1, dim='time', return_p=False):
     """
     Calculated lagged correlation of a xr.Dataset.
     Parameters
@@ -312,4 +293,38 @@ def xr_autocorr(ds, lag=1, dim='time', return_p=False):
     r : Pearson correlation coefficient
     p : (if return_p True) p-value
     """
-    return st.xr_autocorr(ds, lag=lag, dim=dim, return_p=return_p)
+    return st.autocorr(ds, lag=lag, dim=dim, return_p=return_p)
+
+
+def ACF(ds, dim='time', nlags=None):
+    """
+    Compute the ACF of a time series to a specific lag.
+
+    Args:
+      ds (xarray object): dataset/dataarray containing the time series.
+      dim (str): dimension to apply ACF over.
+      nlags (optional int): number of lags to compute ACF over. If None,
+                            compute for length of `dim` on `ds`.
+
+    Returns:
+      Dataset or DataArray with ACF results.
+
+    Notes:
+      This is preferred over ACF functions from MATLAB/scipy, since it doesn't
+      use FFT methods.
+    """
+    # Drop variables that don't have requested dimension, so this can be
+    # applied over the full dataset.
+    if isinstance(ds, xr.Dataset):
+        dropVars = [i for i in ds if dim not in ds[i].dims]
+        ds = ds.drop(dropVars)
+
+    # Loop through every step in `dim`
+    if nlags is None:
+        nlags = ds[dim].size
+
+    acf = []
+    # The 2 factor accounts for fact that time series reduces in size for
+    # each lag.
+    for i in range (nlags - 2):
+        res = autocorr
