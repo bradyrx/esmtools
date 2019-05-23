@@ -244,7 +244,7 @@ def corr(x, y, dim='time', lag=0, two_sided=True, return_p=False):
     https://doi.org/10.5194/bg-2018-415, in review, 2018.
     """
     return st.corr(x, y, dim=dim, lag=lag, two_sided=two_sided,
-                      return_p=return_p)
+                   return_p=return_p)
 
 
 def rm_poly(da, order, dim='time'):
@@ -326,5 +326,8 @@ def ACF(ds, dim='time', nlags=None):
     acf = []
     # The 2 factor accounts for fact that time series reduces in size for
     # each lag.
-    for i in range (nlags - 2):
-        res = autocorr
+    for i in range(nlags - 2):
+        res = autocorr(ds, lag=i, dim=dim)
+        acf.append(res)
+    acf = xr.concat(acf, dim=dim)
+    return acf
