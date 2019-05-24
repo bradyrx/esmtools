@@ -304,14 +304,14 @@ def ACF(ds, dim='time', nlags=None):
     return acf
   
 
-  def xr_ttest_ind(a, b, dim='time'):
+  def ttest_ind(a, b, dim='time'):
     """Parallelize scipy.stats.ttest_ind."""
     return xr.apply_ufunc(ttest_ind, a, b, input_core_dims=[[dim], [dim]],
                           output_core_dims=[[], []],
                           vectorize=True, dask='parallelized')
 
 
-def xr_ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2, equal_var=True):
+def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2, equal_var=True):
     """Parallelize scipy.stats.ttest_ind_from_stats."""
     return xr.apply_ufunc(ttest_ind_from_stats, mean1, std1, nobs1, mean2, std2, nobs2,
                           input_core_dims=[[], [], [], [], [], []],
@@ -370,7 +370,7 @@ def composite_analysis(field,
         s2 = composite.std('time').sel(index=index)
         n2 = len(composite.groups[index])
 
-        t, p = xr_ttest_ind_from_stats(m1, s1, n1, m2, s2, n2)
+        t, p = ttest_ind_from_stats(m1, s1, n1, m2, s2, n2)
         comp_pos = composite.mean('time').sel(index='pos').where(p < psig)
 
         # test if neg different from none
@@ -383,7 +383,7 @@ def composite_analysis(field,
         s2 = composite.std('time').sel(index=index)
         n2 = len(composite.groups[index])
 
-        t, p = xr_ttest_ind_from_stats(m1, s1, n1, m2, s2, n2)
+        t, p = ttest_ind_from_stats(m1, s1, n1, m2, s2, n2)
         comp_neg = composite.mean('time').sel(index='neg').where(p < psig)
 
         composite = xr.concat([comp_pos, comp_neg], dim='index')
