@@ -101,3 +101,23 @@ def xyz_to_lat_lon(x, y, z, radians=False):
     else:
         return plon * 180./np.pi, \
                plat * 180./np.pi
+
+
+def convert_rad_to_deg(ds):
+    """Quick converter from radians to degrees.
+
+    Just set up for LIGHT for now.
+    """
+    ds['latParticle'] = ds['latParticle'] * (180/np.pi)
+    ds['lonParticle'] = ds['lonParticle'] * (180/np.pi)
+    return ds
+
+
+def convert_deg_to_rad(ds):
+    """Quick converter from degrees to radians.
+
+    Just set up for LIGHT for now.
+    """
+    ds['latParticle'] = ds['latParticle'] * (np.pi/180)
+    ds['lonParticle'] = ds['lonParticle'] * (np.pi/180)
+    return ds
