@@ -1,9 +1,9 @@
-# Need to require climpred after it's registered on PyPI.
 import climpred.stats as st
 import numpy as np
 import xarray as xr
 from scipy.stats import linregress as lreg
-from scipy.stats import ttest_ind, ttest_ind_from_stats
+from scipy.stats import ttest_ind as tti
+from scipy.stats import ttest_ind_from_stats as tti_from_stats
 
 from .utils import (check_xarray, get_dims)
 
@@ -165,7 +165,7 @@ def linregress(da, dim='time', compact=True):
         return ds
     else:
         return ds['slope'], ds['intercept'], ds['rvalue'], ds['pvalue'], \
-            ds['stderr']
+               ds['stderr']
 
 
 @check_xarray(0)
@@ -302,18 +302,19 @@ def ACF(ds, dim='time', nlags=None):
         acf.append(res)
     acf = xr.concat(acf, dim=dim)
     return acf
-  
 
-  def ttest_ind(a, b, dim='time'):
+
+def ttest_ind(a, b, dim='time'):
     """Parallelize scipy.stats.ttest_ind."""
-    return xr.apply_ufunc(ttest_ind, a, b, input_core_dims=[[dim], [dim]],
+    return xr.apply_ufunc(tti, a, b, input_core_dims=[[dim], [dim]],
                           output_core_dims=[[], []],
                           vectorize=True, dask='parallelized')
 
 
-def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2, equal_var=True):
+def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
     """Parallelize scipy.stats.ttest_ind_from_stats."""
-    return xr.apply_ufunc(ttest_ind_from_stats, mean1, std1, nobs1, mean2, std2, nobs2,
+    return xr.apply_ufunc(tti_from_stats, mean1, std1, nobs1, mean2, std2,
+                          nobs2,
                           input_core_dims=[[], [], [], [], [], []],
                           output_core_dims=[[], []],
                           vectorize=True, dask='parallelized')
@@ -396,4 +397,3 @@ def composite_analysis(field,
         composite.plot(col='index', **plot_kwargs)
     else:
         return composite
-  
