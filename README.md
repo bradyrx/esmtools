@@ -11,32 +11,6 @@ Please check out [`climpred`](https://github.com/bradyrx/climpred) for a package
 pip install git+https://github.com/bradyrx/esmtools
 ```
 
-## Modules
-
-`carbon`
-
-Functions for the carbon cycle and carbonate chemistry.
-
-`loadutils`
-
-Load in sample datasets or masks.
-
-`filtering`
-
-Functions for filtering output over space and time.
-
-`physics`
-
-Functions related to physical conversions.
-
-`stats`
-
-Functions for time series and spatial statistics
-
-`vis`
-
-Functions for colorbars, coloarmaps, and projecting data globally or regionally.
-
 **Note**: Little development in the future will go towards visualization. We suggest [proplot](https://github.com/lukelbd/proplot) to users for a phenomenal `matplotlib` wrapper.
 
 ## Contact
