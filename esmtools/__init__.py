@@ -8,3 +8,4 @@ from . import ebus
 from . import mpas
 from . import loadutils
 from . import grid
+from . import composite
