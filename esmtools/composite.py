@@ -9,6 +9,8 @@ def standardize(ds, dim='time'):
 
 
 def _create_composites(anomaly_field, index, threshold=1, dim='time'):
+    """Creates composite from some variable's anomaly field and a climate
+    index"""
     index_comp = xr.full_like(index, 'none', dtype='U4')
     index_comp[index >= threshold] = 'pos'
     index_comp[index <= -threshold] = 'neg'
@@ -22,24 +24,29 @@ def composite_analysis(field,
                        index,
                        threshold=1,
                        plot=False,
-                       ttest=True,
+                       ttest=False,
                        psig=0.05,
                        **plot_kwargs):
-    """Short summary.
+    """Create composite maps based on some variable's response to a climate
+    index.
+
+    Make sure that the field and index are detrended prior to using this
+    function if needed.
 
     Args:
-        field (xr.object): contains dims: 'time', 2 spatial.
-        index (xr.object): Create composite based on climate index.
-        threshold (float): threshold value for positive composite.
-                        Defaults to 1.
-        plot (bool): quick plot and no returns. Defaults to False.
+        field (xr.object): Variable to create composites for. Contains dims
+                           `time` and 2 spatial.
+        index (xr.object): Climate index time series.
+        threshold (float): Threshold value for standardized composite.
+                           Defaults to 1.
+        plot (bool): Quick plot and no returns. Defaults to False.
         ttest (bool): Apply `ttest` whether pos/neg different from mean.
-                      Defaults to True.
+                      Defaults to False.
         psig (float): Significance level for ttest. Defaults to 0.05.
-        **plot_kwargs (type): Description of parameter `**plot_kwargs`.
+        **plot_kwargs (type): kwargs to pass to xarray's plot function.
 
     Returns:
-        composite (xr.object): pos and negative composite if `not plot`.
+        composite (xr.object): Positive and negative composite if `not plot`.
 
     References:
         * Motivated from Ryan Abernathy's notebook here:
