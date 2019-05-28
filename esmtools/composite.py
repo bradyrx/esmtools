@@ -8,10 +8,10 @@ def standardize(ds, dim='time'):
     return (ds - ds.mean(dim)) / ds.std(dim)
 
 
-def _create_composites(anomaly_field, timeseries, threshold=1, dim='time'):
-    index_comp = xr.full_like(timeseries, 'none', dtype='U4')
-    index_comp[timeseries >= threshold] = 'pos'
-    index_comp[timeseries <= -threshold] = 'neg'
+def _create_composites(anomaly_field, index, threshold=1, dim='time'):
+    index_comp = xr.full_like(index, 'none', dtype='U4')
+    index_comp[index >= threshold] = 'pos'
+    index_comp[index <= -threshold] = 'neg'
     composite = anomaly_field.groupby(
         index_comp.rename('index'))
     return composite
@@ -19,7 +19,7 @@ def _create_composites(anomaly_field, timeseries, threshold=1, dim='time'):
 
 @check_xarray([0, 1])
 def composite_analysis(field,
-                       timeseries,
+                       index,
                        threshold=1,
                        plot=False,
                        ttest=True,
@@ -29,7 +29,7 @@ def composite_analysis(field,
 
     Args:
         field (xr.object): contains dims: 'time', 2 spatial.
-        timeseries (xr.object): Create composite based on timeseries.
+        index (xr.object): Create composite based on climate index.
         threshold (float): threshold value for positive composite.
                         Defaults to 1.
         plot (bool): quick plot and no returns. Defaults to False.
@@ -64,7 +64,13 @@ def composite_analysis(field,
         t, p = ttest_ind_from_stats(m1, s1, n1, m2, s2, n2)
         return composite.mean('time').sel(index=index).where(p < psig)
 
-    index = standardize(timeseries)
+    # Raise error if time slices are different.
+    if field.time.size != index.time.size:
+        raise ValueError(f"""Time periods for field and index do not match.
+        field: {field.time.size}
+        index: {index.time.size}""")
+
+    index = standardize(index)
     field = field - field.mean('time')
     composite = _create_composites(field, index, threshold=threshold)
 
