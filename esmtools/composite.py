@@ -1,7 +1,7 @@
-import xarray as xr
-
 from .utils import check_xarray
 from .stats import ttest_ind_from_stats
+import warnings
+import xarray as xr
 
 
 def standardize(ds, dim='time'):
@@ -62,14 +62,17 @@ def composite_analysis(field,
             index: 'pos' or 'neg'
             psig: Significance level for ttest
         """
-        m1 = composite.mean('time').sel(index=index)
-        s1 = composite.std('time').sel(index=index)
-        n1 = len(composite.groups[index])
-        m2 = composite.mean('time').sel(index='none')
-        s2 = composite.std('time').sel(index='none')
-        n2 = len(composite.groups['none'])
-        t, p = ttest_ind_from_stats(m1, s1, n1, m2, s2, n2)
-        return composite.mean('time').sel(index=index).where(p < psig)
+        # Suppress NaN of empty slice warning.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            m1 = composite.mean('time').sel(index=index)
+            s1 = composite.std('time').sel(index=index)
+            n1 = len(composite.groups[index])
+            m2 = composite.mean('time').sel(index='none')
+            s2 = composite.std('time').sel(index='none')
+            n2 = len(composite.groups['none'])
+            t, p = ttest_ind_from_stats(m1, s1, n1, m2, s2, n2)
+            return composite.mean('time').sel(index=index).where(p < psig)
 
     # Raise error if time slices are different.
     if field.time.size != index.time.size:
@@ -78,7 +81,9 @@ def composite_analysis(field,
         index: {index.time.size}""")
 
     index = standardize(index)
-    field = field - field.mean('time')
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=RuntimeWarning)
+        field = field - field.mean('time')
     composite = _create_composites(field, index, threshold=threshold)
 
     if ttest:
@@ -88,7 +93,9 @@ def composite_analysis(field,
         comp_neg = compute_ttest_for_composite(composite, 'neg', psig)
         composite = xr.concat([comp_pos, comp_neg], dim='index')
     else:
-        composite = composite.mean('time').sel(index=['pos', 'neg'])
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=RuntimeWarning)
+            composite = composite.mean('time').sel(index=['pos', 'neg'])
 
     composite['index'] = ['positive', 'negative']
 
