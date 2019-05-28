@@ -54,37 +54,34 @@ def composite_analysis(field,
         * Motivated from Ryan Abernathy's notebook here:
         https://rabernat.github.io/research_computing/xarray.html
     """
+    def compute_ttest_for_composite(composite, index, psig):
+        """
+        Computes the ttest for the composite relative to neutral years and
+        returns a masked map based on some alpha level.
+
+        Args:
+            composite: The grouped composite object
+            index: 'pos' or 'neg'
+            psig: Significance level for ttest
+        """
+        m1 = composite.mean('time').sel(index=index)
+        s1 = composite.std('time').sel(index=index)
+        n1 = len(composite.groups[index])
+        m2 = composite.mean('time').sel(index='none')
+        s2 = composite.std('time').sel(index='none')
+        n2 = len(composite.groups['none'])
+        t, p = ttest_ind_from_stats(m1, s1, n1, m2, s2, n2)
+        return composite.mean('time').sel(index=index).where(p < psig)
+
     index = standardize(timeseries)
     field = field - field.mean('time')
     composite = _create_composites(field, index, threshold=threshold)
 
     if ttest:
         # test if pos different from none
-        index = 'pos'
-        m1 = composite.mean('time').sel(index=index)
-        s1 = composite.std('time').sel(index=index)
-        n1 = len(composite.groups[index])
-        index = 'none'
-        m2 = composite.mean('time').sel(index=index)
-        s2 = composite.std('time').sel(index=index)
-        n2 = len(composite.groups[index])
-
-        t, p = ttest_ind_from_stats(m1, s1, n1, m2, s2, n2)
-        comp_pos = composite.mean('time').sel(index='pos').where(p < psig)
-
+        comp_pos = compute_ttest_for_composite(composite, 'pos', psig)
         # test if neg different from none
-        index = 'neg'
-        m1 = composite.mean('time').sel(index=index)
-        s1 = composite.std('time').sel(index=index)
-        n1 = len(composite.groups[index])
-        index = 'none'
-        m2 = composite.mean('time').sel(index=index)
-        s2 = composite.std('time').sel(index=index)
-        n2 = len(composite.groups[index])
-
-        t, p = ttest_ind_from_stats(m1, s1, n1, m2, s2, n2)
-        comp_neg = composite.mean('time').sel(index='neg').where(p < psig)
-
+        comp_neg = compute_ttest_for_composite(composite, 'neg', psig)
         composite = xr.concat([comp_pos, comp_neg], dim='index')
     else:
         composite = composite.mean('time').sel(index=['pos', 'neg'])
