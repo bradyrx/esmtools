@@ -1,16 +1,7 @@
 import xarray as xr
-from scipy.stats import ttest_ind_from_stats as tti_from_stats
 
 from .utils import check_xarray
-
-
-def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
-    """Parallelize scipy.stats.ttest_ind_from_stats."""
-    return xr.apply_ufunc(tti_from_stats, mean1, std1, nobs1, mean2, std2,
-                          nobs2,
-                          input_core_dims=[[], [], [], [], [], []],
-                          output_core_dims=[[], []],
-                          vectorize=True, dask='parallelized')
+from .stats import ttest_ind_from_stats
 
 
 def standardize(ds, dim='time'):
