@@ -23,6 +23,15 @@ def standardize(ds, dim='time'):
     return (ds - ds.mean(dim)) / ds.std(dim)
 
 
+def _create_composites(anomaly_field, timeseries, threshold=1, dim='time'):
+    index_comp = xr.full_like(timeseries, 'none', dtype='U4')
+    index_comp[timeseries >= threshold] = 'pos'
+    index_comp[timeseries <= -threshold] = 'neg'
+    composite = anomaly_field.groupby(
+        index_comp.rename('index'))
+    return composite
+
+
 def composite_analysis(field,
                        timeseries,
                        threshold=1,
@@ -49,16 +58,8 @@ def composite_analysis(field,
     """
     index = standardize(timeseries)
     field = field - field.mean('time')
-
-    def _create_composites(anomaly_field, timeseries, threshold=1, dim='time'):
-        index_comp = xr.full_like(timeseries, 'none', dtype='U4')
-        index_comp[timeseries >= threshold] = 'pos'
-        index_comp[timeseries <= -threshold] = 'neg'
-        composite = anomaly_field.groupby(
-            index_comp.rename('index'))
-        return composite
-
     composite = _create_composites(field, index, threshold=threshold)
+
     if ttest:
         # test if pos different from none
         index = 'pos'
