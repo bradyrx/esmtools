@@ -1,3 +1,5 @@
+from functools import wraps
+
 import xarray as xr
 
 
@@ -10,6 +12,7 @@ def dec_args_kwargs(wrapper):
                 wrapper(func, *dec_args, **dec_kwargs)
     )
 
+
 # --------------------------------------#
 # CHECKS
 # --------------------------------------#
@@ -20,25 +23,33 @@ def check_xarray(func, *dec_args):
     Decorate a function to ensure the first arg being submitted is
     either a Dataset or DataArray.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        ds_da_locs = dec_args[0]
-        if not isinstance(ds_da_locs, list):
-            ds_da_locs = [ds_da_locs]
+        try:
+            ds_da_locs = dec_args[0]
+            if not isinstance(ds_da_locs, list):
+                ds_da_locs = [ds_da_locs]
 
-        for loc in ds_da_locs:
-            if isinstance(loc, int):
-                ds_da = args[loc]
-            elif isinstance(loc, str):
-                ds_da = kwargs[loc]
+            for loc in ds_da_locs:
+                if isinstance(loc, int):
+                    ds_da = args[loc]
+                elif isinstance(loc, str):
+                    ds_da = kwargs[loc]
 
-            is_ds_da = isinstance(ds_da, (xr.Dataset, xr.DataArray))
-            if not is_ds_da:
-                typecheck = type(ds_da)
-                raise IOError(f"""The input data is not an xarray DataArray or
-                    Dataset. Please convert to an xarray object for this
-                    function to work properly.
-                    Your input was of type: {typecheck}""")
-
+                is_ds_da = isinstance(ds_da, (xr.Dataset, xr.DataArray))
+                if not is_ds_da:
+                    typecheck = type(ds_da)
+                    raise IOError(
+                        f"""The input data is not an xarray DataArray or
+                        Dataset. climpred is built to wrap xarray to make
+                        use of its awesome features. Please input an xarray
+                        object and retry the function.
+                        Your input was of type: {typecheck}""")
+        except IndexError:
+            pass
+        # this is outside of the try/except so that the traceback is relevant
+        # to the actual function call rather than showing a simple Exception
+        # (probably IndexError from trying to subselect an empty dec_args list)
         return func(*args, **kwargs)
     return wrapper
 

@@ -2,6 +2,8 @@ import xarray as xr
 from scipy.stats import ttest_ind as tti
 from scipy.stats import ttest_ind_from_stats as tti_from_stats
 
+from .utils import check_xarray
+
 
 def ttest_ind(a, b, dim='time'):
     """Parallelize scipy.stats.ttest_ind."""
@@ -32,6 +34,7 @@ def _create_composites(anomaly_field, timeseries, threshold=1, dim='time'):
     return composite
 
 
+@check_xarray([0, 1])
 def composite_analysis(field,
                        timeseries,
                        threshold=1,
@@ -55,6 +58,9 @@ def composite_analysis(field,
     Returns:
         composite (xr.object): pos and negative composite if `not plot`.
 
+    References:
+        * Motivated from Ryan Abernathy's notebook here:
+        https://rabernat.github.io/research_computing/xarray.html
     """
     index = standardize(timeseries)
     field = field - field.mean('time')
