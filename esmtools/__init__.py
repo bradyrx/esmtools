@@ -7,3 +7,4 @@ from . import conversions
 from . import mpas
 from . import loadutils
 from . import grid
+from . import composite
