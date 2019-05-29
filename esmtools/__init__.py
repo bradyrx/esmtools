@@ -4,7 +4,6 @@ from . import stats
 from . import carbon
 from . import physics
 from . import conversions
-from . import ebus
 from . import mpas
 from . import loadutils
 from . import grid
