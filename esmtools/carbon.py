@@ -1,8 +1,9 @@
+import warnings
 import numpy as np
 import xarray as xr
-import warnings
 
-from .stats import linregress
+from .stats import linregress, rm_trend
+from .utils import check_xarray
 
 
 def co2_sol(t, s):
@@ -156,10 +157,10 @@ def spco2_sensitivity(ds):
     # sensitivities at each grid cell.
     # TODO: Add keyword for sliding mean, as in N year chunks of time to
     # account for trends.
-    DIC = ds['dissicos'].mean('time')
-    ALK = ds['talkos'].mean('time')
-    SALT = ds['sos'].mean('time')
-    pCO2 = ds['spco2'].mean('time')
+    DIC = ds['dissicos']
+    ALK = ds['talkos']
+    SALT = ds['sos']
+    pCO2 = ds['spco2']
 
     buffer_factor = dict()
     buffer_factor['ALK'] = -ALK**2 / ((2 * DIC - ALK) * (ALK - DIC))
@@ -176,7 +177,10 @@ def spco2_sensitivity(ds):
 
 
 # TODO: adapt for CESM and MPI output.
-def spco2_decomposition_index(ds_terms, index, plot=False, **plot_kwargs):
+@check_xarray([0, 1])
+def spco2_decomposition_index(ds_terms, index, detrend=False,
+                              deseasonalize=False, plot=False,
+                              **plot_kwargs):
     """Decompose oceanic surface pco2 in a first order Taylor-expansion.
 
     Reference:
@@ -192,7 +196,10 @@ def spco2_decomposition_index(ds_terms, index, plot=False, **plot_kwargs):
                             dissicos[mmol m-3]: DIC at ocean surface
                             tos [C] : temperature at ocean surface
                             sos [psu] : salinity at ocean surface
-        index (xr.object): Any timeseries.
+        index (xr.object): Climate index to regress onto.
+        detrend (bool): Whether to detrend time series prior to regression.
+        deseasonalize (bool): Whether to deseasonalize time series prior to
+                              regression.
         plot (bool): quick plot. Defaults to False.
         **plot_kwargs (type): `**plot_kwargs`.
 
@@ -201,12 +208,6 @@ def spco2_decomposition_index(ds_terms, index, plot=False, **plot_kwargs):
                                           if `not plot`
 
     """
-    warnings.warn("""Make sure your terms and index are detrended and
-    deseasonalized for the most accurate results.""")
-
-    pco2_sensitivity = spco2_sensitivity(ds_terms)
-    ds_terms_anomaly = ds_terms - ds_terms.mean('time')
-
     def regression_against_index(ds, index, psig=None):
         terms = dict()
         for term in ds.data_vars:
@@ -217,8 +218,21 @@ def spco2_decomposition_index(ds_terms, index, plot=False, **plot_kwargs):
         terms = xr.Dataset(terms)
         return terms
 
+    pco2_sensitivity = spco2_sensitivity(ds_terms)
+    if detrend:
+        ds_terms_anomaly = rm_trend(ds_terms, dim='time')
+    else:
+        warnings.warn("Your data are not being detrended.")
+        ds_terms_anomaly = ds_terms - ds_terms.mean('time')
+
+    if deseasonalize:
+        clim = ds_terms_anomaly.groupby('time.month').mean('time')
+        ds_terms_anomaly = ds_terms_anomaly.groupby('time.month') - clim
+    else:
+        warnings.warn("Your data are not being deseasonalized.")
+
     terms = regression_against_index(ds_terms_anomaly, index)
-    terms_in_pCO2_units = terms * pco2_sensitivity
+    terms_in_pCO2_units = terms * pco2_sensitivity.mean('time')
     if plot:
         terms_in_pCO2_units.to_array().plot(
             col='variable', cmap='RdBu_r', robust=True, **plot_kwargs)
@@ -226,7 +240,8 @@ def spco2_decomposition_index(ds_terms, index, plot=False, **plot_kwargs):
         return terms_in_pCO2_units
 
 
-def spco2_decomposition(ds_terms):
+@check_xarray(0)
+def spco2_decomposition(ds_terms, detrend=False, deseasonalize=False):
     """Decompose oceanic surface pco2 in a first order Taylor-expansion.
 
     Reference:
@@ -242,12 +257,26 @@ def spco2_decomposition(ds_terms):
                                dissicos[mmol m-3]: DIC at ocean surface
                                tos [C] : temperature at ocean surface
                                sos [psu] : salinity at ocean surface
+        detrend (bool): If True, detrend when generating anomalies.
+        deseasonalize (bool): If True, deseasonalize when generating anomalies.
 
     Returns:
         terms_in_pCO2_units (xr.Dataset): terms of spco2 decomposition
 
     """
     pco2_sensitivity = spco2_sensitivity(ds_terms)
-    ds_terms_anomaly = ds_terms - ds_terms.mean('time')
-    terms_in_pCO2_units = pco2_sensitivity * ds_terms_anomaly
+
+    if detrend:
+        ds_terms_anomaly = rm_trend(ds_terms, dim='time')
+    else:
+        warnings.warn("Your data are not being detrended.")
+        ds_terms_anomaly = ds_terms - ds_terms.mean('time')
+
+    if deseasonalize:
+        clim = ds_terms_anomaly.groupby('time.month').mean('time')
+        ds_terms_anomaly = ds_terms_anomaly.groupby('time.month') - clim
+    else:
+        warnings.warn("Your data are not being deseasonalized.")
+
+    terms_in_pCO2_units = pco2_sensitivity.mean('time') * ds_terms_anomaly
     return terms_in_pCO2_units
