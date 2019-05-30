@@ -312,3 +312,15 @@ def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
                           input_core_dims=[[], [], [], [], [], []],
                           output_core_dims=[[], []],
                           vectorize=True, dask='parallelized')
+
+
+@check_xarray(0)
+def nanmean(ds, dim='time'):
+    """Compute mean NaNs and suppress warning from numpy"""
+    if 'time' in ds.dims:
+        mask = ds.isnull().isel(time=0)
+    else:
+        mask = ds.isnull()
+    ds = ds.fillna(0).mean(dim)
+    ds = ds.where(~mask)
+    return ds

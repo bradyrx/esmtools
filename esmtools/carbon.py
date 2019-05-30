@@ -1,8 +1,9 @@
 import warnings
 import numpy as np
 import xarray as xr
+from tqdm import tqdm
 
-from .stats import linregress, rm_trend
+from .stats import linregress, nanmean, rm_poly
 from .utils import check_xarray
 
 
@@ -178,8 +179,9 @@ def spco2_sensitivity(ds):
 
 # TODO: adapt for CESM and MPI output.
 @check_xarray([0, 1])
-def spco2_decomposition_index(ds_terms, index, detrend=False,
+def spco2_decomposition_index(ds_terms, index, detrend=True, order=1,
                               deseasonalize=False, plot=False,
+                              sliding_window=10,
                               **plot_kwargs):
     """Decompose oceanic surface pco2 in a first order Taylor-expansion.
 
@@ -198,9 +200,13 @@ def spco2_decomposition_index(ds_terms, index, detrend=False,
                             sos [psu] : salinity at ocean surface
         index (xr.object): Climate index to regress onto.
         detrend (bool): Whether to detrend time series prior to regression.
+                        Defaults to a linear (order 1) regression.
+        order (int): If detrend is True, what order polynomial to remove.
         deseasonalize (bool): Whether to deseasonalize time series prior to
                               regression.
         plot (bool): quick plot. Defaults to False.
+        sliding_window (int): Number of years to apply sliding window to for
+                              calculation. Defaults to 10.
         **plot_kwargs (type): `**plot_kwargs`.
 
     Returns:
@@ -212,18 +218,20 @@ def spco2_decomposition_index(ds_terms, index, detrend=False,
         terms = dict()
         for term in ds.data_vars:
             if term != 'spco2':
-                print('Progress ...', term)
                 reg = linregress(index, ds[term], psig=psig)
                 terms[term] = reg['slope']
         terms = xr.Dataset(terms)
         return terms
 
     pco2_sensitivity = spco2_sensitivity(ds_terms)
-    if detrend:
-        ds_terms_anomaly = rm_trend(ds_terms, dim='time')
+    if (detrend and not order):
+        raise KeyError("""Please provide the order of polynomial to remove from
+                       your time series if you are using detrend.""")
+    elif detrend:
+        ds_terms_anomaly = rm_poly(ds_terms, order=order, dim='time')
     else:
         warnings.warn("Your data are not being detrended.")
-        ds_terms_anomaly = ds_terms - ds_terms.mean('time')
+        ds_terms_anomaly = ds_terms - nanmean(ds_terms)
 
     if deseasonalize:
         clim = ds_terms_anomaly.groupby('time.month').mean('time')
@@ -231,8 +239,25 @@ def spco2_decomposition_index(ds_terms, index, detrend=False,
     else:
         warnings.warn("Your data are not being deseasonalized.")
 
-    terms = regression_against_index(ds_terms_anomaly, index)
-    terms_in_pCO2_units = terms * pco2_sensitivity.mean('time')
+    # Apply sliding window to regressions. I.e., compute in N year chunks
+    # then average the resulting dpCO2/dX.
+    if sliding_window is None:
+        terms = regression_against_index(ds_terms_anomaly, index)
+        terms_in_pCO2_units = terms * nanmean(pco2_sensitivity)
+    else:
+        years = [y for y in index.groupby('time.year').groups]
+        y_end = index['time.year'][-1]
+        res = []
+        for y1 in tqdm(years):
+            y2 = y1 + sliding_window
+            if y2 <= y_end:
+                ds = ds_terms_anomaly.sel(time=slice(str(y1), str(y2)))
+                ind = index.sel(time=slice(str(y1), str(y2)))
+                terms = regression_against_index(ds, ind)
+                sens = pco2_sensitivity.sel(time=slice(str(y1), str(y2)))
+                res.append(terms * nanmean(sens))
+        terms_in_pCO2_units = xr.concat(res, dim='time').mean('time')
+
     if plot:
         terms_in_pCO2_units.to_array().plot(
             col='variable', cmap='RdBu_r', robust=True, **plot_kwargs)
@@ -241,7 +266,8 @@ def spco2_decomposition_index(ds_terms, index, detrend=False,
 
 
 @check_xarray(0)
-def spco2_decomposition(ds_terms, detrend=False, deseasonalize=False):
+def spco2_decomposition(ds_terms, detrend=True, order=1,
+                        deseasonalize=False):
     """Decompose oceanic surface pco2 in a first order Taylor-expansion.
 
     Reference:
@@ -257,7 +283,10 @@ def spco2_decomposition(ds_terms, detrend=False, deseasonalize=False):
                                dissicos[mmol m-3]: DIC at ocean surface
                                tos [C] : temperature at ocean surface
                                sos [psu] : salinity at ocean surface
-        detrend (bool): If True, detrend when generating anomalies.
+        detrend (bool): If True, detrend when generating anomalies. Default to
+                        a linear (order 1) regression.
+        order (int): If detrend is true, the order polynomial to remove from
+                     your time series.
         deseasonalize (bool): If True, deseasonalize when generating anomalies.
 
     Returns:
@@ -266,8 +295,11 @@ def spco2_decomposition(ds_terms, detrend=False, deseasonalize=False):
     """
     pco2_sensitivity = spco2_sensitivity(ds_terms)
 
-    if detrend:
-        ds_terms_anomaly = rm_trend(ds_terms, dim='time')
+    if (detrend and not order):
+        raise KeyError("""Please provide the order of polynomial you would like
+                       to remove from your time series.""")
+    elif detrend:
+        ds_terms_anomaly = rm_poly(ds_terms, order=order, dim='time')
     else:
         warnings.warn("Your data are not being detrended.")
         ds_terms_anomaly = ds_terms - ds_terms.mean('time')
