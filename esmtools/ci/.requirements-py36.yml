@@ -15,6 +15,5 @@ dependencies:
   - eofs
   - cftime
   - bottleneck
-  - matplotlib
   - netcdf4
   - lxml 
