@@ -1,0 +1,19 @@
+name: test_env
+channels:
+  - conda-forge
+dependencies:
+  - python=3.6
+  - numpy
+  - pandas
+  - xarray
+  - dask
+  - scipy
+  - matplotlib
+  - bottleneck
+  - netcdf4
+  - pytest
+  - eofs
+  - cftime
+  - bottleneck
+  - netcdf4
+  - lxml 
