@@ -129,15 +129,15 @@ def smooth_series(da, dim, length, center=True):
 
 
 @check_xarray(0)
-def linregress(da, dim='time', compact=True):
+def linregress(x, y, dim='time', compact=True, psig=.05):
     """
-    Computes the least-squares linear regression of a dataarray over some
-    dimension (typically time).
+    Computes the least-squares linear regression of a xr.dataarray x against  another xr.dataArray y.
     Parameters
     ----------
-    da : xarray DataArray
+    x, y : xarray DataArray
     dim : str (default to 'time')
         dimension over which to compute the linear regression.
+    psig : significance level. To ignore set to None.
     compact : boolean (default to True)
         If true, return all results of linregress as a single dataset.
         If false, return results as five separate DataArrays.
@@ -149,7 +149,7 @@ def linregress(da, dim='time', compact=True):
         computed over. If compact is False, these five parameters are
         returned separately.
     """
-    results = xr.apply_ufunc(lreg, da[dim], da,
+    results = xr.apply_ufunc(lreg, x, y,
                              input_core_dims=[[dim], [dim]],
                              output_core_dims=[[], [], [], [], []],
                              vectorize=True, dask='parallelized')
@@ -160,11 +160,13 @@ def linregress(da, dim='time', compact=True):
     for i, l in enumerate(labels):
         results[i].name = l
         ds = xr.merge([ds, results[i]])
+    if psig is not None:
+        ds = ds.where(ds['pvalue'] < psig)
     if compact:
         return ds
     else:
         return ds['slope'], ds['intercept'], ds['rvalue'], ds['pvalue'], \
-               ds['stderr']
+            ds['stderr']
 
 
 @check_xarray(0)
@@ -310,3 +312,15 @@ def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
                           input_core_dims=[[], [], [], [], [], []],
                           output_core_dims=[[], []],
                           vectorize=True, dask='parallelized')
+
+
+@check_xarray(0)
+def nanmean(ds, dim='time'):
+    """Compute mean NaNs and suppress warning from numpy"""
+    if 'time' in ds.dims:
+        mask = ds.isnull().isel(time=0)
+    else:
+        mask = ds.isnull()
+    ds = ds.fillna(0).mean(dim)
+    ds = ds.where(~mask)
+    return ds

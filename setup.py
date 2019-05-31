@@ -8,7 +8,8 @@ DESCRIPTION = ('A toolbox for functions related to Earth System Model' +
                'analysis, with a focus on biogeochemical oceanography.')
 URL = 'https://github.com/bradyrx/esmtools'
 LICENSE = 'MIT'
-INSTALL_REQUIRES = ['xarray', 'pandas', 'numpy', 'matplotlib', 'xskillscore']
+INSTALL_REQUIRES = ['xarray', 'pandas', 'numpy', 'matplotlib', 'xskillscore',
+                    'tqdm']
 # TODO: Add testing
 # TESTS_REQUIRE = ['pytest']
 PYTHON_REQUIRE = '>=3.6'
