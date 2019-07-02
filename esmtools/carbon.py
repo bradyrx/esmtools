@@ -3,7 +3,7 @@ import numpy as np
 import xarray as xr
 from tqdm import tqdm
 
-from .stats import linregress, nanmean, rm_poly
+from .stats import linear_regression, nanmean, rm_poly
 from .utils import check_xarray
 
 
@@ -218,7 +218,7 @@ def spco2_decomposition_index(ds_terms, index, detrend=True, order=1,
         terms = dict()
         for term in ds.data_vars:
             if term != 'spco2':
-                reg = linregress(index, ds[term], psig=psig)
+                reg = linear_regression(index, ds[term], psig=psig)
                 terms[term] = reg['slope']
         terms = xr.Dataset(terms)
         return terms
