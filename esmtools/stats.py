@@ -1,10 +1,10 @@
 import climpred.stats as st
 import numpy as np
 import xarray as xr
-from scipy.stats import ttest_ind_from_stats as tti_from_stats
 from scipy.stats import linregress as lreg
+from scipy.stats import ttest_ind_from_stats as tti_from_stats
 
-from .utils import (check_xarray, get_dims)
+from .utils import check_xarray, get_dims
 
 
 # --------------------------
@@ -49,8 +49,7 @@ def cos_weight(da, lat_coord='lat', lon_coord='lon', one_dimensional=True):
     nan_mask = np.asarray(da.isel(filter_dict).isnull())
     lat[nan_mask] = np.nan
     cos_lat = np.cos(np.deg2rad(lat))
-    aw_da = (da * cos_lat).sum(lat_coord).sum(lon_coord) / \
-        np.nansum(cos_lat)
+    aw_da = (da * cos_lat).sum(lat_coord).sum(lon_coord) / np.nansum(cos_lat)
     return aw_da
 
 
@@ -129,18 +128,27 @@ def smooth_series(da, dim, length, center=True):
 
 
 @check_xarray(0)
-def linregress(x, y, dim='time', compact=True, psig=.05):
+def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig=None):
     """
-    Computes the least-squares linear regression of a xr.dataarray x against  another xr.dataArray y.
+    Computes the least-squares linear regression of a xr.dataarray x against
+    another xr.dataArray y.
+
     Parameters
     ----------
     x, y : xarray DataArray
     dim : str (default to 'time')
         dimension over which to compute the linear regression.
-    psig : significance level. To ignore set to None.
+    interpolate_na : bool (default to False)
+        If True, linearly interpolate NaNs (and backfill/forwardfill). Note that if
+        this is False, the linear regression will return NaN if there are *any*
+        NaNs in the time series.
     compact : boolean (default to True)
         If true, return all results of linregress as a single dataset.
         If false, return results as five separate DataArrays.
+    psig : double (default to None)
+        Alpha level for correlation significance. If not None, NaNs out any grid cells
+        that are larger than psig.
+
     Returns
     -------
     ds : xarray Dataset
@@ -149,10 +157,59 @@ def linregress(x, y, dim='time', compact=True, psig=.05):
         computed over. If compact is False, these five parameters are
         returned separately.
     """
-    results = xr.apply_ufunc(lreg, x, y,
-                             input_core_dims=[[dim], [dim]],
-                             output_core_dims=[[], [], [], [], []],
-                             vectorize=True, dask='parallelized')
+    if interpolate_na:
+        # borrowed from @ahuang11's implementation in `climpred`
+        da_dims_orig = list(y.dims)  # orig -> original
+        if len(da_dims_orig) > 1:
+            # want independent axis to be the leading dimension
+            da_dims_swap = da_dims_orig.copy()  # copy to prevent contamination
+
+            # https://stackoverflow.com/questions/1014523/
+            # simple-syntax-for-bringing-a-list-element-to-the-front-in-python
+            da_dims_swap.insert(0, da_dims_swap.pop(da_dims_swap.index(dim)))
+            y = y.transpose(*da_dims_swap)
+
+            # hide other dims into a single dim
+            y = y.stack({'other_dims': da_dims_swap[1:]})
+            dims_swapped = True
+        else:
+            dims_swapped = False
+
+        # This is borrowed from @ahuang11's implementation in `climpred` to handle
+        # NaNs in the time series.
+        nan_locs = np.isnan(y.values)
+
+        # any(nan_locs.sum(axis=0)) fails if not 2D
+        if nan_locs.ndim == 1:
+            nan_locs = nan_locs.reshape(len(nan_locs), 1)
+
+        # check if there's any NaNs in the provided dim because
+        # interpolate_na is computationally expensive to run regardless of NaNs
+        # if nan_locs.sum(dim=dim).any():
+        if any(nan_locs.sum(axis=0)) > 0:
+            y = y.interpolate_na(dim)
+            if any(nan_locs[0, :]):
+                # [np.nan, 1, 2], no first value to interpolate from; back fill
+                y = y.bfill(dim)
+            if any(nan_locs[-1, :]):
+                # [0, 1, np.nan], no last value to interpolate from; forward fill
+                y = y.ffill(dim)
+
+        # this handles the other axes; doesn't matter since it won't affect the fit
+        y = y.fillna(0)
+        if dims_swapped:
+            y = y.unstack('other_dims').transpose(*da_dims_orig)
+
+    results = xr.apply_ufunc(
+        lreg,
+        x,
+        y,
+        input_core_dims=[[dim], [dim]],
+        output_core_dims=[[], [], [], [], []],
+        vectorize=True,
+        dask='allowed',
+    )
+
     # Force into a cleaner dataset. The above function returns a dataset
     # with no clear labeling.
     ds = xr.Dataset()
@@ -165,8 +222,7 @@ def linregress(x, y, dim='time', compact=True, psig=.05):
     if compact:
         return ds
     else:
-        return ds['slope'], ds['intercept'], ds['rvalue'], ds['pvalue'], \
-            ds['stderr']
+        return ds['slope'], ds['intercept'], ds['rvalue'], ds['pvalue'], ds['stderr']
 
 
 @check_xarray(0)
@@ -211,8 +267,7 @@ def corr(x, y, dim='time', lag=0, two_sided=True, return_p=False):
     fluxes in Eastern Boundary Upwelling Systems, Biogeosciences Discuss.,
     https://doi.org/10.5194/bg-2018-415, in review, 2018.
     """
-    return st.corr(x, y, dim=dim, lag=lag, two_sided=two_sided,
-                   return_p=return_p)
+    return st.corr(x, y, dim=dim, lag=lag, two_sided=two_sided, return_p=return_p)
 
 
 @check_xarray(0)
@@ -307,11 +362,19 @@ def ACF(ds, dim='time', nlags=None):
 
 def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
     """Parallelize scipy.stats.ttest_ind_from_stats."""
-    return xr.apply_ufunc(tti_from_stats, mean1, std1, nobs1, mean2, std2,
-                          nobs2,
-                          input_core_dims=[[], [], [], [], [], []],
-                          output_core_dims=[[], []],
-                          vectorize=True, dask='parallelized')
+    return xr.apply_ufunc(
+        tti_from_stats,
+        mean1,
+        std1,
+        nobs1,
+        mean2,
+        std2,
+        nobs2,
+        input_core_dims=[[], [], [], [], [], []],
+        output_core_dims=[[], []],
+        vectorize=True,
+        dask='parallelized',
+    )
 
 
 @check_xarray(0)
