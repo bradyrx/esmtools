@@ -3,8 +3,9 @@ import numpy as np
 import xarray as xr
 from scipy.stats import linregress as lreg
 from scipy.stats import ttest_ind_from_stats as tti_from_stats
-
+import numpy.polynomial.polynomial as poly
 from .utils import check_xarray, get_dims
+from .checks import has_dims
 
 
 # --------------------------
@@ -127,6 +128,98 @@ def smooth_series(da, dim, length, center=True):
     return da.rolling({dim: length}, center=center).mean()
 
 
+@check_xarray(0)
+def fit_poly(ds, order, dim='time'):
+    """Returns the fitted polynomial line of order N
+
+    .. note::
+        This automatically interpolates across NaNs to make the fit.
+
+    Args:
+        ds (xarray object): Time series to fit  polynomial to.
+        order (int): Order of polynomial fit.
+        dim (optional str): Dimension over which to fit hte polynomial.
+
+    Returns:
+        xarray object with polynomial fit.
+
+    References:
+        This is a modification of @ahuang11's script `rm_poly` in `climpred`.
+    """
+    has_dims(ds, dim, 'dataset')
+
+    # handle both datasets and dataarray
+    if isinstance(ds, xr.Dataset):
+        da = ds.to_array()
+        return_ds = True
+    else:
+        da = ds.copy()
+        return_ds = False
+
+    da_dims_orig = list(da.dims)  # orig -> original
+    if len(da_dims_orig) > 1:
+        # want independent axis to be the leading dimension
+        da_dims_swap = da_dims_orig.copy()  # copy to prevent contamination
+
+        # https://stackoverflow.com/questions/1014523/
+        # simple-syntax-for-bringing-a-list-element-to-the-front-in-python
+        da_dims_swap.insert(0, da_dims_swap.pop(da_dims_swap.index(dim)))
+        da = da.transpose(*da_dims_swap)
+
+        # hide other dims into a single dim
+        da = da.stack({'other_dims': da_dims_swap[1:]})
+        dims_swapped = True
+    else:
+        dims_swapped = False
+
+    # NaNs will make the polyfit fail--interpolate any NaNs in
+    # the provided dim to prevent poor fit, while other dims' NaNs
+    # will be filled with 0s; however, all NaNs will be replaced
+    # in the final output
+    nan_locs = np.isnan(da.values)
+
+    # any(nan_locs.sum(axis=0)) fails if not 2D
+    if nan_locs.ndim == 1:
+        nan_locs = nan_locs.reshape(len(nan_locs), 1)
+
+    # check if there's any NaNs in the provided dim because
+    # interpolate_na is computationally expensive to run regardless of NaNs
+    if any(nan_locs.sum(axis=0)) > 0:
+        # Could do a check to see if there's any NaNs that aren't bookended.
+        # [0, np.nan, 2], can interpolate.
+        da = da.interpolate_na(dim)
+        if any(nan_locs[0, :]):
+            # [np.nan, 1, 2], no first value to interpolate from; back fill
+            da = da.bfill(dim)
+        if any(nan_locs[-1, :]):
+            # [0, 1, np.nan], no last value to interpolate from; forward fill
+            da = da.ffill(dim)
+
+    # this handles the other axes; doesn't matter since it won't affect the fit
+    da = da.fillna(0)
+
+    # the actual operation of detrending
+    y = da.values
+    x = np.arange(0, len(y), 1)
+    coefs = poly.polyfit(x, y, order)
+    fit = poly.polyval(x, coefs)
+    fit = fit.transpose()
+    fit = xr.DataArray(fit, dims=da.dims, coords=da.coords)
+
+    if dims_swapped:
+        # revert the other dimensions to its original form and ordering
+        fit = fit.unstack('other_dims').transpose(*da_dims_orig)
+
+    if return_ds:
+        # revert back into a dataset
+        return xr.merge(
+            fit.sel(variable=var).rename(var).drop('variable')
+            for var in fit['variable'].values
+        )
+    else:
+        return fit
+
+
 @check_xarray([0, 1])
 def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig=None):
     """
@@ -134,7 +227,7 @@ def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig
     another xr.DataArray y.
 
     Note: This only returns the statistics from the LSR (slope, intercept, rvalue,
-    pvalue, stderr). Use `fit_polynomial` to get the fitted line returned.
+    pvalue, stderr). Use `fit_poly` to get the fitted line returned.
 
     Parameters
     ----------
