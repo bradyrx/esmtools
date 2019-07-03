@@ -127,11 +127,14 @@ def smooth_series(da, dim, length, center=True):
     return da.rolling({dim: length}, center=center).mean()
 
 
-@check_xarray(0)
+@check_xarray([0, 1])
 def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig=None):
     """
-    Computes the least-squares linear regression of a xr.dataarray x against
-    another xr.dataArray y.
+    Computes the least-squares linear regression of an xr.DataArray x against
+    another xr.DataArray y.
+
+    Note: This only returns the statistics from the LSR (slope, intercept, rvalue,
+    pvalue, stderr). Use `fit_polynomial` to get the fitted line returned.
 
     Parameters
     ----------
@@ -157,6 +160,12 @@ def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig
         computed over. If compact is False, these five parameters are
         returned separately.
     """
+    # Linear regression doesn't like to work with actual datetime. So temporarily
+    # convert to integers.
+    # This might miss `cftime`.
+    if np.issubdtype(x, np.datetime64):
+        x = np.arange(len(x))
+
     if interpolate_na:
         # borrowed from @ahuang11's implementation in `climpred`
         da_dims_orig = list(y.dims)  # orig -> original
