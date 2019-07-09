@@ -328,19 +328,20 @@ def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig
 
 
 @check_xarray(0)
-def corr(x, y, dim='time', lag=0, two_sided=True, return_p=False):
+def corr(x, y, dim='time', lag=0, return_p=False):
     """
     Computes the Pearson product-momment coefficient of linear correlation.
     (See autocorr for autocorrelation/lag for one time series)
     This version calculates the effective degrees of freedom, accounting
     for autocorrelation within each time series that could fluff the
     significance of the correlation.
+
     NOTE: If lag is not zero, x predicts y. In other words, the time series for
     x is stationary, and y slides to the left. Or, y stays in place and x
     slides to the right.
     This function is written to accept a dataset of arbitrary number of
     dimensions (e.g., lat, lon, depth).
-    TODO: Add functionality for an ensemble.
+
     Parameters
     ----------
     x, y : xarray DataArray
@@ -349,14 +350,14 @@ def corr(x, y, dim='time', lag=0, two_sided=True, return_p=False):
         Correlation dimension
     lag : int (default 0)
         Lag to apply to correlation, with x predicting y.
-    two_sided : boolean (default True)
-        If true, compute a two-sided t-test
     return_p : boolean (default False)
         If true, return both r and p
+
     Returns
     -------
     r : correlation coefficient
     p : p-value accounting for autocorrelation (if return_p True)
+
     References (for dealing with autocorrelation):
     ----------
     1. Wilks, Daniel S. Statistical methods in the atmospheric sciences.
@@ -369,7 +370,7 @@ def corr(x, y, dim='time', lag=0, two_sided=True, return_p=False):
     fluxes in Eastern Boundary Upwelling Systems, Biogeosciences Discuss.,
     https://doi.org/10.5194/bg-2018-415, in review, 2018.
     """
-    return st.corr(x, y, dim=dim, lag=lag, two_sided=two_sided, return_p=return_p)
+    return st.corr(x, y, dim=dim, lag=lag, return_p=return_p)
 
 
 @check_xarray(0)
