@@ -9,7 +9,7 @@ DESCRIPTION = ('A toolbox for functions related to Earth System Model' +
 URL = 'https://github.com/bradyrx/esmtools'
 LICENSE = 'MIT'
 INSTALL_REQUIRES = ['xarray', 'pandas', 'numpy', 'matplotlib', 'xskillscore',
-                    'tqdm']
+                    'tqdm', 'climpred >= 1.0.1']
 # TODO: Add testing
 # TESTS_REQUIRE = ['pytest']
 PYTHON_REQUIRE = '>=3.6'
