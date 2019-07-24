@@ -1,11 +1,12 @@
 import climpred.stats as st
 import numpy as np
+import numpy.polynomial.polynomial as poly
 import xarray as xr
 from scipy.stats import linregress as lreg
 from scipy.stats import ttest_ind_from_stats as tti_from_stats
-import numpy.polynomial.polynomial as poly
-from .utils import check_xarray, get_dims
+
 from .checks import has_dims
+from .utils import check_xarray, get_dims
 
 
 # --------------------------
@@ -220,8 +221,8 @@ def fit_poly(ds, order, dim='time'):
         return fit
 
 
-@check_xarray([0, 1])
-def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig=None):
+@check_xarray(0)
+def linear_regression(da, dim='time', interpolate_na=False, compact=True, psig=None):
     """
     Computes the least-squares linear regression of an xr.DataArray x against
     another xr.DataArray y.
@@ -231,7 +232,7 @@ def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig
 
     Parameters
     ----------
-    x, y : xarray DataArray
+    da : xarray DataArray
     dim : str (default to 'time')
         dimension over which to compute the linear regression.
     interpolate_na : bool (default to False)
@@ -253,15 +254,23 @@ def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig
         computed over. If compact is False, these five parameters are
         returned separately.
     """
+    # Check if dataset.
+    if isinstance(da, xr.Dataset):
+        raise NotImplementedError(
+            'Datasets are not yet supported for this function. '
+            + 'Please retry with a DataArray.'
+        )
+
+    x = da[dim]
     # Linear regression doesn't like to work with actual datetime. So temporarily
     # convert to integers.
-    # This might miss `cftime`.
-    if np.issubdtype(x, np.datetime64):
+    # `np.object` covers cftime.
+    if np.issubdtype(x, np.datetime64) or isinstance(x, np.object):
         x = np.arange(len(x))
 
     if interpolate_na:
         # borrowed from @ahuang11's implementation in `climpred`
-        da_dims_orig = list(y.dims)  # orig -> original
+        da_dims_orig = list(da.dims)  # orig -> original
         if len(da_dims_orig) > 1:
             # want independent axis to be the leading dimension
             da_dims_swap = da_dims_orig.copy()  # copy to prevent contamination
@@ -269,17 +278,17 @@ def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig
             # https://stackoverflow.com/questions/1014523/
             # simple-syntax-for-bringing-a-list-element-to-the-front-in-python
             da_dims_swap.insert(0, da_dims_swap.pop(da_dims_swap.index(dim)))
-            y = y.transpose(*da_dims_swap)
+            da = da.transpose(*da_dims_swap)
 
             # hide other dims into a single dim
-            y = y.stack({'other_dims': da_dims_swap[1:]})
+            da = da.stack({'other_dims': da_dims_swap[1:]})
             dims_swapped = True
         else:
             dims_swapped = False
 
         # This is borrowed from @ahuang11's implementation in `climpred` to handle
         # NaNs in the time series.
-        nan_locs = np.isnan(y.values)
+        nan_locs = np.isnan(da.values)
 
         # any(nan_locs.sum(axis=0)) fails if not 2D
         if nan_locs.ndim == 1:
@@ -289,23 +298,23 @@ def linear_regression(x, y, dim='time', interpolate_na=False, compact=True, psig
         # interpolate_na is computationally expensive to run regardless of NaNs
         # if nan_locs.sum(dim=dim).any():
         if any(nan_locs.sum(axis=0)) > 0:
-            y = y.interpolate_na(dim)
+            da = da.interpolate_na(dim)
             if any(nan_locs[0, :]):
                 # [np.nan, 1, 2], no first value to interpolate from; back fill
-                y = y.bfill(dim)
+                da = da.bfill(dim)
             if any(nan_locs[-1, :]):
                 # [0, 1, np.nan], no last value to interpolate from; forward fill
-                y = y.ffill(dim)
+                da = da.ffill(dim)
 
         # this handles the other axes; doesn't matter since it won't affect the fit
-        y = y.fillna(0)
+        da = da.fillna(0)
         if dims_swapped:
-            y = y.unstack('other_dims').transpose(*da_dims_orig)
+            da = da.unstack('other_dims').transpose(*da_dims_orig)
 
     results = xr.apply_ufunc(
         lreg,
         x,
-        y,
+        da,
         input_core_dims=[[dim], [dim]],
         output_core_dims=[[], [], [], [], []],
         vectorize=True,
