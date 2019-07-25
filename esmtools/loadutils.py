@@ -10,14 +10,20 @@ _default_cache_dir = _os.sep.join(('~', '.esmtools_data'))
 
 def file_md5_checksum(fname):
     hash_md5 = hashlib.md5()
-    with open(fname, "rb") as f:
+    with open(fname, 'rb') as f:
         hash_md5.update(f.read())
     return hash_md5.hexdigest()
 
 
-def open_dataset(name, cache=True, cache_dir=_default_cache_dir,
-                 github_url='https://github.com/bradyrx/climdata',
-                 branch='master', extension=None, **kws):
+def open_dataset(
+    name,
+    cache=True,
+    cache_dir=_default_cache_dir,
+    github_url='https://github.com/bradyrx/climdata',
+    branch='master',
+    extension=None,
+    **kws
+):
     """Load example data or a mask from an online repository.
 
     This is a function from `xarray.tutorial` to load an online dataset

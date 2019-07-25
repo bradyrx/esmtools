@@ -1,12 +1,13 @@
 """
-Objects dealing with physical conversions. 
+Objects dealing with physical conversions.
 
 Winds and Wind Stress
 ---------------------
-`stress_to_speed` : Convert ocean wind stress to U10 wind speed on the native ocean grid.
+`stress_to_speed` : Convert ocean wind stress to U10 wind speed on the native ocean grid
 """
 import numpy as np
 import xarray as xr
+
 
 def stress_to_speed(x, y):
     """
@@ -31,11 +32,13 @@ def stress_to_speed(x, y):
     ------
     U10 : DataArray of the approximated wind speed.
     """
-    tau = (np.sqrt(x**2 + y**2)) / 1.2 * 100**2 / 1e5 # Convert from dyn/cm2 to m2/s2
+    tau = (
+        (np.sqrt(x ** 2 + y ** 2)) / 1.2 * 100 ** 2 / 1e5
+    )  # Convert from dyn/cm2 to m2/s2
     U10 = np.zeros(len(tau))
     for t in range(len(tau)):
         c_tau = tau[t]
-        p = np.array([0.0000764, 0.000142, 0.0027, -1*c_tau])
+        p = np.array([0.0000764, 0.000142, 0.0027, -1 * c_tau])
         r = np.roots(p)
         i = np.imag(r)
         good = np.where(i == 0)

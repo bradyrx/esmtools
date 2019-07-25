@@ -9,16 +9,17 @@ Spatial
 
 import numpy as np
 
+
 def _find_indices(xgrid, ygrid, xpoint, ypoint):
     """
     Returns the i,j index for a latitude/longitude point on a grid.
-    
+
     Parameters
     ----------
     xgrid, ygrid : array_like, shape (`M`, `N`).
-                   Longitude and latitude meshgrid. 
+                   Longitude and latitude meshgrid.
     xpoint, ypoint : int or 1-D array_like
-                   Longitude and latitude of point searching for on grid. 
+                   Longitude and latitude of point searching for on grid.
                    Should be in the same range as the grid itself (e.g.,
                    if the longitude grid is 0-360, should be 200 instead
                    of -160)
@@ -52,10 +53,11 @@ def _find_indices(xgrid, ygrid, xpoint, ypoint):
     i, j = np.unravel_index(min_ix, reduced_grid.shape)
     return i, j
 
+
 def extract_region(ds, xgrid, ygrid, coords, lat_dim='nlat', lon_dim='nlon'):
     """
     Takes in an array of data, its lon/lat grid, and coordinates pertaining
-    to the lat/lon sub-box desired and returns the extracted data. 
+    to the lat/lon sub-box desired and returns the extracted data.
 
     Parameters
     ----------
@@ -66,17 +68,16 @@ def extract_region(ds, xgrid, ygrid, coords, lat_dim='nlat', lon_dim='nlon'):
     coords : vector
         [x0, x1, y0, y1] pertaining to corners of box to extract
     lat_dim, lon_dim : str (optional)
-        
+
 
     Return
     ------
     subset_data : array_like
         Data subset to domain of interest
     """
-    print("NOTE: Make sure your coordinates are in order [x0, x1, y0, y1]")
+    print('NOTE: Make sure your coordinates are in order [x0, x1, y0, y1]')
     x0, x1, y0, y1 = coords
     a, c = _find_indices(xgrid, ygrid, x0, y0)
     b, d = _find_indices(xgrid, ygrid, x1, y1)
     subset_data = ds.isel(nlat=slice(a, b), nlon=slice(c, d))
     return subset_data
-

@@ -14,19 +14,14 @@ def _create_composites(anomaly_field, index, threshold=1, dim='time'):
     index_comp = xr.full_like(index, 'none', dtype='U4')
     index_comp[index >= threshold] = 'pos'
     index_comp[index <= -threshold] = 'neg'
-    composite = anomaly_field.groupby(
-        index_comp.rename('index'))
+    composite = anomaly_field.groupby(index_comp.rename('index'))
     return composite
 
 
 @check_xarray([0, 1])
-def composite_analysis(field,
-                       index,
-                       threshold=1,
-                       plot=False,
-                       ttest=False,
-                       psig=0.05,
-                       **plot_kwargs):
+def composite_analysis(
+    field, index, threshold=1, plot=False, ttest=False, psig=0.05, **plot_kwargs
+):
     """Create composite maps based on some variable's response to a climate
     index.
 
@@ -52,6 +47,7 @@ def composite_analysis(field,
         * Motivated from Ryan Abernathy's notebook here:
         https://rabernat.github.io/research_computing/xarray.html
     """
+
     def compute_ttest_for_composite(composite, index, psig):
         """
         Computes the ttest for the composite relative to neutral years and
@@ -64,7 +60,7 @@ def composite_analysis(field,
         """
         # Suppress NaN of empty slice warning.
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=RuntimeWarning)
+            warnings.simplefilter('ignore', category=RuntimeWarning)
             m1 = composite.mean('time').sel(index=index)
             s1 = composite.std('time').sel(index=index)
             n1 = len(composite.groups[index])
@@ -76,13 +72,15 @@ def composite_analysis(field,
 
     # Raise error if time slices are different.
     if field.time.size != index.time.size:
-        raise ValueError(f"""Time periods for field and index do not match.
+        raise ValueError(
+            f"""Time periods for field and index do not match.
         field: {field.time.size}
-        index: {index.time.size}""")
+        index: {index.time.size}"""
+        )
 
     index = standardize(index)
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", category=RuntimeWarning)
+        warnings.simplefilter('ignore', category=RuntimeWarning)
         field = field - field.mean('time')
     composite = _create_composites(field, index, threshold=threshold)
 
@@ -94,7 +92,7 @@ def composite_analysis(field,
         composite = xr.concat([comp_pos, comp_neg], dim='index')
     else:
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=RuntimeWarning)
+            warnings.simplefilter('ignore', category=RuntimeWarning)
             composite = composite.mean('time').sel(index=['pos', 'neg'])
 
     composite['index'] = ['positive', 'negative']
