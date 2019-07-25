@@ -1,0 +1,8 @@
+numpy
+pandas
+xarray
+scipy
+xskillscore>=0.0.4
+tqdm
+climpred>=1.0.1
+cftime
