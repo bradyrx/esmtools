@@ -1,4 +1,4 @@
-name: test_env
+name: esmtools-dev
 channels:
   - conda-forge
 dependencies:
@@ -17,3 +17,8 @@ dependencies:
   - bottleneck
   - netcdf4
   - lxml
+  - climpred
+  - cartopy
+  - pip
+  - pip:
+      - xskillscore>=0.0.4

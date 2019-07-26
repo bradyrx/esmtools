@@ -31,13 +31,12 @@ def co2_sol(t, s):
     b = [0.025695, -0.025225, 0.0049867]
     t = (np.mean(t) + 273.15) * 0.01
     s = np.mean(s)
-    t_sq = t**2
+    t_sq = t ** 2
     t_inv = 1.0 / t
     log_t = np.log(t)
     d0 = b[2] * t_sq + b[1] * t + b[0]
     # Compute solubility in mol.kg^{-1}.atm^{-1}
-    ff = np.exp(a[0] + a[1] * t_inv + a[2] * log_t +
-                a[3] * t_sq + d0 * s)
+    ff = np.exp(a[0] + a[1] * t_inv + a[2] * log_t + a[3] * t_sq + d0 * s)
     return ff
 
 
@@ -146,12 +145,15 @@ def spco2_sensitivity(ds):
         sensitivity (xr.Dataset):
 
     """
+
     def _check_variables(ds):
         requiredVars = ['spco2', 'tos', 'sos', 'talkos', 'dissicos']
         if not all(i in ds.data_vars for i in requiredVars):
             missingVars = [i for i in requiredVars if i not in ds.data_vars]
-            raise ValueError(f"""Missing variables needed for calculation:
-            {missingVars}""")
+            raise ValueError(
+                f"""Missing variables needed for calculation:
+            {missingVars}"""
+            )
 
     _check_variables(ds)
     # Sensitivities are based on the time-mean for each field. This computes
@@ -164,9 +166,10 @@ def spco2_sensitivity(ds):
     pCO2 = ds['spco2']
 
     buffer_factor = dict()
-    buffer_factor['ALK'] = -ALK**2 / ((2 * DIC - ALK) * (ALK - DIC))
-    buffer_factor['DIC'] = (3*ALK*DIC - 2*DIC**2) / \
-                           ((2 * DIC - ALK) * (ALK - DIC))
+    buffer_factor['ALK'] = -ALK ** 2 / ((2 * DIC - ALK) * (ALK - DIC))
+    buffer_factor['DIC'] = (3 * ALK * DIC - 2 * DIC ** 2) / (
+        (2 * DIC - ALK) * (ALK - DIC)
+    )
     # Compute sensitivities
     sensitivity = dict()
     sensitivity['tos'] = 0.0423
@@ -179,10 +182,16 @@ def spco2_sensitivity(ds):
 
 # TODO: adapt for CESM and MPI output.
 @check_xarray([0, 1])
-def spco2_decomposition_index(ds_terms, index, detrend=True, order=1,
-                              deseasonalize=False, plot=False,
-                              sliding_window=10,
-                              **plot_kwargs):
+def spco2_decomposition_index(
+    ds_terms,
+    index,
+    detrend=True,
+    order=1,
+    deseasonalize=False,
+    plot=False,
+    sliding_window=10,
+    **plot_kwargs,
+):
     """Decompose oceanic surface pco2 in a first order Taylor-expansion.
 
     Reference:
@@ -214,6 +223,7 @@ def spco2_decomposition_index(ds_terms, index, detrend=True, order=1,
                                           if `not plot`
 
     """
+
     def regression_against_index(ds, index, psig=None):
         terms = dict()
         for term in ds.data_vars:
@@ -224,20 +234,22 @@ def spco2_decomposition_index(ds_terms, index, detrend=True, order=1,
         return terms
 
     pco2_sensitivity = spco2_sensitivity(ds_terms)
-    if (detrend and not order):
-        raise KeyError("""Please provide the order of polynomial to remove from
-                       your time series if you are using detrend.""")
+    if detrend and not order:
+        raise KeyError(
+            """Please provide the order of polynomial to remove from
+                       your time series if you are using detrend."""
+        )
     elif detrend:
         ds_terms_anomaly = rm_poly(ds_terms, order=order, dim='time')
     else:
-        warnings.warn("Your data are not being detrended.")
+        warnings.warn('Your data are not being detrended.')
         ds_terms_anomaly = ds_terms - nanmean(ds_terms)
 
     if deseasonalize:
         clim = ds_terms_anomaly.groupby('time.month').mean('time')
         ds_terms_anomaly = ds_terms_anomaly.groupby('time.month') - clim
     else:
-        warnings.warn("Your data are not being deseasonalized.")
+        warnings.warn('Your data are not being deseasonalized.')
 
     # Apply sliding window to regressions. I.e., compute in N year chunks
     # then average the resulting dpCO2/dX.
@@ -260,14 +272,14 @@ def spco2_decomposition_index(ds_terms, index, detrend=True, order=1,
 
     if plot:
         terms_in_pCO2_units.to_array().plot(
-            col='variable', cmap='RdBu_r', robust=True, **plot_kwargs)
+            col='variable', cmap='RdBu_r', robust=True, **plot_kwargs
+        )
     else:
         return terms_in_pCO2_units
 
 
 @check_xarray(0)
-def spco2_decomposition(ds_terms, detrend=True, order=1,
-                        deseasonalize=False):
+def spco2_decomposition(ds_terms, detrend=True, order=1, deseasonalize=False):
     """Decompose oceanic surface pco2 in a first order Taylor-expansion.
 
     Reference:
@@ -295,20 +307,22 @@ def spco2_decomposition(ds_terms, detrend=True, order=1,
     """
     pco2_sensitivity = spco2_sensitivity(ds_terms)
 
-    if (detrend and not order):
-        raise KeyError("""Please provide the order of polynomial you would like
-                       to remove from your time series.""")
+    if detrend and not order:
+        raise KeyError(
+            """Please provide the order of polynomial you would like
+                       to remove from your time series."""
+        )
     elif detrend:
         ds_terms_anomaly = rm_poly(ds_terms, order=order, dim='time')
     else:
-        warnings.warn("Your data are not being detrended.")
+        warnings.warn('Your data are not being detrended.')
         ds_terms_anomaly = ds_terms - ds_terms.mean('time')
 
     if deseasonalize:
         clim = ds_terms_anomaly.groupby('time.month').mean('time')
         ds_terms_anomaly = ds_terms_anomaly.groupby('time.month') - clim
     else:
-        warnings.warn("Your data are not being deseasonalized.")
+        warnings.warn('Your data are not being deseasonalized.')
 
     terms_in_pCO2_units = pco2_sensitivity.mean('time') * ds_terms_anomaly
     return terms_in_pCO2_units

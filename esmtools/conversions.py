@@ -19,5 +19,5 @@ def convert_CO2_flux(mpas_CO2):
     conv_CO2 : array_like
         array of converted MPAS values
     """
-    conv_CO2 = mpas_CO2 * -1 * (60 * 60 * 24 * 365.25) * (1/10**3)
+    conv_CO2 = mpas_CO2 * -1 * (60 * 60 * 24 * 365.25) * (1 / 10 ** 3)
     return conv_CO2

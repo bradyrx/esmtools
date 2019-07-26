@@ -36,15 +36,15 @@ def deseam(lon, lat, data):
 
     """
     i, j = lat.shape
-    new_lon = np.zeros((i, j+1))
+    new_lon = np.zeros((i, j + 1))
     new_lon[:, :-1] = lon
     new_lon[:, -1] = lon[:, 0]
 
-    new_lat = np.zeros((i, j+1))
+    new_lat = np.zeros((i, j + 1))
     new_lat[:, :-1] = lat
     new_lat[:, -1] = lat[:, 0]
 
-    new_data = np.zeros((i, j+1))
+    new_data = np.zeros((i, j + 1))
     new_data[:, :-1] = data
     new_data[:, -1] = data[:, 0]
     new_data = np.ma.array(new_data, mask=np.isnan(new_data))
@@ -87,9 +87,14 @@ def discrete_cmap(levels, base_cmap):
     return LinearSegmentedColormap.from_list(cmap_name, color_list, levels)
 
 
-def make_cartopy(projection=ccrs.Robinson(), land_color='k',
-                 grid_color='#D3D3D3', grid_lines=True, figsize=(12, 8),
-                 frameon=True):
+def make_cartopy(
+    projection=ccrs.Robinson(),
+    land_color='k',
+    grid_color='#D3D3D3',
+    grid_lines=True,
+    figsize=(12, 8),
+    frameon=True,
+):
     """
     Returns a global cartopy projection with the defined projection style.
 
@@ -120,8 +125,7 @@ def make_cartopy(projection=ccrs.Robinson(), land_color='k',
     f, ax, gl = et.vis.make_cartopy(land_color='#D3D3D3',
                                     projection=ccrs.Mercator()))
     """
-    fig, ax = plt.subplots(figsize=figsize,
-                           subplot_kw=dict(projection=projection))
+    fig, ax = plt.subplots(figsize=figsize, subplot_kw=dict(projection=projection))
     if grid_lines:
         gl = ax.gridlines(draw_labels=False, color=grid_color)
     else:
@@ -163,8 +167,7 @@ def add_box(ax, x0, x1, y0, y1, **kwargs):
     ax.add_geometries([ring], ccrs.PlateCarree(), **kwargs)
 
 
-def savefig(filename, directory=None, extension='.png', transparent=True,
-            dpi=300):
+def savefig(filename, directory=None, extension='.png', transparent=True, dpi=300):
     """
     Save a publication-ready figure.
 
@@ -188,11 +191,21 @@ def savefig(filename, directory=None, extension='.png', transparent=True,
     """
     # Need to identify a directory to place the file.
     if directory is not None:
-        plt.savefig(directory + filename + extension, bbox_inches='tight',
-                    pad_inches=1, transparent=transparent, dpi=dpi)
+        plt.savefig(
+            directory + filename + extension,
+            bbox_inches='tight',
+            pad_inches=1,
+            transparent=transparent,
+            dpi=dpi,
+        )
     else:
-        plt.savefig(filename + extension, bbox_inches='tight', pad_inches=1,
-                    transparent=transparent, dpi=dpi)
+        plt.savefig(
+            filename + extension,
+            bbox_inches='tight',
+            pad_inches=1,
+            transparent=transparent,
+            dpi=dpi,
+        )
 
 
 def meshgrid(x, y, d):
@@ -228,12 +241,13 @@ def outer_legend(fontsize=12):
     fontsize : int
                Size of text within the legend.
     """
-    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
     plt.setp(plt.gca().get_legend().get_texts(), fontsize=fontsize)
 
 
-def quick_pcolor(da, lon='lon', lat='lat', cyclic=True, add_colorbar=True,
-                 cartopy={}, pcolor={}):
+def quick_pcolor(
+    da, lon='lon', lat='lat', cyclic=True, add_colorbar=True, cartopy={}, pcolor={}
+):
     """
     Plots a nice looking pcolormesh cartopy map of an xarray DataArray.
 

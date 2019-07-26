@@ -1,12 +1,12 @@
 """
 Objects dealing with plotting and analysis of output from the Model for
-Prediction Across Scales (MPAS). This submodule will generally be built for 
+Prediction Across Scales (MPAS). This submodule will generally be built for
 MPAS-Ocean, but theoretically should work with other MPAS modules.
 References
 ----------
-MPAS-Ocean: Ringler, T., Petersen, M., Higdon, R. L., Jacobsen, D., 
-Jones, P. W., & Maltrud, M. (2013). Ocean Modelling. Ocean Modelling, 69(C), 
-211–232. doi:10.1016/j.ocemod.2013.04.010. 
+MPAS-Ocean: Ringler, T., Petersen, M., Higdon, R. L., Jacobsen, D.,
+Jones, P. W., & Maltrud, M. (2013). Ocean Modelling. Ocean Modelling, 69(C),
+211–232. doi:10.1016/j.ocemod.2013.04.010.
 Conversion
 ----------
 `xyz_to_lat_lon` : Converts xyz coordinate output to lat/lon coordinates.
@@ -20,8 +20,17 @@ import cartopy.crs as ccrs
 from esmtools.vis import make_cartopy
 
 
-def scatter(lon, lat, data, cmap, vmin, vmax, stride=5, projection=ccrs.Robinson(),
-        colorbar=True):
+def scatter(
+    lon,
+    lat,
+    data,
+    cmap,
+    vmin,
+    vmax,
+    stride=5,
+    projection=ccrs.Robinson(),
+    colorbar=True,
+):
     """
     Create a cartopy map of MPAS output on the native unstructured grid, using
     matplotlib's scatter function.
@@ -42,9 +51,9 @@ def scatter(lon, lat, data, cmap, vmin, vmax, stride=5, projection=ccrs.Robinson
     stride : int
         Stride in plotting data to avoid plotting too much
     projection : ccrs map projection
-        Map projection to use 
+        Map projection to use
     colorbar : logical
-        Whether or not to add a colorbar to the figure. Generally want to set this 
+        Whether or not to add a colorbar to the figure. Generally want to set this
         to off and do it manually if you need more advanced changes to it.
     Examples
     --------
@@ -58,8 +67,16 @@ def scatter(lon, lat, data, cmap, vmin, vmax, stride=5, projection=ccrs.Robinson
     lat = lat[0::stride]
     data = data[0::stride]
 
-    p = ax.scatter(lon, lat, s=1, c=data, cmap=cmap, transform=ccrs.PlateCarree(),
-            vmin=vmin, vmax=vmax)
+    p = ax.scatter(
+        lon,
+        lat,
+        s=1,
+        c=data,
+        cmap=cmap,
+        transform=ccrs.PlateCarree(),
+        vmin=vmin,
+        vmax=vmax,
+    )
     if colorbar:
         plt.colorbar(p, orientation='horizontal', pad=0.05, fraction=0.08)
 
@@ -92,15 +109,14 @@ def xyz_to_lat_lon(x, y, z, radians=False):
     lon, lat = xyz_to_lat_lon(ds.xParticle, ds.yParticle, ds.zParticle)
     """
     x, y, z = np.asarray(x), np.asarray(y), np.asarray(z)
-    plat = np.arcsin(z / np.sqrt(x**2 + y**2 + z**2))
+    plat = np.arcsin(z / np.sqrt(x ** 2 + y ** 2 + z ** 2))
     plon = np.arctan2(y, x)
     # longitude adjustment
-    plon[plon < 0.0] = 2*np.pi + plon[plon < 0.0]
+    plon[plon < 0.0] = 2 * np.pi + plon[plon < 0.0]
     if radians:
         return plon, plat
     else:
-        return plon * 180./np.pi, \
-               plat * 180./np.pi
+        return plon * 180.0 / np.pi, plat * 180.0 / np.pi
 
 
 def convert_rad_to_deg(ds):
@@ -108,8 +124,8 @@ def convert_rad_to_deg(ds):
 
     Just set up for LIGHT for now.
     """
-    ds['latParticle'] = ds['latParticle'] * (180/np.pi)
-    ds['lonParticle'] = ds['lonParticle'] * (180/np.pi)
+    ds['latParticle'] = ds['latParticle'] * (180 / np.pi)
+    ds['lonParticle'] = ds['lonParticle'] * (180 / np.pi)
     return ds
 
 
@@ -118,6 +134,6 @@ def convert_deg_to_rad(ds):
 
     Just set up for LIGHT for now.
     """
-    ds['latParticle'] = ds['latParticle'] * (np.pi/180)
-    ds['lonParticle'] = ds['lonParticle'] * (np.pi/180)
+    ds['latParticle'] = ds['latParticle'] * (np.pi / 180)
+    ds['lonParticle'] = ds['lonParticle'] * (np.pi / 180)
     return ds
