@@ -27,8 +27,7 @@ CLASSIFIERS = [
 setup(
     maintainer='Riley X. Brady',
     maintainer_email='riley.brady@colorado.edu',
-    description='A toolbox for functions related to Earth System Model analysis '
-    + 'with a focus on biogeochemical oceanography.',
+    description='a toolbox for Earth System Model analysis',
     install_requires=install_requires,
     python_requires='>=3.6',
     license='MIT',

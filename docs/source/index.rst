@@ -1,12 +1,4 @@
-esmtools: a toolbox for Earth System Model analysis
-===================================================
-
-Installation
-============
-
-.. code-block:: bash
-
-    pip install esmtools
+.. include:: ../../README.rst
 
 **Getting Started**
 
@@ -18,3 +10,14 @@ Installation
     :caption: Getting Started
 
     examples
+
+**Help & Reference**
+
+* :doc:`api`
+
+.. toctree::
+    :maxdepth: 1
+    :hidden:
+    :caption: Help & Reference
+
+    api
