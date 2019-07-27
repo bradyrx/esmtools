@@ -2,12 +2,12 @@
 Changelog History
 =================
 
-esm-analysis v1.0.2 (2019-07-27)
+esm_analysis v1.0.2 (2019-07-27)
 ================================
 
 Internals/Minor Fixes
 ---------------------
-- Changed name from ``esmtools`` to ``esm-analysis`` since the former was registered on readthedocs.
+- Changed name from ``esmtools`` to ``esm_analysis`` since the former was registered on readthedocs.
 
 esmtools v1.0.1 (2019-07-25)
 ============================

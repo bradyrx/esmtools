@@ -1,13 +1,13 @@
 API Reference
 =============
 
-This page provides an auto-generated summary of esm-analysis's API.
+This page provides an auto-generated summary of esm_analysis's API.
 For more details and examples, refer to the relevant chapters in the main part of the documentation.
 
 Carbon
 ~~~~~~
 
-.. automodsumm:: esm-analysis.carbon
+.. automodsumm:: esm_analysis.carbon
     :functions-only:
     :toctree: api
     :skip: check_xarray, linear_regression, nanmean, rm_poly
@@ -15,7 +15,7 @@ Carbon
 Composite Analysis
 ~~~~~~~~~~~~~~~~~~
 
-.. automodsumm:: esm-analysis.composite
+.. automodsumm:: esm_analysis.composite
     :functions-only:
     :toctree: api
     :skip: check_xarray, ttest_ind_from_stats
@@ -23,21 +23,21 @@ Composite Analysis
 Filtering
 ~~~~~~~~~
 
-.. automodsumm:: esm-analysis.filtering
+.. automodsumm:: esm_analysis.filtering
     :functions-only:
     :toctree: api
 
 Grid Tools
 ~~~~~~~~~~
 
-.. automodsumm:: esm-analysis.grid
+.. automodsumm:: esm_analysis.grid
     :functions-only:
     :toctree: api
 
 MPAS Model Tools
 ~~~~~~~~~~~~~~~~
 
-.. automodsumm:: esm-analysis.mpas
+.. automodsumm:: esm_analysis.mpas
     :functions-only:
     :toctree: api
     :skip: make_cartopy
@@ -45,7 +45,7 @@ MPAS Model Tools
 Physics
 ~~~~~~~
 
-.. automodsumm:: esm-analysis.physics
+.. automodsumm:: esm_analysis.physics
     :functions-only:
     :toctree: api
 
@@ -53,7 +53,7 @@ Physics
 Statistics
 ~~~~~~~~~~
 
-.. automodsumm:: esm-analysis.stats
+.. automodsumm:: esm_analysis.stats
     :functions-only:
     :toctree: api
     :skip: check_xarray, get_dims, has_dims, lreg, tti_from_stats
@@ -61,14 +61,14 @@ Statistics
 Unit Conversions
 ~~~~~~~~~~~~~~~~
 
-.. automodsumm:: esm-analysis.conversions
+.. automodsumm:: esm_analysis.conversions
     :functions-only:
     :toctree: api
 
 Visualization
 ~~~~~~~~~~~~~
 
-.. automodsumm:: esm-analysis.vis
+.. automodsumm:: esm_analysis.vis
     :functions-only:
     :toctree: api
     :skip: add_cyclic_point

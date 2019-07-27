@@ -1,6 +1,6 @@
 import climpred
 import pytest
-from esm-analysis.stats import linear_regression
+from esm_analysis.stats import linear_regression
 
 
 @pytest.fixture

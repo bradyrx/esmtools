@@ -57,7 +57,7 @@ def scatter(
         to off and do it manually if you need more advanced changes to it.
     Examples
     --------
-    from esm-analysis.mpas import scatter
+    from esm_analysis.mpas import scatter
     import xarray as xr
     ds = xr.open_dataset('some_BGC_output.nc')
     scatter(ds['lonCell'], ds['latCell'], ds['FG_CO2'], "RdBu_r")
@@ -103,7 +103,7 @@ def xyz_to_lat_lon(x, y, z, radians=False):
         Array of latitude values
     Examples
     --------
-    from esm-analysis.mpas import xyz_to_lat_lon
+    from esm_analysis.mpas import xyz_to_lat_lon
     import xarray as xr
     ds = xr.open_dataset('particle_output.nc')
     lon, lat = xyz_to_lat_lon(ds.xParticle, ds.yParticle, ds.zParticle)

@@ -5,7 +5,7 @@ from urllib.request import urlretrieve as _urlretrieve
 from xarray.backends.api import open_dataset as _open_dataset
 import hashlib
 
-_default_cache_dir = _os.sep.join(('~', '.esm-analysis_data'))
+_default_cache_dir = _os.sep.join(('~', '.esm_analysis_data'))
 
 
 def file_md5_checksum(fname):
