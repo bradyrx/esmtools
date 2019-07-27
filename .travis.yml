@@ -33,6 +33,9 @@ install:
 script:
   - coverage run --source esmtools -m py.test
   - coverage report
+  - pushd docs
+  - make html
+  - popd
   - ./ci/run-linter.sh
 
 after_success:

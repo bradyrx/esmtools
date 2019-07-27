@@ -70,7 +70,6 @@ def show_versions(as_json=False):
         ('esmtools', lambda mod: mod.__version__),
         ('climpred', lambda mod: mod.__version__),
         ('xarray', lambda mod: mod.__version__),
-        ('pandas', lambda mod: mod.__version__),
         ('numpy', lambda mod: mod.__version__),
         ('scipy', lambda mod: mod.__version__),
         ('cftime', lambda mod: mod.__version__),

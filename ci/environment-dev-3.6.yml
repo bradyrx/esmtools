@@ -4,7 +4,6 @@ channels:
 dependencies:
   - python=3.6
   - numpy
-  - pandas
   - xarray
   - dask
   - scipy
@@ -12,13 +11,18 @@ dependencies:
   - bottleneck
   - netcdf4
   - pytest
-  - eofs
   - cftime
   - bottleneck
   - netcdf4
-  - lxml
   - climpred
   - cartopy
+  - pytest-cov
+  - sphinx_rtd_theme
+  - sphinx
+  - nbsphinx
+  - coveralls
+  - importlib_metadata
   - pip
   - pip:
-      - xskillscore>=0.0.4
+      - sphinxcontrib-napoleon
+      - sphinx_automodapi
