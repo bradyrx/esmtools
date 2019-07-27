@@ -13,7 +13,7 @@ import datetime
 #
 import os
 import sys
-import esmtools
+import esm_analysis 
 
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -21,12 +21,12 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information -----------------------------------------------------
 
 current_year = datetime.datetime.now().year
-project = 'esmtools'
+project = 'esm_analysis'
 copyright = f'2019-{current_year}, Riley X. Brady'
 author = 'Riley X. Brady'
 
 # The full version, including alpha/beta/rc tags
-version = esmtools.__version__
+version = esm_analysis.__version__
 
 # -- General configuration ---------------------------------------------------
 
@@ -47,8 +47,8 @@ extensions = [
 ]
 
 extlinks = {
-    'issue': ('https://github.com/bradyrx/esmtools/issues/%s', 'GH#'),
-    'pr': ('https://github.com/bradyrx/esmtools/pull/%s', 'GH#'),
+    'issue': ('https://github.com/bradyrx/esm_analysis/issues/%s', 'GH#'),
+    'pr': ('https://github.com/bradyrx/esm_analysis/pull/%s', 'GH#'),
 }
 
 

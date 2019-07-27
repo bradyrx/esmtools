@@ -1,6 +1,6 @@
 from os.path import exists
 
-from setuptools import find_packages, setup
+from setuptools import setup, find_packages
 
 if exists('README.rst'):
     with open('README.rst') as f:
@@ -33,11 +33,11 @@ setup(
     license='MIT',
     long_description=long_description,
     classifiers=CLASSIFIERS,
-    name='esmtools',
+    name='esm_analysis',
     packages=find_packages(),
-    test_suite='esmtools/tests',
+    test_suite='esm_analysis/tests',
     tests_require=test_requirements,
-    url='https://github.com/bradyrx/esmtools',
+    url='https://github.com/bradyrx/esm_analysis',
     use_scm_version={'version_scheme': 'post-release', 'local_scheme': 'dirty-tag'},
     setup_requires=[
         'setuptools_scm',

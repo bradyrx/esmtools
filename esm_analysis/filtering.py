@@ -32,7 +32,7 @@ def _find_indices(xgrid, ygrid, xpoint, ypoint):
 
     Examples
     --------
-    >>> import esmtools as et
+    >>> import esm_analysis as et
     >>> import numpy as np
     >>> x = np.linspace(0, 360, 37)
     >>> y = np.linspace(-90, 90, 19)

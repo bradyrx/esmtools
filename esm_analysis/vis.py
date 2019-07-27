@@ -74,7 +74,7 @@ def discrete_cmap(levels, base_cmap):
     --------
     import numpy as np
     import matplotlib.pyplot as plt
-    import esmtools as et
+    import esm_analysis as et
     data = np.random.randn(50,50)
     plt.pcolor(data, vmin=-3, vmax=3, cmap=et.vis.discrete_cmap(10,
                plt.cm.RdBu))
@@ -120,7 +120,7 @@ def make_cartopy(
 
     Examples
     --------
-    import esmtools as et
+    import esm_analysis as et
     import cartopy.crs as ccrs
     f, ax, gl = et.vis.make_cartopy(land_color='#D3D3D3',
                                     projection=ccrs.Mercator()))
@@ -156,7 +156,7 @@ def add_box(ax, x0, x1, y0, y1, **kwargs):
 
     Examples
     --------
-    import esmtools as et
+    import esm_analysis as et
     fig, ax = et.vis.make_cartopy()
     et.visualization.add_box(ax, [-150, -110, 30, 50], edgecolor='k',
                              facecolor='#D3D3D3', linewidth=2, alpha=0.5)

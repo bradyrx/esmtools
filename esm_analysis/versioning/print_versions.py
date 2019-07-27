@@ -67,7 +67,7 @@ def show_versions(as_json=False):
 
     deps = [
         # (MODULE_NAME, f(mod) -> mod version)
-        ('esmtools', lambda mod: mod.__version__),
+        ('esm_analysis', lambda mod: mod.__version__),
         ('climpred', lambda mod: mod.__version__),
         ('xarray', lambda mod: mod.__version__),
         ('numpy', lambda mod: mod.__version__),

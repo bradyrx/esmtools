@@ -18,7 +18,7 @@ def cos_weight(da, lat_coord='lat', lon_coord='lon', one_dimensional=True):
     Area-weights data on a regular (e.g. 360x180) grid that does not come with
     cell areas. Uses cosine-weighting.
     NOTE: Currently explicitly writing `xr` as a prefix for xarray-specific
-    definitions. Since `esmtools` is supposed to be a wrapper for xarray,
+    definitions. Since `esm_analysis` is supposed to be a wrapper for xarray,
     this might be altered in the future.
     Parameters
     ----------
@@ -34,7 +34,7 @@ def cos_weight(da, lat_coord='lat', lon_coord='lon', one_dimensional=True):
     aw_da : Area-weighted DataArray
     Examples
     --------
-    import esmtools as et
+    import esm_analysis as et
     da_aw = et.stats.reg_aw(SST)
     """
     non_spatial = [i for i in get_dims(da) if i not in [lat_coord, lon_coord]]
@@ -111,7 +111,7 @@ def smooth_series(da, dim, length, center=True):
     """
     Returns a smoothed version of the input timeseries.
     NOTE: Currently explicitly writing `xr` as a prefix for xarray-specific
-    definitions. Since `esmtools` is supposed to be a wrapper for xarray,
+    definitions. Since `esm_analysis` is supposed to be a wrapper for xarray,
     this might be altered in the future.
     Parameters
     ----------

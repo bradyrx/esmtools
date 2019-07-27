@@ -1,4 +1,4 @@
 [run]
 omit =
-    esmtools/tests/*.py
+    esm_analysis/tests/*.py
     setup.py
