@@ -17,8 +17,8 @@ before_install:
   - conda info -a
 
 install:
-  - conda env create -n esm_analysis-dev --file ci/environment-dev-3.6.yml
-  - source activate esm_analysis-dev
+  - conda env create -n esm-analysis-dev --file ci/environment-dev-3.6.yml
+  - source activate esm-analysis-dev
   - conda install pip
   - conda list
   - which conda
