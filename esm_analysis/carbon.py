@@ -7,71 +7,107 @@ from .stats import linear_regression, nanmean, rm_poly
 from .utils import check_xarray
 
 
+@check_xarray([0, 1])
 def co2_sol(t, s):
+    """Compute CO2 solubility per the equation used in CESM.
+
+    .. note::
+        See ``co2calc.F90`` for the calculation of CO2 solubility in CESM.
+
+    Args:
+        t (xarray object): SST (degC)
+        s (xarray object): SSS (PSU)
+
+    Return:
+        ff (xarray object): Value of solubility in mol/kg/atm
+
+    References:
+        Weiss & Price (1980, Mar. Chem., 8, 347-359; Eq 13 with table 6 values)
+
+    Examples:
+        >>> from esm_analysis.carbon import co2_sol
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> t = xr.DataArray(np.random.randint(10, 25, size=(100, 10, 10)),
+                dims=['time', 'lat', 'lon'])
+        >>> s = xr.DataArray(np.random.randint(30, 35, size=(100, 10, 10)),
+                dims=['time', 'lat', 'lon'])
+        >>> ff = co2_sol(t, s)
     """
-    Compute CO2 sollubility per the equation used in CESM. The mean will be taken over
-    the time series provided to produce the average solubility over this time period.
-    Thus, if you want more accurate solubility you can feed in smaller time periods.
 
-    Input
-    -----
-    t : SST time series (degC)
-    s : SSS time series (PSU)
+    def sol_calc(t, s):
+        a = [-162.8301, 218.2968, 90.9241, -1.47696]
+        b = [0.025695, -0.025225, 0.0049867]
+        t = (t + 273.15) * 0.01
+        t_sq = t ** 2
+        t_inv = 1.0 / t
+        log_t = np.log(t)
+        d0 = b[2] * t_sq + b[1] * t + b[0]
+        # Compute solubility in mol.kg^{-1}.atm^{-1}
+        ff = np.exp(a[0] + a[1] * t_inv + a[2] * log_t + a[3] * t_sq + d0 * s)
+        return ff
 
-    Return
-    ------
-    ff : Value of solubility in mol/kg/atm
-
-    References
-    ----------
-    Weiss & Price (1980, Mar. Chem., 8, 347-359;
-    Eq 13 with table 6 values)
-    """
-    a = [-162.8301, 218.2968, 90.9241, -1.47696]
-    b = [0.025695, -0.025225, 0.0049867]
-    t = (np.mean(t) + 273.15) * 0.01
-    s = np.mean(s)
-    t_sq = t ** 2
-    t_inv = 1.0 / t
-    log_t = np.log(t)
-    d0 = b[2] * t_sq + b[1] * t + b[0]
-    # Compute solubility in mol.kg^{-1}.atm^{-1}
-    ff = np.exp(a[0] + a[1] * t_inv + a[2] * log_t + a[3] * t_sq + d0 * s)
+    ff = xr.apply_ufunc(
+        sol_calc, t, s, input_core_dims=[[], []], vectorize=True, dask='allowed'
+    )
+    ff.attrs['units'] = 'mol/kg/atm'
     return ff
 
 
+@check_xarray(0)
 def schmidt(t):
+    """Computes the dimensionless Schmidt number.
+
+    .. note::
+        The polynomials used are for SST ranges between 0 and 30C and a salinity of 35.
+
+    Args:
+        t (xarray object): SST (degC)
+
+    Return:
+        Sc (xarray object): Schmidt number (dimensionless)
+
+    References:
+        Sarmiento and Gruber (2006). Ocean Biogeochemical Dynamics. Table 3.3.1
+
+    Examples:
+        >>> from esm_analysis.carbon import schmidt
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> t = xr.DataArray(np.random.randint(10, 25, size=(100, 10, 10)),
+                    dims=['time', 'lat', 'lon'])
+        >>> Sc = schmidt(t)
     """
-    Computes the dimensionless Schmidt number. The mean will be taken over the
-    time series provided to produce the average Schmidt number over this time period.
-    The polynomials used are for SST ranges between 0 and 30C and a salinity of 35.
 
-    Input
-    -----
-    t : SST time series (degC)
+    def calc_schmidt(t):
+        c = [2073.1, 125.62, 3.6276, 0.043219]
+        Sc = c[0] - c[1] * t + c[2] * (t ** 2) - c[3] * (t ** 3)
+        return Sc
 
-    Return
-    ------
-    Sc : Schmidt number (dimensionless)
-
-    Reference
-    --------
-    Sarmiento and Gruber (2006). Ocean Biogeochemical Dynamics.
-    Table 3.3.1
-    """
-    c = [2073.1, 125.62, 3.6276, 0.043219]
-    t = np.mean(t)
-    Sc = c[0] - c[1] * t + c[2] * (t ** 2) - c[3] * (t ** 3)
+    Sc = xr.apply_ufunc(
+        calc_schmidt, t, input_core_dims=[[]], vectorize=True, dask='allowed'
+    )
     return Sc
 
 
+@check_xarray(0)
 def temp_decomp_takahashi(ds, time_dim='time', temperature='tos', pco2='spco2'):
-    """
-    Decompose spco2 into thermal and non-thermal component.
+    """Decompose surface pCO2 into thermal and non-thermal components.
 
-    Reference
-    ---------
-    Takahashi, Taro, Stewart C. Sutherland, Colm Sweeney, Alain Poisson, Nicolas
+    .. note::
+        This expects cmorized variable names. You can pass keywords to change that
+        or rename your variables accordingly.
+
+    Args:
+        ds (xarray.Dataset): Contains two variables:
+            * `tos` (sea surface temperature in degC)
+            * `spco2` (surface pCO2 in uatm)
+
+    Return:
+        decomp (xr.Dataset): Decomposed thermal and non-thermal components.
+
+    References:
+        Takahashi, Taro, Stewart C. Sutherland, Colm Sweeney, Alain Poisson, Nicolas
         Metzl, Bronte Tilbrook, Nicolas Bates, et al. “Global Sea–Air CO2 Flux
         Based on Climatological Surface Ocean PCO2, and Seasonal Biological and
         Temperature Effects.” Deep Sea Research Part II: Topical Studies in
@@ -79,71 +115,106 @@ def temp_decomp_takahashi(ds, time_dim='time', temperature='tos', pco2='spco2'):
         Carbon in the Southern Ocean, 49, no. 9 (January 1,2002): 1601–22.
         https://doi.org/10/dmk4f2.
 
-    Input
-    -----
-    ds : xr.Dataset containing spco2[ppm] and tos[C or K]
-
-    Output
-    ------
-    thermal, non_thermal : xr.DataArray
-        thermal and non-thermal components in ppm units
-
+    Examples:
+        >>> from esm_analysis.carbon import temp_decomp_takahashi
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> t = xr.DataArray(np.random.randint(10, 25, size=(100, 10, 10)),
+                dims=['time', 'lat', 'lon']).rename('tos')
+        >>> pco2 = xr.DataArray(np.random.randint(350, 400, size=(100, 10, 10)),
+                dims=['time', 'lat', 'lon']).rename('spco2')
+        >>> ds = xr.merge([t, pco2])
+        >>> decomp = temp_decomp_takahashi(ds)
     """
+    if temperature not in ds.data_vars:
+        raise ValueError(f'{temperature} is not a variable in your dataset.')
+    if pco2 not in ds.data_vars:
+        raise ValueError(f'{pco2} is not a variable in your dataset.')
+
     fac = 0.0432
     tos_mean = ds[temperature].mean(time_dim)
     tos_diff = ds[temperature] - tos_mean
-    thermal = ds[pco2].mean(time_dim) * (np.exp(tos_diff * fac))
-    non_thermal = ds[pco2] * (np.exp(tos_diff * -fac))
-    return thermal, non_thermal
+    thermal = (ds[pco2].mean(time_dim) * (np.exp(tos_diff * fac))).rename('thermal')
+    non_thermal = (ds[pco2] * (np.exp(tos_diff * -fac))).rename('non_thermal')
+    decomp = xr.merge([thermal, non_thermal])
+    decomp.attrs[
+        'description'
+    ] = 'Takahashi decomposition of pCO2 into thermal and non-thermal components.'
+    return decomp
 
 
+@check_xarray([0, 1])
 def potential_pco2(t_insitu, pco2_insitu):
-    """
-    Calculate potential pco2 in the inner ocean. Requires the first index of
-    depth to be at the surface.
+    """Calculate potential pCO2 in the interior ocean.
 
-    Input
-    -----
-    t_insitu : xr object
-        SST with depth [C or K]
-    pco2_insitu : xr object
-        pCO2 with depth [ppm]
+    .. note::
+        Requires the first index of depth to be at the surface.
 
-    Output
-    ------
-    pco2_potential : xr object
-        potential pco2 with depth
+    Args:
+        t_insitu (xarray object): Temperature with depth [degC]
+        pco2_insitu (xarray object): pCO2 with depth [uatm]
+
+    Return:
+        pco2_potential (xarray object): potential pCO2 with depth
 
     Reference:
-    - Sarmiento, Jorge Louis, and Nicolas Gruber. Ocean Biogeochemical Dynamics.
+        Sarmiento, Jorge Louis, and Nicolas Gruber. Ocean Biogeochemical Dynamics.
         Princeton, NJ: Princeton Univ. Press, 2006., p.421, eq. (10:3:1)
 
+    Examples:
+        >>> from esm_analysis.carbon import potential_pco2
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> t_insitu = xr.DataArray(np.random.randint(0, 20, size=(100, 10, 30)),
+            dims=['time', 'lat', 'depth'])
+        >>> pco2_insitu = xr.DataArray(np.random.randint(350, 500, size=(100, 10, 30)),
+            dims=['time', 'lat', 'depth'])
+        >>> pco2_potential = potential_pco2(t_insitu, pco2_insitu)
     """
     t_sfc = t_insitu.isel(depth=0)
     pco2_potential = pco2_insitu * (1 + 0.0423 * (t_sfc - t_insitu))
     return pco2_potential
 
 
+@check_xarray(0)
 def spco2_sensitivity(ds):
-    """Generate sensitivities in spco2 for changes in other variables.
-
-    * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
-        “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
-        the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
-        (2007). https://doi.org/10/fpv2wt.
-    * Gruber and Sarmiento, 2005
+    """Compute sensitivity of surface pCO2 to changes in driver variables.
 
     Args:
         ds (xr.Dataset): containing cmorized variables:
-                            spco2 [ppm]: pCO2,ocean at ocean surface
-                            talkos[mmol m-3]: Alkalinity at ocean surface
-                            dissicos[mmol m-3]: DIC at ocean surface
-                            tos [C] : temperature at ocean surface
-                            sos [psu] : salinity at ocean surface
+                         * spco2 [uatm]: ocean pCO2 at surface
+                         * talkos[mmol m-3]: Alkalinity at ocean surface
+                         * dissicos[mmol m-3]: DIC at ocean surface
+                         * tos [C] : temperature at ocean surface
+                         * sos [psu] : salinity at ocean surface
 
     Returns:
         sensitivity (xr.Dataset):
 
+    References:
+        * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
+          “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
+          the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
+          (2007). https://doi.org/10/fpv2wt.
+        * Sarmiento, Jorge Louis, and Nicolas Gruber. Ocean Biogeochemical Dynamics.
+          Princeton, NJ: Princeton Univ. Press, 2006., p.421, eq. (10:3:1)
+
+    Examples:
+        >>> from esm_analysis.carbon import spco2_sensitivity
+        >>> import numpy as np
+        >>> import xarray as xr
+        >>> tos = xr.DataArray(np.random.randint(15, 30, size=(100, 10, 10)),
+                dims=['time', 'lat', 'lon']).rename('tos')
+        >>> sos = xr.DataArray(np.random.randint(30, 35, size=(100, 10, 10)),
+                dims=['time', 'lat', 'lon']).rename('sos')
+        >>> spco2 = xr.DataArray(np.random.randint(350, 400, size=(100, 10, 10)),
+                dims=['time', 'lat', 'lon']).rename('spco2')
+        >>> dissicos = xr.DataArray(np.random.randint(1900, 2100, size=(100, 10, 10)),
+                dims=['time', 'lat', 'lon']).rename('dissicos')
+        >>> talkos = xr.DataArray(np.random.randint(2100, 2300, size=(100, 10, 10)),
+                dims=['time', 'lat', 'lon']).rename('talkos')
+        >>> ds = xr.merge([tos, sos, spco2, dissicos, talkos])
+        >>> sensitivity = spco2_sensitivity(ds)
     """
 
     def _check_variables(ds):
@@ -170,6 +241,7 @@ def spco2_sensitivity(ds):
     buffer_factor['DIC'] = (3 * ALK * DIC - 2 * DIC ** 2) / (
         (2 * DIC - ALK) * (ALK - DIC)
     )
+
     # Compute sensitivities
     sensitivity = dict()
     sensitivity['tos'] = 0.0423
@@ -194,20 +266,14 @@ def spco2_decomposition_index(
 ):
     """Decompose oceanic surface pco2 in a first order Taylor-expansion.
 
-    Reference:
-    * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
-        “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
-        the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
-        (2007). https://doi.org/10/fpv2wt.
-
     Args:
         ds (xr.Dataset): containing cmorized variables:
-                            spco2 [ppm]: pCO2,ocean at ocean surface
+                            spco2 [ppm]: ocean pCO2 at surface
                             talkos[mmol m-3]: Alkalinity at ocean surface
                             dissicos[mmol m-3]: DIC at ocean surface
                             tos [C] : temperature at ocean surface
                             sos [psu] : salinity at ocean surface
-        index (xr.object): Climate index to regress onto.
+        index (xarray object): Climate index to regress onto.
         detrend (bool): Whether to detrend time series prior to regression.
                         Defaults to a linear (order 1) regression.
         order (int): If detrend is True, what order polynomial to remove.
@@ -222,6 +288,14 @@ def spco2_decomposition_index(
         terms_in_pCO2_units (xr.Dataset): terms of spco2 decomposition,
                                           if `not plot`
 
+    References:
+        * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
+          “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
+          the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
+          (2007). https://doi.org/10/fpv2wt.
+        * Brady, Riley X., et al. "On the role of climate modes in modulating the
+          air–sea CO 2 fluxes in eastern boundary upwelling systems." Biogeosciences
+          16.2 (2019): 329-346.
     """
 
     def regression_against_index(ds, index, psig=None):
@@ -282,15 +356,9 @@ def spco2_decomposition_index(
 def spco2_decomposition(ds_terms, detrend=True, order=1, deseasonalize=False):
     """Decompose oceanic surface pco2 in a first order Taylor-expansion.
 
-    Reference:
-    * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
-        “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
-        the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
-        (2007). https://doi.org/10/fpv2wt.
-
     Args:
         ds_terms (xr.Dataset): containing cmorized variables:
-                               spco2 [ppm]: pCO2,ocean at ocean surface
+                               spco2 [ppm]: ocean pCO2 at surface
                                talkos[mmol m-3]: Alkalinity at ocean surface
                                dissicos[mmol m-3]: DIC at ocean surface
                                tos [C] : temperature at ocean surface
@@ -301,9 +369,14 @@ def spco2_decomposition(ds_terms, detrend=True, order=1, deseasonalize=False):
                      your time series.
         deseasonalize (bool): If True, deseasonalize when generating anomalies.
 
-    Returns:
+    Return:
         terms_in_pCO2_units (xr.Dataset): terms of spco2 decomposition
 
+    References:
+    * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
+        “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
+        the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
+        (2007). https://doi.org/10/fpv2wt.
     """
     pco2_sensitivity = spco2_sensitivity(ds_terms)
 

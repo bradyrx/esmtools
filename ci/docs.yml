@@ -12,7 +12,6 @@ dependencies:
   - jupyterlab
   - netcdf4
   - pip
-  - Cython
   - cartopy
   - pip:
       - sphinxcontrib-napoleon
