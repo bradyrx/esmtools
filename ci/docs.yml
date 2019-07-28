@@ -13,6 +13,7 @@ dependencies:
   - netcdf4
   - pip
   - Cython
+  - cartopy
   - pip:
       - sphinxcontrib-napoleon
       - importlib_metadata
