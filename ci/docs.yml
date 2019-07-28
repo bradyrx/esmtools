@@ -12,6 +12,7 @@ dependencies:
   - jupyterlab
   - netcdf4
   - pip
+  - Cython
   - pip:
       - sphinxcontrib-napoleon
       - importlib_metadata
