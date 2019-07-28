@@ -1,5 +1,7 @@
+sphinx:
+  configuration: docs/source/conf.py
 conda:
-  file: ci/environment-dev-3.6.yml
+  file: ci/docs.yml
 python:
-  version: 3
+  version: 3.6
   setup_py_install: true
