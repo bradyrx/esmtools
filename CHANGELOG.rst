@@ -2,6 +2,18 @@
 Changelog History
 =================
 
+esm_analysis v1.0.3 (2019-07-##)
+================================
+
+Features
+--------
+- ``co2_sol`` and ``schmidt`` now can be computed on grids and does not do time-averaging.
+- ``temp_decomp_takahashi`` now returns a dataset with thermal/non-thermal components.
+
+Internals/Minor Fixes
+---------------------
+- docstring updates with examples for ``carbon`` module.
+
 esm_analysis v1.0.2 (2019-07-27)
 ================================
 
@@ -20,3 +32,5 @@ Internals/Minor Fixes
 esmtools v1.0.0 (2019-07-25)
 ============================
 Formally releases ``esmtools`` on pip for easy installing by other packages.
+
+.. _`Riley X. Brady`: https://github.com/bradyrx
