@@ -1,4 +1,5 @@
 import warnings
+
 import numpy as np
 import xarray as xr
 from tqdm import tqdm
@@ -252,9 +253,70 @@ def spco2_sensitivity(ds):
     return sensitivity
 
 
+@check_xarray(0)
+def co2_flx_ocean_sensitivities(ds):
+    """Compute sensitivity of oceanic co2_flux to changes in driver variables.
+
+    .. math: co2_flx_ocean = co2trans * (co2atm - co2ocean) * (1 - ice)
+
+    Args:
+        ds (xr.Dataset): containing cmorized variables:
+                         * co2_flx_ocean [kg m-2 s-1]: surface air-sea CO2 flux
+                         * co2ocean[ppm CO2]: partial pressure of CO2 in
+                                              surface sea water
+                         * CO2[ppm]: partial pressure of atmospheric CO2 at the
+                                     surface
+                         * co2trans [10-9 mol s m-4] : transfer velocity of
+                                                       ocean/atmosphere CO2 flux
+                         * seaice [%]: fraction of grid cell covered by ice
+
+    Returns:
+        sensitivity (xr.Dataset):
+
+    References:
+        * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
+          “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
+          the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
+          (2007). https://doi.org/10/fpv2wt.
+        * Sarmiento, Jorge Louis, and Nicolas Gruber. Ocean Biogeochemical Dynamics.
+          Princeton, NJ: Princeton Univ. Press, 2006., p.421, eq. (10:3:1)
+
+    """
+
+    def _check_variables(ds):
+        requiredVars = ['co2_flx_ocean', 'CO2', 'co2ocean', 'co2trans', 'seaice']
+        if not all(i in ds.data_vars for i in requiredVars):
+            missingVars = [i for i in requiredVars if i not in ds.data_vars]
+            raise ValueError(
+                f"""Missing variables needed for calculation:
+            {missingVars}"""
+            )
+
+    _check_variables(ds)
+
+    # Sensitivities are based on the time-mean for each field. This computes
+    # sensitivities at each grid cell.
+    # TODO: Add keyword for sliding mean, as in N year chunks of time to
+    # account for trends.
+    CO2FLUX = ds['co2_flx_ocean']
+    CO2OCEAN = ds['co2ocean']
+    CO2ATM = ds['CO2']
+    ICE = ds['seaice']
+    CO2TRANS = ds['co2trans']
+
+    # Compute sensitivities
+    sensitivity = dict()
+    sensitivity['ice'] = -1 / ICE
+    sensitivity['co2trans'] = 1 / CO2TRANS
+    sensitivity['co2atm'] = 1 / CO2ATM
+    sensitivity['co2ocean'] = -1 / CO2OCEAN
+    sensitivity = xr.Dataset(sensitivity) * CO2FLUX
+    return sensitivity
+
+
 # TODO: adapt for CESM and MPI output.
 @check_xarray([0, 1])
-def spco2_decomposition_index(
+def decomposition_index(
     ds_terms,
     index,
     detrend=True,
@@ -262,17 +324,14 @@ def spco2_decomposition_index(
     deseasonalize=False,
     plot=False,
     sliding_window=10,
+    decompose='spco2',
     **plot_kwargs,
 ):
-    """Decompose oceanic surface pco2 in a first order Taylor-expansion.
+    """Decompose a spco2 or co2_flx_ocean in a first order Taylor-expansion.
 
     Args:
-        ds (xr.Dataset): containing cmorized variables:
-                            spco2 [ppm]: ocean pCO2 at surface
-                            talkos[mmol m-3]: Alkalinity at ocean surface
-                            dissicos[mmol m-3]: DIC at ocean surface
-                            tos [C] : temperature at ocean surface
-                            sos [psu] : salinity at ocean surface
+        ds (xr.Dataset): containing cmorized variables as required for
+                         sensitivity
         index (xarray object): Climate index to regress onto.
         detrend (bool): Whether to detrend time series prior to regression.
                         Defaults to a linear (order 1) regression.
@@ -282,10 +341,12 @@ def spco2_decomposition_index(
         plot (bool): quick plot. Defaults to False.
         sliding_window (int): Number of years to apply sliding window to for
                               calculation. Defaults to 10.
+        decompose (str): variable to be decomposed. Choose from:
+                         ['co2_flx_ocean', 'spco2']
         **plot_kwargs (type): `**plot_kwargs`.
 
     Returns:
-        terms_in_pCO2_units (xr.Dataset): terms of spco2 decomposition,
+        terms_in_decompose_units (xr.Dataset): terms of spco2 decomposition,
                                           if `not plot`
 
     References:
@@ -301,13 +362,23 @@ def spco2_decomposition_index(
     def regression_against_index(ds, index, psig=None):
         terms = dict()
         for term in ds.data_vars:
-            if term != 'spco2':
+            if term != decompose:
                 reg = linear_regression(index, ds[term], psig=psig)
                 terms[term] = reg['slope']
         terms = xr.Dataset(terms)
         return terms
 
-    pco2_sensitivity = spco2_sensitivity(ds_terms)
+    if decompose == 'spco2':
+        decompose_sensitivity = spco2_sensitivity
+    elif decompose == 'co2_flx_ocean':
+        decompose_sensitivity = co2_flx_ocean_sensitivities
+    else:
+        raise ValueError(
+            'Please provide `decompose` from \
+                         ["spco2", "co2_flx_ocean"]'
+        )
+    sensitivity = decompose_sensitivity(ds_terms)
+
     if detrend and not order:
         raise KeyError(
             """Please provide the order of polynomial to remove from
@@ -329,7 +400,7 @@ def spco2_decomposition_index(
     # then average the resulting dpCO2/dX.
     if sliding_window is None:
         terms = regression_against_index(ds_terms_anomaly, index)
-        terms_in_pCO2_units = terms * nanmean(pco2_sensitivity)
+        terms_in_decompose_units = terms * nanmean(sensitivity)
     else:
         years = [y for y in index.groupby('time.year').groups]
         y_end = index['time.year'][-1]
@@ -340,37 +411,37 @@ def spco2_decomposition_index(
                 ds = ds_terms_anomaly.sel(time=slice(str(y1), str(y2)))
                 ind = index.sel(time=slice(str(y1), str(y2)))
                 terms = regression_against_index(ds, ind)
-                sens = pco2_sensitivity.sel(time=slice(str(y1), str(y2)))
+                sens = sensitivity.sel(time=slice(str(y1), str(y2)))
                 res.append(terms * nanmean(sens))
-        terms_in_pCO2_units = xr.concat(res, dim='time').mean('time')
+        terms_in_decompose_units = xr.concat(res, dim='time').mean('time')
 
     if plot:
-        terms_in_pCO2_units.to_array().plot(
+        terms_in_decompose_units.to_array().plot(
             col='variable', cmap='RdBu_r', robust=True, **plot_kwargs
         )
     else:
-        return terms_in_pCO2_units
+        return terms_in_decompose_units
 
 
 @check_xarray(0)
-def spco2_decomposition(ds_terms, detrend=True, order=1, deseasonalize=False):
-    """Decompose oceanic surface pco2 in a first order Taylor-expansion.
+def decomposition(
+    ds_terms, detrend=True, order=1, deseasonalize=False, decompose='spco2'
+):
+    """Decompose spco2 or co2_flx_ocean in a first order Taylor-expansion.
 
     Args:
-        ds_terms (xr.Dataset): containing cmorized variables:
-                               spco2 [ppm]: ocean pCO2 at surface
-                               talkos[mmol m-3]: Alkalinity at ocean surface
-                               dissicos[mmol m-3]: DIC at ocean surface
-                               tos [C] : temperature at ocean surface
-                               sos [psu] : salinity at ocean surface
+        ds_terms (xr.Dataset): containing cmorized variables as required by
+                               sensitivities
         detrend (bool): If True, detrend when generating anomalies. Default to
                         a linear (order 1) regression.
         order (int): If detrend is true, the order polynomial to remove from
                      your time series.
         deseasonalize (bool): If True, deseasonalize when generating anomalies.
+        decompose (str): variable to be decomposed. Choose from:
+                         ['co2_flx_ocean', 'spco2']
 
     Return:
-        terms_in_pCO2_units (xr.Dataset): terms of spco2 decomposition
+        terms_in_decompose_units (xr.Dataset): terms of spco2 decomposition
 
     References:
     * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
@@ -378,7 +449,16 @@ def spco2_decomposition(ds_terms, detrend=True, order=1, deseasonalize=False):
         the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
         (2007). https://doi.org/10/fpv2wt.
     """
-    pco2_sensitivity = spco2_sensitivity(ds_terms)
+    if decompose == 'spco2':
+        decompose_sensitivity = spco2_sensitivity
+    elif decompose == 'co2_flx_ocean':
+        decompose_sensitivity = co2_flx_ocean_sensitivities
+    else:
+        raise ValueError(
+            'Please provide `decompose` from \
+                         ["spco2", "co2_flx_ocean"]'
+        )
+    sensitivity = decompose_sensitivity(ds_terms)
 
     if detrend and not order:
         raise KeyError(
@@ -397,5 +477,5 @@ def spco2_decomposition(ds_terms, detrend=True, order=1, deseasonalize=False):
     else:
         warnings.warn('Your data are not being deseasonalized.')
 
-    terms_in_pCO2_units = pco2_sensitivity.mean('time') * ds_terms_anomaly
-    return terms_in_pCO2_units
+    terms_in_decompose_units = sensitivity.mean('time') * ds_terms_anomaly
+    return terms_in_decompose_units
