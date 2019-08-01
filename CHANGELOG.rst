@@ -9,6 +9,7 @@ Features
 --------
 - ``co2_sol`` and ``schmidt`` now can be computed on grids and does not do time-averaging.
 - ``temp_decomp_takahashi`` now returns a dataset with thermal/non-thermal components.
+- ``temporal`` module that includes a ``to_annual()`` function for weighted temporal resampling.
 
 Internals/Minor Fixes
 ---------------------

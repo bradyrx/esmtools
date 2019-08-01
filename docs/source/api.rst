@@ -58,6 +58,15 @@ Statistics
     :toctree: api
     :skip: check_xarray, get_dims, has_dims, lreg, tti_from_stats
 
+
+Temporal
+~~~~~~~~
+
+.. automodsumm:: esm_analysis.temporal
+    :functions-only:
+    :toctree: api
+
+
 Unit Conversions
 ~~~~~~~~~~~~~~~~
 
