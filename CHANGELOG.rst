@@ -7,9 +7,9 @@ esm_analysis v1.0.3 (2019-07-##)
 
 Features
 --------
-- ``co2_sol`` and ``schmidt`` now can be computed on grids and does not do time-averaging.
-- ``temp_decomp_takahashi`` now returns a dataset with thermal/non-thermal components.
-- ``temporal`` module that includes a ``to_annual()`` function for weighted temporal resampling.
+- ``co2_sol`` and ``schmidt`` now can be computed on grids and does not do time-averaging (:pr:`45`) `Riley X. Brady`_.
+- ``temp_decomp_takahashi`` now returns a dataset with thermal/non-thermal components (:pr:`45`) `Riley X. Brady`_.
+- ``temporal`` module that includes a ``to_annual()`` function for weighted temporal resampling (:pr:`50`) `Riley X. Brady`_.
 
 Internals/Minor Fixes
 ---------------------
