@@ -10,6 +10,7 @@ from . import (
     mpas,
     physics,
     stats,
+    temporal,
     vis,
 )
 from .versioning.print_versions import show_versions
