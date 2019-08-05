@@ -38,6 +38,8 @@ Grid Tools
 MPAS Model Tools
 ~~~~~~~~~~~~~~~~
 
+Functions related to analyzing output from the Model for Prediction Across Scales (MPAS) ocean model. Since the grid is comprised of unstructured hexagons, analysis and visualization is not as straight-forward as working with regularly gridded data. The best visualizations on the unstructured grid can be made in ParaView.
+
 .. automodsumm:: esm_analysis.mpas
     :functions-only:
     :toctree: api
