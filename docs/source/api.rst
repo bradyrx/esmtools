@@ -18,7 +18,15 @@ Composite Analysis
 .. automodsumm:: esm_analysis.composite
     :functions-only:
     :toctree: api
-    :skip: check_xarray, ttest_ind_from_stats
+    :skip: check_xarray, ttest_ind_from_stats, standardize
+
+Conversions
+~~~~~~~~~~~
+
+.. automodsumm:: esm_analysis.conversions
+    :functions-only:
+    :toctree: api
+    :skip: check_xarray
 
 Filtering
 ~~~~~~~~~
