@@ -12,6 +12,7 @@ Features
 - ``temporal`` module that includes a ``to_annual()`` function for weighted temporal resampling (:pr:`50`) `Riley X. Brady`_.
 - ``filtering`` module renamed to ``spatial`` and ``find_indices`` made public. (:pr:`52`) `Riley X. Brady`_.
 - ``standardize`` function moved to stats. (:pr:`52`) `Riley X. Brady`_.
+- ``loadutils`` removed (:pr:`52`) `Riley X. Brady`_.
 
 Internals/Minor Fixes
 ---------------------
