@@ -1,11 +1,7 @@
 from .utils import check_xarray
-from .stats import ttest_ind_from_stats
+from .stats import ttest_ind_from_stats, standardize
 import warnings
 import xarray as xr
-
-
-def standardize(ds, dim='time'):
-    return (ds - ds.mean(dim)) / ds.std(dim)
 
 
 def _create_composites(anomaly_field, index, threshold=1, dim='time'):

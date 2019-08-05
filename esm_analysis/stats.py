@@ -9,6 +9,39 @@ from .checks import has_dims
 from .utils import check_xarray, get_dims
 
 
+# ------------------
+# GENERAL STATISTICS
+# ------------------
+@check_xarray(0)
+def standardize(ds, dim='time'):
+    """Standardize Dataset/DataArray
+
+    .. math::
+        \\frac{x - \\mu_{x}}{\\sigma_{x}}
+
+    Args:
+        ds (xarray object): Dataset or DataArray with variable(s) to standardize.
+        dim (optional str): Which dimension to standardize over (default 'time').
+
+    Returns:
+        stdized (xarray object): Standardized variable(s).
+    """
+    stdized = (ds - ds.mean(dim)) / ds.std(dim)
+    return stdized
+
+
+@check_xarray(0)
+def nanmean(ds, dim='time'):
+    """Compute mean NaNs and suppress warning from numpy"""
+    if 'time' in ds.dims:
+        mask = ds.isnull().isel(time=0)
+    else:
+        mask = ds.isnull()
+    ds = ds.fillna(0).mean(dim)
+    ds = ds.where(~mask)
+    return ds
+
+
 # --------------------------
 # AREA-WEIGHTING DEFINITIONS
 # --------------------------
@@ -487,15 +520,3 @@ def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
         vectorize=True,
         dask='parallelized',
     )
-
-
-@check_xarray(0)
-def nanmean(ds, dim='time'):
-    """Compute mean NaNs and suppress warning from numpy"""
-    if 'time' in ds.dims:
-        mask = ds.isnull().isel(time=0)
-    else:
-        mask = ds.isnull()
-    ds = ds.fillna(0).mean(dim)
-    ds = ds.where(~mask)
-    return ds
