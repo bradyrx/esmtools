@@ -28,13 +28,6 @@ Conversions
     :toctree: api
     :skip: check_xarray
 
-Filtering
-~~~~~~~~~
-
-.. automodsumm:: esm_analysis.filtering
-    :functions-only:
-    :toctree: api
-
 Grid Tools
 ~~~~~~~~~~
 
@@ -57,6 +50,13 @@ Physics
     :functions-only:
     :toctree: api
 
+Spatial
+~~~~~~~
+
+.. automodsumm:: esm_analysis.spatial
+    :functions-only:
+    :toctree: api
+    :skip: check_xarray
 
 Statistics
 ~~~~~~~~~~

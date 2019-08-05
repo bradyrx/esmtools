@@ -4,7 +4,7 @@ from . import (
     carbon,
     composite,
     conversions,
-    filtering,
+    spatial,
     grid,
     loadutils,
     mpas,
