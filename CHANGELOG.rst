@@ -10,10 +10,12 @@ Features
 - ``co2_sol`` and ``schmidt`` now can be computed on grids and does not do time-averaging (:pr:`45`) `Riley X. Brady`_.
 - ``temp_decomp_takahashi`` now returns a dataset with thermal/non-thermal components (:pr:`45`) `Riley X. Brady`_.
 - ``temporal`` module that includes a ``to_annual()`` function for weighted temporal resampling (:pr:`50`) `Riley X. Brady`_.
+- ``filtering`` module renamed to ``spatial`` and ``find_indices`` made public. (:pr:`52`) `Riley X. Brady`_.
+- ``standardize`` function moved to stats. (:pr:`52`) `Riley X. Brady`_.
 
 Internals/Minor Fixes
 ---------------------
-- docstring updates with examples for ``carbon`` module.
+- ``esm_analysis`` documentation created with docstring updates for all functions.
 
 esm_analysis v1.0.2 (2019-07-27)
 ================================
