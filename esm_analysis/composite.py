@@ -21,8 +21,9 @@ def composite_analysis(
     """Create composite maps based on some variable's response to a climate
     index.
 
-    Make sure that the field and index are detrended prior to using this
-    function if needed.
+    .. note::
+        Make sure that the field and index are detrended prior to using this
+        function if needed.
 
     Args:
         field (xr.object): Variable to create composites for. Contains dims
