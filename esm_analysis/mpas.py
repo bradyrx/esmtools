@@ -1,19 +1,3 @@
-"""
-Objects dealing with plotting and analysis of output from the Model for
-Prediction Across Scales (MPAS). This submodule will generally be built for
-MPAS-Ocean, but theoretically should work with other MPAS modules.
-References
-----------
-MPAS-Ocean: Ringler, T., Petersen, M., Higdon, R. L., Jacobsen, D.,
-Jones, P. W., & Maltrud, M. (2013). Ocean Modelling. Ocean Modelling, 69(C),
-211–232. doi:10.1016/j.ocemod.2013.04.010.
-Conversion
-----------
-`xyz_to_lat_lon` : Converts xyz coordinate output to lat/lon coordinates.
-Visualization
--------------
-`scatter` : Plots output onto a global (or regional) cartopy map.
-"""
 import numpy as np
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
@@ -31,36 +15,34 @@ def scatter(
     projection=ccrs.Robinson(),
     colorbar=True,
 ):
-    """
-    Create a cartopy map of MPAS output on the native unstructured grid, using
-    matplotlib's scatter function.
-    Input
-    -----
-    lon : xarray DataArray
-        1D da of longitudes (should be 'lonCell' in MPAS output)
-    lat : xarray DataArray
-        1D da of latitudes (should be 'latCell' in MPAS output)
-    data : xarray DataArray
-        1D da of output data
-    cmap : str
-        Native matplotlib colormap or cmocean colormap
-    vmin : double
-        Minimum color bound
-    vmax : double
-        Maximum color bound
-    stride : int
-        Stride in plotting data to avoid plotting too much
-    projection : ccrs map projection
-        Map projection to use
-    colorbar : logical
-        Whether or not to add a colorbar to the figure. Generally want to set this
-        to off and do it manually if you need more advanced changes to it.
-    Examples
-    --------
-    from esm_analysis.mpas import scatter
-    import xarray as xr
-    ds = xr.open_dataset('some_BGC_output.nc')
-    scatter(ds['lonCell'], ds['latCell'], ds['FG_CO2'], "RdBu_r")
+    """Create map of MPAS output on the native unstructured grid.
+
+    .. note::
+      ``pcolormesh`` and ``contourf`` can't be used with the native output, since
+      it's on an unstructured grid. To visualize the unstructured grid in the most
+      straight forward fashion, it's best to use ParaView.
+
+    Args:
+        lon (xarray object): 1D da of longitudes (``lonCell``)
+        lat (xarray object): 1D da of latitudes (``latCell``)
+        data (xarray object): Data to plot
+        cmap (str): Colormap str.
+        vmin (float): Minimum color bound.
+        vmax (float): Maximum color bound.
+        stride (optional int):
+            Stride in plotting data to avoid plotting too much. Defaults to 5.
+        projection (cartopy map projection):
+            Map projection to use. Defaults to Robinson.
+        colorbar (optional bool):
+            Whether or not to add a colorbar to the figure. Generally want to set this
+            to off and do it manually if you need more advanced changes to it.
+
+    Examples:
+        >>> from esm_analysis.mpas import scatter
+        >>> import xarray as xr
+        >>> ds = xr.open_dataset('some_mpas_BGC_output.nc')
+        >>> scatter(ds.lonCell, ds.latCell, ds.FG_CO2, "RdBu_r",
+                    -5, 5)
     """
     f, ax = make_cartopy(projection=projection, grid_lines=False, frameon=False)
     lon = lon[0::stride]
