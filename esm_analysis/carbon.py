@@ -1,7 +1,11 @@
 import warnings
+
 import numpy as np
+import pandas as pd
 import xarray as xr
 from tqdm import tqdm
+
+import matplotlib.pyplot as plt
 
 from .stats import linear_regression, nanmean, rm_poly
 from .utils import check_xarray
@@ -134,7 +138,8 @@ def temp_decomp_takahashi(ds, time_dim='time', temperature='tos', pco2='spco2'):
     fac = 0.0432
     tos_mean = ds[temperature].mean(time_dim)
     tos_diff = ds[temperature] - tos_mean
-    thermal = (ds[pco2].mean(time_dim) * (np.exp(tos_diff * fac))).rename('thermal')
+    thermal = (ds[pco2].mean(time_dim) *
+               (np.exp(tos_diff * fac))).rename('thermal')
     non_thermal = (ds[pco2] * (np.exp(tos_diff * -fac))).rename('non_thermal')
     decomp = xr.merge([thermal, non_thermal])
     decomp.attrs[
@@ -399,3 +404,103 @@ def spco2_decomposition(ds_terms, detrend=True, order=1, deseasonalize=False):
 
     terms_in_pCO2_units = pco2_sensitivity.mean('time') * ds_terms_anomaly
     return terms_in_pCO2_units
+
+
+def calculate_compatible_emissions(global_co2_flux, co2atm_forcing):
+    """Calculate compatible emissions.
+
+    Args:
+        global_co2_flux (xr.object): global co2_flux in PgC/yr.
+        co2atm_forcing (xr.object): prescribed atm. CO2 forcing in ppm.
+
+    Returns:
+        xr.object: compatible emissions in PgC/yr.
+
+    References:
+    * Jones, Chris, Eddy Robertson, Vivek Arora, Pierre Friedlingstein, Elena
+        Shevliakova, Laurent Bopp, Victor Brovkin, et al. “Twenty-First-Century
+        Compatible CO2 Emissions and Airborne Fraction Simulated by CMIP5 Earth
+        System Models under Four Representative Concentration Pathways.”
+        Journal of Climate 26, no. 13 (February 1, 2013): 4398–4413.
+        https://doi.org/10/f44bbn.
+    """
+    compatible_emissions = co2atm_forcing.diff('time') * 2.12 - global_co2_flux
+    compatible_emissions.name = 'compatible_emissions'
+    return compatible_emissions
+
+
+def get_iam_emissions():
+    """Download IAM emissions from PIK website."""
+    ds = []
+    member = ['rcp26', 'rcp45', 'rcp85']
+    for r in member:
+        if r == 'rcp26':
+            r = 'rcp3pd'
+        r = r.upper()
+        # http://www.pik-potsdam.de/~mmalte/rcps/
+        link = f'http://www.pik-potsdam.de/~mmalte/rcps/data/{r}_EMISSIONS.xls'
+        # print(r,link)
+        e = pd.read_excel(
+            link, sheet_name=f'{r}_EMISSIONS', skiprows=35, header=2)
+        e = e.set_index(e.columns[0])
+        e.index.name = 'Year'
+        ds.append(e[['FossilCO2', 'OtherCO2']].to_xarray())
+    ds = xr.concat(ds, 'member')
+    ds = ds.sel(Year=slice(1850, 2100)).rename({'Year': 'time'})
+    ds['member'] = member
+    ds['IAM_emissions'] = ds['FossilCO2'] + ds['OtherCO2']
+    return ds['IAM_emissions']
+
+
+def plot_compatible_emissions(compatible_emissions, global_co2_flux, iam_emissions=None, ax=None):
+    """Plot combatible emissions plot.
+
+    References:
+    * Jones, Chris, Eddy Robertson, Vivek Arora, Pierre Friedlingstein, Elena
+        Shevliakova, Laurent Bopp, Victor Brovkin, et al. “Twenty-First-Century
+        Compatible CO2 Emissions and Airborne Fraction Simulated by CMIP5 Earth
+        System Models under Four Representative Concentration Pathways.”
+        Journal of Climate 26, no. 13 (February 1, 2013): 4398–4413.
+        https://doi.org/10/f44bbn. Fig. 5a
+    * IPCC AR5 Fig. 6.25
+    """
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10, 6))
+    # hist
+    alpha = .1
+    c = 'gray'
+    compatible_emissions.isel(member=0).sel(time=slice(None, 2005)).to_dataframe(
+    ).unstack()['compatible_emissions'].plot(ax=ax, legend=False, color=c, alpha=alpha)
+    compatible_emissions.isel(member=0).sel(time=slice(None, 2005)).mean(
+        'initialization').plot(ax=ax, color='w', lw=3)
+    compatible_emissions.isel(member=0).sel(time=slice(None, 2005)).mean(
+        'initialization').plot(ax=ax, color=c, lw=2)
+    # rcps
+    colors = ['royalblue', 'orange', 'red'][::-1]
+    for i, m in enumerate(global_co2_flux.member.values[::-1]):
+        c = colors[i]
+        compatible_emissions.sel(member=m).sel(time=slice(2005, None)).to_dataframe(
+        ).unstack()['compatible_emissions'].plot(ax=ax, legend=False, color=c, alpha=alpha)
+        compatible_emissions.sel(member=m).sel(time=slice(2005, None)).mean(
+            'initialization').plot(ax=ax, color='w', lw=3)
+        compatible_emissions.sel(member=m).sel(time=slice(2005, None)).mean(
+            'initialization').plot(ax=ax, color=c, lw=2)
+
+    if iam_emissions is not None:
+        ls = (0, (5, 5))
+        iam_emissions.isel(member=0).sel(time=slice(
+            None, 2005)).plot(ax=ax, color='white', lw=3)
+        iam_emissions.isel(member=0).sel(time=slice(None, 2005)).plot(
+            ax=ax, color='gray', lw=2, ls=ls)
+        for i, m in enumerate(global_co2_flux.member.values[::-1]):
+            c = colors[i]
+            iam_emissions.sel(member=m).sel(time=slice(
+                2005, None)).plot(ax=ax, color='white', lw=3)
+            iam_emissions.sel(member=m).sel(time=slice(
+                2005, None)).plot(ax=ax, color=c, lw=2, ls=ls)
+
+    # fig aestetics
+    ax.axhline(y=0, ls=':', c='gray')
+    ax.set_ylabel('Compatible emissions [PgC/yr]')
+    ax.set_xlabel('Time [year]')
+    ax.set_title('Compatible emissions')
