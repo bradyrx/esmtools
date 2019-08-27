@@ -437,9 +437,7 @@ def get_iam_emissions():
         if r == 'rcp26':
             r = 'rcp3pd'
         r = r.upper()
-        # http://www.pik-potsdam.de/~mmalte/rcps/
         link = f'http://www.pik-potsdam.de/~mmalte/rcps/data/{r}_EMISSIONS.xls'
-        # print(r,link)
         e = pd.read_excel(
             link, sheet_name=f'{r}_EMISSIONS', skiprows=35, header=2)
         e = e.set_index(e.columns[0])
