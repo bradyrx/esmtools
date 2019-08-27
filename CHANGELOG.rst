@@ -13,6 +13,7 @@ Features
 - ``filtering`` module renamed to ``spatial`` and ``find_indices`` made public. (:pr:`52`) `Riley X. Brady`_.
 - ``standardize`` function moved to stats. (:pr:`52`) `Riley X. Brady`_.
 - ``loadutils`` removed (:pr:`52`) `Riley X. Brady`_.
+- compatible emissions (:pr:`54`) `Aaron Spring`_
 
 Internals/Minor Fixes
 ---------------------
