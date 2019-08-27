@@ -138,8 +138,7 @@ def temp_decomp_takahashi(ds, time_dim='time', temperature='tos', pco2='spco2'):
     fac = 0.0432
     tos_mean = ds[temperature].mean(time_dim)
     tos_diff = ds[temperature] - tos_mean
-    thermal = (ds[pco2].mean(time_dim) *
-               (np.exp(tos_diff * fac))).rename('thermal')
+    thermal = (ds[pco2].mean(time_dim) * (np.exp(tos_diff * fac))).rename('thermal')
     non_thermal = (ds[pco2] * (np.exp(tos_diff * -fac))).rename('non_thermal')
     decomp = xr.merge([thermal, non_thermal])
     decomp.attrs[
@@ -430,7 +429,12 @@ def calculate_compatible_emissions(global_co2_flux, co2atm_forcing):
 
 
 def get_iam_emissions():
-    """Download IAM emissions from PIK website."""
+    """Download IAM emissions from PIK website.
+
+    Returns:
+        iam_emissions (xr.object): emissions from the IAMs in PgC/yr.
+
+    """
     ds = []
     member = ['rcp26', 'rcp45', 'rcp85']
     for r in member:
@@ -438,8 +442,7 @@ def get_iam_emissions():
             r = 'rcp3pd'
         r = r.upper()
         link = f'http://www.pik-potsdam.de/~mmalte/rcps/data/{r}_EMISSIONS.xls'
-        e = pd.read_excel(
-            link, sheet_name=f'{r}_EMISSIONS', skiprows=35, header=2)
+        e = pd.read_excel(link, sheet_name=f'{r}_EMISSIONS', skiprows=35, header=2)
         e = e.set_index(e.columns[0])
         e.index.name = 'Year'
         ds.append(e[['FossilCO2', 'OtherCO2']].to_xarray())
@@ -450,7 +453,23 @@ def get_iam_emissions():
     return ds['IAM_emissions']
 
 
-def plot_compatible_emissions(compatible_emissions, global_co2_flux, iam_emissions=None, ax=None):
+def plot_compatible_emissions(
+    compatible_emissions, global_co2_flux, iam_emissions=None, ax=None
+):
+    """Plot combatible emissions.
+
+    Args:
+        compatible_emissions (xr.object): compatible_emissions in PgC/yr from
+            `calculate_compatible_emissions`.
+        global_co2_flux (xr.object): Global CO2 flux in PgC/yr.
+        iam_emissions (xr.object): (optional) Emissions from the IAMs in PgC/yr.
+            Defaults to None.
+        ax (plt.ax): (optional) matplotlib axis to plot onto. Defaults to None.
+
+    Returns:
+        ax (plt.ax): matplotlib axis.
+
+    """
     """Plot combatible emissions plot.
 
     References:
@@ -465,40 +484,55 @@ def plot_compatible_emissions(compatible_emissions, global_co2_flux, iam_emissio
     if ax is None:
         fig, ax = plt.subplots(figsize=(10, 6))
     # hist
-    alpha = .1
+    alpha = 0.1
     c = 'gray'
-    compatible_emissions.isel(member=0).sel(time=slice(None, 2005)).to_dataframe(
-    ).unstack()['compatible_emissions'].plot(ax=ax, legend=False, color=c, alpha=alpha)
+    compatible_emissions.isel(member=0).sel(
+        time=slice(None, 2005)
+    ).to_dataframe().unstack()['compatible_emissions'].plot(
+        ax=ax, legend=False, color=c, alpha=alpha
+    )
     compatible_emissions.isel(member=0).sel(time=slice(None, 2005)).mean(
-        'initialization').plot(ax=ax, color='w', lw=3)
+        'initialization'
+    ).plot(ax=ax, color='w', lw=3)
     compatible_emissions.isel(member=0).sel(time=slice(None, 2005)).mean(
-        'initialization').plot(ax=ax, color=c, lw=2)
+        'initialization'
+    ).plot(ax=ax, color=c, lw=2)
     # rcps
     colors = ['royalblue', 'orange', 'red'][::-1]
     for i, m in enumerate(global_co2_flux.member.values[::-1]):
         c = colors[i]
-        compatible_emissions.sel(member=m).sel(time=slice(2005, None)).to_dataframe(
-        ).unstack()['compatible_emissions'].plot(ax=ax, legend=False, color=c, alpha=alpha)
+        compatible_emissions.sel(member=m).sel(
+            time=slice(2005, None)
+        ).to_dataframe().unstack()['compatible_emissions'].plot(
+            ax=ax, legend=False, color=c, alpha=alpha
+        )
         compatible_emissions.sel(member=m).sel(time=slice(2005, None)).mean(
-            'initialization').plot(ax=ax, color='w', lw=3)
+            'initialization'
+        ).plot(ax=ax, color='w', lw=3)
         compatible_emissions.sel(member=m).sel(time=slice(2005, None)).mean(
-            'initialization').plot(ax=ax, color=c, lw=2)
+            'initialization'
+        ).plot(ax=ax, color=c, lw=2)
 
     if iam_emissions is not None:
         ls = (0, (5, 5))
-        iam_emissions.isel(member=0).sel(time=slice(
-            None, 2005)).plot(ax=ax, color='white', lw=3)
         iam_emissions.isel(member=0).sel(time=slice(None, 2005)).plot(
-            ax=ax, color='gray', lw=2, ls=ls)
+            ax=ax, color='white', lw=3
+        )
+        iam_emissions.isel(member=0).sel(time=slice(None, 2005)).plot(
+            ax=ax, color='gray', lw=2, ls=ls
+        )
         for i, m in enumerate(global_co2_flux.member.values[::-1]):
             c = colors[i]
-            iam_emissions.sel(member=m).sel(time=slice(
-                2005, None)).plot(ax=ax, color='white', lw=3)
-            iam_emissions.sel(member=m).sel(time=slice(
-                2005, None)).plot(ax=ax, color=c, lw=2, ls=ls)
+            iam_emissions.sel(member=m).sel(time=slice(2005, None)).plot(
+                ax=ax, color='white', lw=3
+            )
+            iam_emissions.sel(member=m).sel(time=slice(2005, None)).plot(
+                ax=ax, color=c, lw=2, ls=ls
+            )
 
     # fig aestetics
     ax.axhline(y=0, ls=':', c='gray')
     ax.set_ylabel('Compatible emissions [PgC/yr]')
     ax.set_xlabel('Time [year]')
     ax.set_title('Compatible emissions')
+    return ax
