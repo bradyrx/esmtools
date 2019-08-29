@@ -370,19 +370,13 @@ def linear_regression(da, dim='time', interpolate_na=False, compact=True, psig=N
 
 
 @check_xarray(0)
-def corr(x, y, dim='time', lag=0, return_p=False):
+def corr(x, y, dim='time', lead=0, return_p=False):
     """
     Computes the Pearson product-momment coefficient of linear correlation.
-    (See autocorr for autocorrelation/lag for one time series)
+
     This version calculates the effective degrees of freedom, accounting
     for autocorrelation within each time series that could fluff the
     significance of the correlation.
-
-    NOTE: If lag is not zero, x predicts y. In other words, the time series for
-    x is stationary, and y slides to the left. Or, y stays in place and x
-    slides to the right.
-    This function is written to accept a dataset of arbitrary number of
-    dimensions (e.g., lat, lon, depth).
 
     Parameters
     ----------
@@ -390,8 +384,9 @@ def corr(x, y, dim='time', lag=0, return_p=False):
         time series being correlated (can be multi-dimensional)
     dim : str (default 'time')
         Correlation dimension
-    lag : int (default 0)
-        Lag to apply to correlation, with x predicting y.
+    lead : int (default 0)
+        If lead > 0, x leads y by that many time steps.
+        If lead < 0, x lags y by that many time steps.
     return_p : boolean (default False)
         If true, return both r and p
 
@@ -412,7 +407,16 @@ def corr(x, y, dim='time', lag=0, return_p=False):
     fluxes in Eastern Boundary Upwelling Systems, Biogeosciences Discuss.,
     https://doi.org/10.5194/bg-2018-415, in review, 2018.
     """
-    return st.corr(x, y, dim=dim, lag=lag, return_p=return_p)
+    # Broadcasts a time series to the same coordinates/size as the grid. If they
+    # are both grids, this function does nothing and isn't expensive.
+    x, y = xr.broadcast(x, y)
+    
+    # Negative lead should have y lead x.
+    if lead < 0:
+        lead = np.abs(lead)
+        return st.corr(y, x, dim=dim, lag=lead, return_p=return_p)
+    else:
+        return st.corr(x, y, dim=dim, lag=lead, return_p=return_p)
 
 
 @check_xarray(0)
