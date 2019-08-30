@@ -14,7 +14,7 @@ Features
 - ``standardize`` function moved to stats. (:pr:`52`) `Riley X. Brady`_.
 - ``loadutils`` removed (:pr:`52`) `Riley X. Brady`_.
 - ``calculate_compatible_emissions`` following Jones et al. 2013  (:pr:`54`) `Aaron Spring`_
-- Update ``corr`` to broadcast ``x`` and ``y`` such that a single time series can be correlated across a grid. (:pr: ###) `Riley X. Brady`_.
+- Update ``corr`` to broadcast ``x`` and ``y`` such that a single time series can be correlated across a grid. (:pr:`58`) `Riley X. Brady`_.
 
 Internals/Minor Fixes
 ---------------------
