@@ -410,7 +410,7 @@ def corr(x, y, dim='time', lead=0, return_p=False):
     # Broadcasts a time series to the same coordinates/size as the grid. If they
     # are both grids, this function does nothing and isn't expensive.
     x, y = xr.broadcast(x, y)
-    
+
     # Negative lead should have y lead x.
     if lead < 0:
         lead = np.abs(lead)
