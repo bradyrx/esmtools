@@ -1,9 +1,6 @@
 from .exceptions import CoordinateError
 from .utils import check_xarray
 
-# NOTE: Check weird POP grid that Eleanor was struggling with. What happens there?
-# NOTE: Check how Andrew implemented accessor in xskillscore. Could do that here.
-
 
 @check_xarray(0)
 def _convert_lon_to_180to180(ds, coord='lon'):
@@ -55,14 +52,15 @@ def _convert_lon_to_0to360(ds, coord='lon'):
     return ds
 
 
+# NOTE: Check weird POP grid that goes up to 240 or something. How do we deal with
+# that?
 @check_xarray(0)
 def convert_lon(ds, coord='lon'):
     """Converts longitude grid from -180to180 to 0to360 and vice versa.
 
     .. note::
         Longitudes are not sorted after conversion (i.e., spanning -180 to 180 or
-        0 to 360 from index 0, ..., N), as it is expected that the user will plot
-        via ``cartopy``, ``basemap``, or ``xarray`` plot functions.
+        0 to 360 from index 0, ..., N) if it is 2D.,
 
     Args:
         ds (xarray object): Dataset to be converted.
@@ -84,6 +82,8 @@ def convert_lon(ds, coord='lon'):
        >>> data = xr.DataArray(np.linspace(-180, 180, 360), dims=['lon'],)
        >>> data, _ = xr.broadcast(data, empty)
        >>> data = data.T
+       >>> data['lon'] = lon
+       >>> data['lat'] = lat
        >>> converted = convert_lon(data, coord='lon')
     """
     if coord not in ds.coords:
@@ -92,4 +92,8 @@ def convert_lon(ds, coord='lon'):
         ds = _convert_lon_to_0to360(ds, coord=coord)
     else:
         ds = _convert_lon_to_180to180(ds, coord=coord)
+    # If 1-D, need to sort by lon (rearrange it) to allow it to be plotted with
+    # xarray.
+    if len(ds[coord].dims) == 1:
+        ds = ds.sortby(coord)
     return ds

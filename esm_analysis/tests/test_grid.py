@@ -82,7 +82,7 @@ def test_1D_0to360_to_180to180(da_1D):
     # But also accounts for coarser grids.
     assert (lonmin >= -180) & (lonmin <= 0) & (lonmax <= 180) & (lonmax >= 0)
     # Checks that data isn't changed.
-    assert np.allclose(data, converted)
+    assert np.allclose(data.mean(), converted.mean())
 
 
 def test_1D_180to180_to_0to360(da_1D):
@@ -94,7 +94,7 @@ def test_1D_180to180_to_0to360(da_1D):
     # Checks that it was appropriately converted, not going below 0 or above 360.
     assert (lonmin >= 0) & (lonmax <= 360)
     # Checks that data isn't changed.
-    assert np.allclose(data, converted)
+    assert np.allclose(data.mean(), converted.mean())
 
 
 def test_2D_0to360_to_180to180(da_2D):
@@ -107,7 +107,7 @@ def test_2D_0to360_to_180to180(da_2D):
     # But also accounts for coarser grids.
     assert (lonmin >= -180) & (lonmin <= 0) & (lonmax <= 180) & (lonmax >= 0)
     # Checks that data isn't changed.
-    assert np.allclose(data, converted)
+    assert np.allclose(data.mean(), converted.mean())
 
 
 def test_2D_180to180_to_0to360(da_2D):
@@ -119,7 +119,7 @@ def test_2D_180to180_to_0to360(da_2D):
     # Checks that it was appropriately converted, not going below 0 or above 360.
     assert (lonmin >= 0) & (lonmax <= 360)
     # Checks that data isn't changed.
-    assert np.allclose(data, converted)
+    assert np.allclose(data.mean(), converted.mean())
 
 
 def test_coordinate_error(da_1D):
