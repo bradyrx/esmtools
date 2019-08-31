@@ -2,7 +2,7 @@
 Changelog History
 =================
 
-esm_analysis v1.0.3 (2019-08-##)
+esm_analysis v1.1 (2019-09-##)
 ================================
 
 Features
@@ -15,6 +15,7 @@ Features
 - ``loadutils`` removed (:pr:`52`) `Riley X. Brady`_.
 - ``calculate_compatible_emissions`` following Jones et al. 2013  (:pr:`54`) `Aaron Spring`_
 - Update ``corr`` to broadcast ``x`` and ``y`` such that a single time series can be correlated across a grid. (:pr:`58`) `Riley X. Brady`_.
+- ``convert_lon_to_180to180`` and ``convert_lon_to_0to360`` now wrapped with ``convert_lon`` and now supports 2D lat/lon grids. (:pr:`###`) `Riley X. Brady`_.
 
 Internals/Minor Fixes
 ---------------------

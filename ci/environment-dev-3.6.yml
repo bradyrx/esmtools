@@ -22,6 +22,7 @@ dependencies:
   - nbsphinx
   - coveralls
   - importlib_metadata
+  - jupyterhub
   - pip
   - pip:
       - sphinxcontrib-napoleon
