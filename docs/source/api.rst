@@ -32,6 +32,7 @@ Functions related to climate model grids.
 .. automodsumm:: esm_analysis.grid
     :functions-only:
     :toctree: api
+    :skip: check_xarray
 
 MPAS Model Tools
 ~~~~~~~~~~~~~~~~

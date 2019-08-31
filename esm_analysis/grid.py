@@ -1,8 +1,8 @@
 from .exceptions import CoordinateError
 from .utils import check_xarray
 
-# NOTE: Add testing
-# NOTE: Compile docs for new API. Delete old functions.
+# NOTE: Check weird POP grid that Eleanor was struggling with. What happens there?
+# NOTE: Check how Andrew implemented accessor in xskillscore. Could do that here.
 
 
 @check_xarray(0)
@@ -73,11 +73,21 @@ def convert_lon(ds, coord='lon'):
 
     Raises:
         CoordinateError: If ``coord`` does not exist in the dataset.
+
+    Examples:
+       >>> import numpy as np
+       >>> import xarray as xr
+       >>> from esm_analysis.grid import convert_lon
+       >>> lat = np.linspace(-89.5, 89.5, 180)
+       >>> lon = np.linspace(0.5, 359.5, 360)
+       >>> empty = xr.DataArray(np.empty((180, 360)), dims=['lat', 'lon'])
+       >>> data = xr.DataArray(np.linspace(-180, 180, 360), dims=['lon'],)
+       >>> data, _ = xr.broadcast(data, empty)
+       >>> data = data.T
+       >>> converted = convert_lon(data, coord='lon')
     """
     if coord not in ds.coords:
         raise CoordinateError(f'{coord} not found in coordinates.')
-    # NOTE: Check weird POP grid that Eleanor sent. Could have a min less than 0
-    # and max greater than 180. Could just throw error then.
     if ds[coord].min() < 0:
         ds = _convert_lon_to_0to360(ds, coord=coord)
     else:
