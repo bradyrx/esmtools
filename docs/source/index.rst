@@ -3,13 +3,14 @@
 **Getting Started**
 
 * :doc:`examples`
-
+* :doc:`accessors`
 .. toctree::
     :maxdepth: 1
     :hidden:
     :caption: Getting Started
 
     examples
+    accessors
 
 **Help & Reference**
 

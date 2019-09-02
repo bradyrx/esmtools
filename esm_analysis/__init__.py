@@ -1,5 +1,6 @@
 from pkg_resources import DistributionNotFound, get_distribution
 
+from .accessor import GridAccessor
 from . import (
     carbon,
     composite,
