@@ -1,15 +1,16 @@
 from pkg_resources import DistributionNotFound, get_distribution
 
+from .accessor import GridAccessor
 from . import (
     carbon,
     composite,
     conversions,
-    filtering,
+    spatial,
     grid,
-    loadutils,
     mpas,
     physics,
     stats,
+    temporal,
     vis,
 )
 from .versioning.print_versions import show_versions

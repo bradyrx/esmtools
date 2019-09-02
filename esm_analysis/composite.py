@@ -1,11 +1,7 @@
 from .utils import check_xarray
-from .stats import ttest_ind_from_stats
+from .stats import ttest_ind_from_stats, standardize
 import warnings
 import xarray as xr
-
-
-def standardize(ds, dim='time'):
-    return (ds - ds.mean(dim)) / ds.std(dim)
 
 
 def _create_composites(anomaly_field, index, threshold=1, dim='time'):
@@ -25,8 +21,9 @@ def composite_analysis(
     """Create composite maps based on some variable's response to a climate
     index.
 
-    Make sure that the field and index are detrended prior to using this
-    function if needed.
+    .. note::
+        Make sure that the field and index are detrended prior to using this
+        function if needed.
 
     Args:
         field (xr.object): Variable to create composites for. Contains dims

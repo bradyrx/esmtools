@@ -1,6 +1,6 @@
 extract_region
 ==============
 
-.. currentmodule:: esm_analysis.filtering
+.. currentmodule:: esm_analysis.spatial
 
 .. autofunction:: extract_region
