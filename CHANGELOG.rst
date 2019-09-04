@@ -19,7 +19,7 @@ Features
 
 Internals/Minor Fixes
 ---------------------
-- Changed name back to ``esmtools`` now that the readthedocs domain was cleared up. Thanks Andrew Walter! (:pr:`###`) `Riley X. Brady`_.
+- Changed name back to ``esmtools`` now that the readthedocs domain was cleared up. Thanks Andrew Walter! (:pr:`61`) `Riley X. Brady`_.
 - ``esmtools`` documentation created with docstring updates for all functions.
 
 esm_analysis v1.0.2 (2019-07-27)
