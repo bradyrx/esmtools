@@ -2,7 +2,7 @@
 Changelog History
 =================
 
-esm_analysis v1.1 (2019-09-##)
+esmtools v1.1 (2019-09-04)
 ================================
 
 Features
@@ -19,7 +19,8 @@ Features
 
 Internals/Minor Fixes
 ---------------------
-- ``esm_analysis`` documentation created with docstring updates for all functions.
+- Changed name back to ``esmtools`` now that the readthedocs domain was cleared up. Thanks Andrew Walter! (:pr:`###`) `Riley X. Brady`_.
+- ``esmtools`` documentation created with docstring updates for all functions.
 
 esm_analysis v1.0.2 (2019-07-27)
 ================================

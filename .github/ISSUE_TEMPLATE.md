@@ -15,9 +15,9 @@ This should explain **why** the current behaviour is a problem and why the expec
 
 #### Expected Output
 
-#### Output of `esm_analysis.show_versions()`
+#### Output of `esmtools.show_versions()`
 
 <details>
-# Paste the output here esm_analysis.show_versions() here
+# Paste the output here esmtools.show_versions() here
 
 </details>
