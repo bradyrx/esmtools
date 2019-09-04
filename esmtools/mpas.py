@@ -60,7 +60,7 @@ def scatter(
         vmax=vmax,
     )
     if colorbar:
-        plt.colorbar(p, orientation='horizontal', pad=0.05, fraction=0.08)
+        plt.colorbar(p, orientation="horizontal", pad=0.05, fraction=0.08)
 
 
 def xyz_to_lat_lon(x, y, z, radians=False):
@@ -106,8 +106,8 @@ def convert_rad_to_deg(ds):
 
     Just set up for LIGHT for now.
     """
-    ds['latParticle'] = ds['latParticle'] * (180 / np.pi)
-    ds['lonParticle'] = ds['lonParticle'] * (180 / np.pi)
+    ds["latParticle"] = ds["latParticle"] * (180 / np.pi)
+    ds["lonParticle"] = ds["lonParticle"] * (180 / np.pi)
     return ds
 
 
@@ -116,6 +116,6 @@ def convert_deg_to_rad(ds):
 
     Just set up for LIGHT for now.
     """
-    ds['latParticle'] = ds['latParticle'] * (np.pi / 180)
-    ds['lonParticle'] = ds['lonParticle'] * (np.pi / 180)
+    ds["latParticle"] = ds["latParticle"] * (np.pi / 180)
+    ds["lonParticle"] = ds["lonParticle"] * (np.pi / 180)
     return ds

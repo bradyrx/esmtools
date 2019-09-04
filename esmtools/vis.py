@@ -89,8 +89,8 @@ def discrete_cmap(levels, base_cmap):
 
 def make_cartopy(
     projection=ccrs.Robinson(),
-    land_color='k',
-    grid_color='#D3D3D3',
+    land_color="k",
+    grid_color="#D3D3D3",
     grid_lines=True,
     figsize=(12, 8),
     frameon=True,
@@ -132,7 +132,7 @@ def make_cartopy(
         gl = None  # still need to return object
     ax.add_feature(cfeature.LAND, facecolor=land_color)
     if not frameon:
-        ax.outline_patch.set_edgecolor('white')
+        ax.outline_patch.set_edgecolor("white")
     return fig, ax, gl
 
 
@@ -167,7 +167,7 @@ def add_box(ax, x0, x1, y0, y1, **kwargs):
     ax.add_geometries([ring], ccrs.PlateCarree(), **kwargs)
 
 
-def savefig(filename, directory=None, extension='.png', transparent=True, dpi=300):
+def savefig(filename, directory=None, extension=".png", transparent=True, dpi=300):
     """
     Save a publication-ready figure.
 
@@ -193,7 +193,7 @@ def savefig(filename, directory=None, extension='.png', transparent=True, dpi=30
     if directory is not None:
         plt.savefig(
             directory + filename + extension,
-            bbox_inches='tight',
+            bbox_inches="tight",
             pad_inches=1,
             transparent=transparent,
             dpi=dpi,
@@ -201,7 +201,7 @@ def savefig(filename, directory=None, extension='.png', transparent=True, dpi=30
     else:
         plt.savefig(
             filename + extension,
-            bbox_inches='tight',
+            bbox_inches="tight",
             pad_inches=1,
             transparent=transparent,
             dpi=dpi,
@@ -227,8 +227,8 @@ def meshgrid(x, y, d):
         Original structure with appended gridded lat/lon coordinates.
     """
     (xx, yy) = np.meshgrid(x, y)
-    d.coords['gridlon'] = (('lat', 'lon'), xx)
-    d.coords['gridlat'] = (('lat', 'lon'), yy)
+    d.coords["gridlon"] = (("lat", "lon"), xx)
+    d.coords["gridlat"] = (("lat", "lon"), yy)
     return d
 
 
@@ -246,7 +246,7 @@ def outer_legend(fontsize=12):
 
 
 def quick_pcolor(
-    da, lon='lon', lat='lat', cyclic=True, add_colorbar=True, cartopy={}, pcolor={}
+    da, lon="lon", lat="lat", cyclic=True, add_colorbar=True, cartopy={}, pcolor={}
 ):
     """
     Plots a nice looking pcolormesh cartopy map of an xarray DataArray.
@@ -289,7 +289,7 @@ def quick_pcolor(
     f, ax, gl = make_cartopy(**cartopy)
     p = plt.pcolormesh(lon, lat, data, transform=ccrs.PlateCarree(), **pcolor)
     if add_colorbar:
-        cb = plt.colorbar(p, orientation='horizontal', pad=0.05, fraction=0.05)
+        cb = plt.colorbar(p, orientation="horizontal", pad=0.05, fraction=0.05)
     return p, ax, cb, gl
 
 

@@ -6,44 +6,44 @@ import xarray as xr
 
 # This supports all calendars used in netCDF.
 dpm = {
-    'noleap': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    '365_day': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    'standard': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    'gregorian': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    'proleptic_gregorian': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    'all_leap': [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    '366_day': [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    '360_day': [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
-    'julian': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    "noleap": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    "365_day": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    "standard": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    "gregorian": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    "proleptic_gregorian": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    "all_leap": [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    "366_day": [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
+    "360_day": [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
+    "julian": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
 }
 # Converts from `cftime` class name to netCDF convention for calendar
 cftime_to_netcdf = {
-    'DatetimeJulian': 'julian',
-    'DatetimeProlepticGregorian': 'proleptic_gregorian',
-    'DatetimeNoLeap': 'noleap',
-    'DatetimeAllLeap': 'all_leap',
-    'DatetimeGregorian': 'gregorian',
+    "DatetimeJulian": "julian",
+    "DatetimeProlepticGregorian": "proleptic_gregorian",
+    "DatetimeNoLeap": "noleap",
+    "DatetimeAllLeap": "all_leap",
+    "DatetimeGregorian": "gregorian",
 }
 CALENDARS = [k for k in dpm]
-resolutions = {'annual': 'time.year'}
+resolutions = {"annual": "time.year"}
 RESOLUTIONS = [k for k in resolutions]
 
 
-def _leap_year(year, calendar='standard'):
+def _leap_year(year, calendar="standard"):
     """Determine if year is a leap year"""
     leap = False
-    if (calendar in ['standard', 'gregorian', 'proleptic_gregorian', 'julian']) and (
+    if (calendar in ["standard", "gregorian", "proleptic_gregorian", "julian"]) and (
         year % 4 == 0
     ):
         leap = True
         if (
-            (calendar == 'proleptic_gregorian')
+            (calendar == "proleptic_gregorian")
             and (year % 100 == 0)
             and (year % 400 != 0)
         ):
             leap = False
         elif (
-            (calendar in ['standard', 'gregorian'])
+            (calendar in ["standard", "gregorian"])
             and (year % 100 == 0)
             and (year % 400 != 0)
             and (year < 1583)
@@ -52,7 +52,7 @@ def _leap_year(year, calendar='standard'):
     return leap
 
 
-def _get_dpm(time, calendar='standard'):
+def _get_dpm(time, calendar="standard"):
     """
     return a array of days per month corresponding to the months provided in `months`
     """
@@ -67,7 +67,7 @@ def _get_dpm(time, calendar='standard'):
     return month_length
 
 
-def _retrieve_calendar(ds, dim='time'):
+def _retrieve_calendar(ds, dim="time"):
     """Attempt to pull calendar type automatically using cftime objects.
 
     .. note::
@@ -84,10 +84,10 @@ def _retrieve_calendar(ds, dim='time'):
         # If this is a `cftime` object, infer what type of calendar it is.
         return cftime_to_netcdf[var_type]
     else:
-        raise ValueError(f'Please submit a calendar from {CALENDARS}')
+        raise ValueError(f"Please submit a calendar from {CALENDARS}")
 
 
-def _weighted_resample(ds, calendar=None, dim='time', resample_resolution=None):
+def _weighted_resample(ds, calendar=None, dim="time", resample_resolution=None):
     """Generalized function for time-weighted resampling.
 
     Args:
@@ -105,12 +105,12 @@ def _weighted_resample(ds, calendar=None, dim='time', resample_resolution=None):
         calendar = _retrieve_calendar(ds, dim=dim)
 
     if resample_resolution not in RESOLUTIONS:
-        raise ValueError(f'Please submit a temporal resolution from {RESOLUTIONS}')
+        raise ValueError(f"Please submit a temporal resolution from {RESOLUTIONS}")
 
     time_length = xr.DataArray(
         _get_dpm(ds.time.to_index(), calendar=calendar),
         coords=[ds.time],
-        name='time_length',
+        name="time_length",
     )
 
     time_res = resolutions[resample_resolution]
@@ -126,7 +126,7 @@ def _weighted_resample(ds, calendar=None, dim='time', resample_resolution=None):
     return ds_weighted
 
 
-def to_annual(ds, calendar=None, how='mean', dim='time'):
+def to_annual(ds, calendar=None, how="mean", dim="time"):
     """Resample sub-annual temporal resolution to annual resolution with weighting.
 
     .. note::
@@ -157,11 +157,11 @@ def to_annual(ds, calendar=None, how='mean', dim='time'):
     Returns:
         ds_weighted (xarray object): Dataset or DataArray resampled to annual resolution
     """
-    if how != 'mean':
+    if how != "mean":
         raise NotImplementedError(
-            'Only annual-weighted averaging is currently'
+            "Only annual-weighted averaging is currently"
             + "supported. Please change `how` keyword to 'mean'"
         )
     return _weighted_resample(
-        ds, calendar=calendar, dim=dim, resample_resolution='annual'
+        ds, calendar=calendar, dim=dim, resample_resolution="annual"
     )

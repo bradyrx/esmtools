@@ -44,7 +44,7 @@ def find_indices(xgrid, ygrid, xpoint, ypoint):
 
 
 @check_xarray(0)
-def extract_region(ds, xgrid, ygrid, coords, lat_dim='lat', lon_dim='lon'):
+def extract_region(ds, xgrid, ygrid, coords, lat_dim="lat", lon_dim="lon"):
     """Extract a subset of some larger spatial data.
 
     Args:
@@ -60,7 +60,7 @@ def extract_region(ds, xgrid, ygrid, coords, lat_dim='lat', lon_dim='lon'):
         subset_data (xarray object): Data subset to domain of interest.
 
     Examples:
-        >>> import esmtools as et 
+        >>> import esmtools as et
         >>> import numpy as np
         >>> import xarray as xr
         >>> x = np.linspace(0, 360, 37)
