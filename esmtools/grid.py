@@ -75,7 +75,7 @@ def convert_lon(ds, coord='lon'):
     Examples:
        >>> import numpy as np
        >>> import xarray as xr
-       >>> from esm_analysis.grid import convert_lon
+       >>> from esmtools.grid import convert_lon
        >>> lat = np.linspace(-89.5, 89.5, 180)
        >>> lon = np.linspace(0.5, 359.5, 360)
        >>> empty = xr.DataArray(np.empty((180, 360)), dims=['lat', 'lon'])

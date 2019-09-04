@@ -22,14 +22,14 @@ def find_indices(xgrid, ygrid, xpoint, ypoint):
             seeking.
 
     Examples:
-        >>> import esm_analysis as ea
+        >>> import esmtools as et
         >>> import numpy as np
         >>> x = np.linspace(0, 360, 37)
         >>> y = np.linspace(-90, 90, 19)
         >>> xx, yy = np.meshgrid(x, y)
         >>> xp = 20
         >>> yp = -20
-        >>> i, j = ea.spatial.find_indices(xx, yy, xp, yp)
+        >>> i, j = et.spatial.find_indices(xx, yy, xp, yp)
         >>> print(xx[i, j])
         20.0
         >>> print(yy[i, j])
@@ -60,7 +60,7 @@ def extract_region(ds, xgrid, ygrid, coords, lat_dim='lat', lon_dim='lon'):
         subset_data (xarray object): Data subset to domain of interest.
 
     Examples:
-        >>> import esm_analysis as ea
+        >>> import esmtools as et 
         >>> import numpy as np
         >>> import xarray as xr
         >>> x = np.linspace(0, 360, 37)
@@ -70,7 +70,7 @@ def extract_region(ds, xgrid, ygrid, coords, lat_dim='lat', lon_dim='lon'):
         >>> ds['latitude'] = (('lat', 'lon'), yy)
         >>> ds['longitude'] = (('lat', 'lon'), xx)
         >>> coords = [0, 30, -20, 20]
-        >>> subset = ea.spatial.extract_region(ds, xx, yy, coords)
+        >>> subset = et.spatial.extract_region(ds, xx, yy, coords)
     """
     # Extract the corners of the box.
     x0, x1, y0, y1 = coords

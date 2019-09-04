@@ -1,8 +1,8 @@
 import numpy as np
 import xarray as xr
 import pytest
-from esm_analysis.grid import convert_lon
-from esm_analysis.exceptions import CoordinateError
+from esmtools.grid import convert_lon
+from esmtools.exceptions import CoordinateError
 
 
 @pytest.fixture()

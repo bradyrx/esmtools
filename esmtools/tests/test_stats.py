@@ -1,6 +1,6 @@
 import numpy as np
 import xarray as xr
-from esm_analysis.stats import corr
+from esmtools.stats import corr
 import pytest
 
 

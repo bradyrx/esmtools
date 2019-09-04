@@ -29,7 +29,7 @@ def co2_sol(t, s):
         Weiss & Price (1980, Mar. Chem., 8, 347-359; Eq 13 with table 6 values)
 
     Examples:
-        >>> from esm_analysis.carbon import co2_sol
+        >>> from esmtools.carbon import co2_sol
         >>> import numpy as np
         >>> import xarray as xr
         >>> t = xr.DataArray(np.random.randint(10, 25, size=(100, 10, 10)),
@@ -75,7 +75,7 @@ def schmidt(t):
         Sarmiento and Gruber (2006). Ocean Biogeochemical Dynamics. Table 3.3.1
 
     Examples:
-        >>> from esm_analysis.carbon import schmidt
+        >>> from esmtools.carbon import schmidt
         >>> import numpy as np
         >>> import xarray as xr
         >>> t = xr.DataArray(np.random.randint(10, 25, size=(100, 10, 10)),
@@ -120,7 +120,7 @@ def temp_decomp_takahashi(ds, time_dim='time', temperature='tos', pco2='spco2'):
         https://doi.org/10/dmk4f2.
 
     Examples:
-        >>> from esm_analysis.carbon import temp_decomp_takahashi
+        >>> from esmtools.carbon import temp_decomp_takahashi
         >>> import numpy as np
         >>> import xarray as xr
         >>> t = xr.DataArray(np.random.randint(10, 25, size=(100, 10, 10)),
@@ -166,7 +166,7 @@ def potential_pco2(t_insitu, pco2_insitu):
         Princeton, NJ: Princeton Univ. Press, 2006., p.421, eq. (10:3:1)
 
     Examples:
-        >>> from esm_analysis.carbon import potential_pco2
+        >>> from esmtools.carbon import potential_pco2
         >>> import numpy as np
         >>> import xarray as xr
         >>> t_insitu = xr.DataArray(np.random.randint(0, 20, size=(100, 10, 30)),
@@ -204,7 +204,7 @@ def spco2_sensitivity(ds):
           Princeton, NJ: Princeton Univ. Press, 2006., p.421, eq. (10:3:1)
 
     Examples:
-        >>> from esm_analysis.carbon import spco2_sensitivity
+        >>> from esmtools.carbon import spco2_sensitivity
         >>> import numpy as np
         >>> import xarray as xr
         >>> tos = xr.DataArray(np.random.randint(15, 30, size=(100, 10, 10)),
