@@ -1,4 +1,4 @@
-name: esm-analysis-dev
+name: esmtools-dev
 channels:
   - conda-forge
 dependencies:
