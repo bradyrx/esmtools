@@ -17,8 +17,8 @@ before_install:
   - conda info -a
 
 install:
-  - conda env create -n esm-analysis-dev --file ci/environment-dev-3.6.yml
-  - source activate esm-analysis-dev
+  - conda env create -n esmtools-dev --file ci/environment-dev-3.6.yml
+  - source activate esmtools-dev
   - conda install pip
   - conda list
   - which conda
@@ -31,7 +31,7 @@ install:
   - pip install flake8
 
 script:
-  - coverage run --source esm_analysis -m py.test
+  - coverage run --source esmtools -m py.test
   - coverage report
   - pushd docs
   - make html
