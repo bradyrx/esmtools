@@ -1,5 +1,4 @@
-esmtools
-========
+.. image:: https://i.imgur.com/weZEU3X.png
 
 a toolbox for Earth System Model analysis
 
