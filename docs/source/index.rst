@@ -1,4 +1,33 @@
-.. include:: ../../README.rst
+
+esmtools: a toolbox for Earth system model analysis
+===================================================
+
+.. image:: https://travis-ci.org/bradyrx/esmtools.svg?branch=master
+    :target: https://travis-ci.org/bradyrx/esmtools
+
+.. image:: https://img.shields.io/pypi/v/esmtools.svg
+    :target: https://pypi.python.org/pypi/esmtools/
+
+.. image:: https://coveralls.io/repos/github/bradyrx/esmtools/badge.svg?branch=master
+    :target: https://coveralls.io/github/bradyrx/esmtools?branch=master
+
+.. image:: https://img.shields.io/readthedocs/esmtools/stable.svg?style=flat
+    :target: https://esmtools.readthedocs.io/en/stable/?badge=stable
+    :alt: Documentation Status
+
+.. image:: https://img.shields.io/github/license/bradyrx/esmtools.svg
+    :alt: license
+    :target: LICENSE.txt
+
+
+Installation
+============
+
+You can install the latest release of ``esmtools`` using ``pip``:
+
+.. code-block:: bash
+
+    pip install esmtools
 
 **Getting Started**
 
@@ -15,6 +44,10 @@
 **Help & Reference**
 
 * :doc:`api`
+* :doc:`contributing`
+* :doc:`changelog`
+* :doc:`release_procedure`
+* :doc:`contributors`
 * :doc:`additional_packages`
 .. toctree::
     :maxdepth: 1
@@ -22,4 +55,8 @@
     :caption: Help & Reference
 
     api
+    contributing
+    changelog
+    release_procedure
+    contributors
     additional_packages.ipynb

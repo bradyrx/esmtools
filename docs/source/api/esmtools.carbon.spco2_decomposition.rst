@@ -1,5 +1,5 @@
-spco2_decomposition
-===================
+esmtools.carbon.spco2\_decomposition
+====================================
 
 .. currentmodule:: esmtools.carbon
 

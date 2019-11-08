@@ -1,5 +1,5 @@
-outer_legend
-============
+esmtools.vis.outer\_legend
+==========================
 
 .. currentmodule:: esmtools.vis
 

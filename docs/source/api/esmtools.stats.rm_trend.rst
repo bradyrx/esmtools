@@ -1,5 +1,5 @@
-rm_trend
-========
+esmtools.stats.rm\_trend
+========================
 
 .. currentmodule:: esmtools.stats
 

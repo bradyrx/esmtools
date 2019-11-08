@@ -1,5 +1,5 @@
-calculate_compatible_emissions
-==============================
+esmtools.carbon.calculate\_compatible\_emissions
+================================================
 
 .. currentmodule:: esmtools.carbon
 

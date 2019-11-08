@@ -1,5 +1,5 @@
-savefig
-=======
+esmtools.vis.savefig
+====================
 
 .. currentmodule:: esmtools.vis
 

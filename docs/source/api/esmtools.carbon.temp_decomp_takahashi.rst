@@ -1,5 +1,5 @@
-temp_decomp_takahashi
-=====================
+esmtools.carbon.temp\_decomp\_takahashi
+=======================================
 
 .. currentmodule:: esmtools.carbon
 

@@ -1,5 +1,5 @@
-convert_rad_to_deg
-==================
+esmtools.mpas.convert\_rad\_to\_deg
+===================================
 
 .. currentmodule:: esmtools.mpas
 

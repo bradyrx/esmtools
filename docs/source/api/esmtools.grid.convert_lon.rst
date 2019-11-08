@@ -1,5 +1,5 @@
-convert_lon
-===========
+esmtools.grid.convert\_lon
+==========================
 
 .. currentmodule:: esmtools.grid
 

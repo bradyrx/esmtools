@@ -1,5 +1,5 @@
-nanmean
-=======
+esmtools.stats.nanmean
+======================
 
 .. currentmodule:: esmtools.stats
 

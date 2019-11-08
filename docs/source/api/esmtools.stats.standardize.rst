@@ -1,5 +1,5 @@
-standardize
-===========
+esmtools.stats.standardize
+==========================
 
 .. currentmodule:: esmtools.stats
 

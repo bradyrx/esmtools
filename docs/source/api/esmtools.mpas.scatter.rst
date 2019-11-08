@@ -1,5 +1,5 @@
-scatter
-=======
+esmtools.mpas.scatter
+=====================
 
 .. currentmodule:: esmtools.mpas
 

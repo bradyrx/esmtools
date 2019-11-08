@@ -1,5 +1,5 @@
-extract_region
-==============
+esmtools.spatial.extract\_region
+================================
 
 .. currentmodule:: esmtools.spatial
 

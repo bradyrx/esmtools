@@ -1,5 +1,5 @@
-spco2_sensitivity
-=================
+esmtools.carbon.spco2\_sensitivity
+==================================
 
 .. currentmodule:: esmtools.carbon
 

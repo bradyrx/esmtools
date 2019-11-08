@@ -1,5 +1,5 @@
-fit_poly
-========
+esmtools.stats.fit\_poly
+========================
 
 .. currentmodule:: esmtools.stats
 

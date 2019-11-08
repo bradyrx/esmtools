@@ -26,5 +26,4 @@ dependencies:
   - pip
   - pip:
       - sphinxcontrib-napoleon
-      - sphinx_automodapi
       - pre-commit

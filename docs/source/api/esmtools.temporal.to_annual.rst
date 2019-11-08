@@ -1,5 +1,5 @@
-to_annual
-=========
+esmtools.temporal.to\_annual
+============================
 
 .. currentmodule:: esmtools.temporal
 

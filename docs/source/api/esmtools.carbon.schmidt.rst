@@ -1,5 +1,5 @@
-schmidt
-=======
+esmtools.carbon.schmidt
+=======================
 
 .. currentmodule:: esmtools.carbon
 

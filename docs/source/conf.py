@@ -13,7 +13,7 @@ import datetime
 #
 import os
 import sys
-import esmtools 
+import esmtools
 
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -37,7 +37,6 @@ extensions = [
     'nbsphinx',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
-    'sphinx_automodapi.automodapi',
     'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinxcontrib.napoleon',
@@ -71,6 +70,8 @@ nbsphinx_timeout = 60
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
+html_logo = 'images/esmtools-logo.png'
+html_theme_options = {'logo_only': True, 'style_nav_header_background': '#fcfcfc'}
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3/', None),

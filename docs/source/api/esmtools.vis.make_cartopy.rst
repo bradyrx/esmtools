@@ -1,5 +1,5 @@
-make_cartopy
-============
+esmtools.vis.make\_cartopy
+==========================
 
 .. currentmodule:: esmtools.vis
 

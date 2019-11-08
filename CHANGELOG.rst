@@ -2,8 +2,24 @@
 Changelog History
 =================
 
+esmtools v1.1.1 (2019-11-##)
+============================
+
+Features
+--------
+
+Bug Fixes
+---------
+
+Internals/Minor Fixes
+---------------------
+
+Documentation
+-------------
+- Add more robust API docs page, information on how to contribute, CHANGELOG, etc. to ``sphinx``. (:pr:`67`) `Riley X. Brady`_.
+
 esmtools v1.1 (2019-09-04)
-================================
+==========================
 
 Features
 --------

@@ -1,5 +1,5 @@
-discrete_cmap
-=============
+esmtools.vis.discrete\_cmap
+===========================
 
 .. currentmodule:: esmtools.vis
 

@@ -1,5 +1,5 @@
-rm_poly
-=======
+esmtools.stats.rm\_poly
+=======================
 
 .. currentmodule:: esmtools.stats
 
