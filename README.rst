@@ -8,8 +8,8 @@ a toolbox for Earth System Model analysis
 .. image:: https://img.shields.io/pypi/v/esmtools.svg
     :target: https://pypi.python.org/pypi/esmtools/
 
-.. image:: https://coveralls.io/repos/github/bradyrx/readthedocs/badge.svg?branch=master
-    :target: https://coveralls.io/github/bradyrx/readthedocs?branch=master
+.. image:: https://coveralls.io/repos/github/bradyrx/esmtools/badge.svg?branch=master
+    :target: https://coveralls.io/github/bradyrx/esmtools?branch=master
 
 .. image:: https://img.shields.io/readthedocs/esmtools/stable.svg?style=flat
     :target: https://esmtools.readthedocs.io/en/stable/?badge=stable
@@ -26,4 +26,4 @@ You can install the latest release of ``esmtools`` using ``pip``:
 
 .. code-block:: bash
 
-    pip install esmtools 
+    pip install esmtools
