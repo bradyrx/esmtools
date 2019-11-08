@@ -1,5 +1,5 @@
-stress_to_speed
-===============
+esmtools.physics.stress\_to\_speed
+==================================
 
 .. currentmodule:: esmtools.physics
 

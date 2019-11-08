@@ -1,5 +1,5 @@
-autocorr
-========
+esmtools.stats.autocorr
+=======================
 
 .. currentmodule:: esmtools.stats
 

@@ -1,5 +1,5 @@
-find_indices
-============
+esmtools.spatial.find\_indices
+==============================
 
 .. currentmodule:: esmtools.spatial
 

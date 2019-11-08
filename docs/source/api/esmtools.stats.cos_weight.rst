@@ -1,5 +1,5 @@
-cos_weight
-==========
+esmtools.stats.cos\_weight
+==========================
 
 .. currentmodule:: esmtools.stats
 

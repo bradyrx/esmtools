@@ -1,5 +1,5 @@
-quick_pcolor
-============
+esmtools.vis.quick\_pcolor
+==========================
 
 .. currentmodule:: esmtools.vis
 

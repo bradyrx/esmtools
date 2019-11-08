@@ -1,5 +1,5 @@
-ACF
-===
+esmtools.stats.ACF
+==================
 
 .. currentmodule:: esmtools.stats
 

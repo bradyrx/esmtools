@@ -1,5 +1,5 @@
-co2_sol
-=======
+esmtools.carbon.co2\_sol
+========================
 
 .. currentmodule:: esmtools.carbon
 

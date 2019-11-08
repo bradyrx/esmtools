@@ -1,5 +1,5 @@
-area_weight
-===========
+esmtools.stats.area\_weight
+===========================
 
 .. currentmodule:: esmtools.stats
 

@@ -1,5 +1,5 @@
-plot_compatible_emissions
-=========================
+esmtools.carbon.plot\_compatible\_emissions
+===========================================
 
 .. currentmodule:: esmtools.carbon
 

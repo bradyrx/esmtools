@@ -1,5 +1,5 @@
-xyz_to_lat_lon
-==============
+esmtools.mpas.xyz\_to\_lat\_lon
+===============================
 
 .. currentmodule:: esmtools.mpas
 

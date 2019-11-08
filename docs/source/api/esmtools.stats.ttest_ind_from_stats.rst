@@ -1,5 +1,5 @@
-ttest_ind_from_stats
-====================
+esmtools.stats.ttest\_ind\_from\_stats
+======================================
 
 .. currentmodule:: esmtools.stats
 

@@ -11,8 +11,8 @@ a toolbox for Earth System Model analysis
 .. image:: https://coveralls.io/repos/github/bradyrx/readthedocs/badge.svg?branch=master
     :target: https://coveralls.io/github/bradyrx/readthedocs?branch=master
 
-.. image:: https://img.shields.io/readthedocs/readthedocs/latest.svg?style=flat
-    :target: https://readthedocs.readthedocs.io/en/latest/?badge=latest
+.. image:: https://img.shields.io/readthedocs/esmtools/stable.svg?style=flat
+    :target: https://esmtools.readthedocs.io/en/stable/?badge=stable
     :alt: Documentation Status
 
 .. image:: https://img.shields.io/github/license/bradyrx/esmtools.svg

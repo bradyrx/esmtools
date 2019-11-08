@@ -1,5 +1,5 @@
-get_iam_emissions
-=================
+esmtools.carbon.get\_iam\_emissions
+===================================
 
 .. currentmodule:: esmtools.carbon
 

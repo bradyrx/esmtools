@@ -1,5 +1,5 @@
-linear_regression
-=================
+esmtools.stats.linear\_regression
+=================================
 
 .. currentmodule:: esmtools.stats
 

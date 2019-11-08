@@ -1,5 +1,5 @@
-global_subplot_colorbar
-=======================
+esmtools.vis.global\_subplot\_colorbar
+======================================
 
 .. currentmodule:: esmtools.vis
 

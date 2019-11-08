@@ -1,5 +1,5 @@
-corr
-====
+esmtools.stats.corr
+===================
 
 .. currentmodule:: esmtools.stats
 

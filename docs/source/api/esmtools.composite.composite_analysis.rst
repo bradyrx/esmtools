@@ -1,5 +1,5 @@
-composite_analysis
-==================
+esmtools.composite.composite\_analysis
+======================================
 
 .. currentmodule:: esmtools.composite
 

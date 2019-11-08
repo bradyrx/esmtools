@@ -1,5 +1,5 @@
-meshgrid
-========
+esmtools.vis.meshgrid
+=====================
 
 .. currentmodule:: esmtools.vis
 

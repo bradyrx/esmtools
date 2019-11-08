@@ -1,5 +1,5 @@
-add_box
-=======
+esmtools.vis.add\_box
+=====================
 
 .. currentmodule:: esmtools.vis
 

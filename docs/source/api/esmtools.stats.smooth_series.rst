@@ -1,5 +1,5 @@
-smooth_series
-=============
+esmtools.stats.smooth\_series
+=============================
 
 .. currentmodule:: esmtools.stats
 
