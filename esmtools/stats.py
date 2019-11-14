@@ -4,8 +4,7 @@ import numpy.polynomial.polynomial as poly
 import xarray as xr
 from scipy.stats import linregress as lreg
 
-from .checks import has_dims
-from .utils import check_xarray, get_dims
+from .checks import check_xarray, get_dims, has_dims
 
 
 # ------------------

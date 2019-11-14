@@ -1,6 +1,6 @@
 import numpy as np
 
-from .utils import check_xarray
+from .checks import check_xarray
 
 
 def find_indices(xgrid, ygrid, xpoint, ypoint):

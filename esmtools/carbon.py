@@ -7,7 +7,7 @@ import xarray as xr
 from tqdm import tqdm
 
 from .stats import linear_regression, nanmean, rm_poly
-from .utils import check_xarray
+from .checks import check_xarray
 
 
 @check_xarray([0, 1])

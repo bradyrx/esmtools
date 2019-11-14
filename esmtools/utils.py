@@ -1,63 +1,79 @@
-from functools import wraps
-
+import cftime
+import numpy as np
 import xarray as xr
+from .constants import CFTIME_TO_NETCDF, CALENDARS, DAYS_PER_MONTH
 
 
-# https://stackoverflow.com/questions/10610824/
-# python-shortcut-for-writing-decorators-which-accept-arguments
-def dec_args_kwargs(wrapper):
-    return lambda *dec_args, **dec_kwargs: lambda func: wrapper(
-        func, *dec_args, **dec_kwargs
-    )
-
-
-# --------------------------------------#
-# CHECKS
-# --------------------------------------#
-@dec_args_kwargs
-# Lifted from climpred. This was originally written by Andrew Huang.
-def check_xarray(func, *dec_args):
+def convert_time(x, dim):
     """
-    Decorate a function to ensure the first arg being submitted is
-    either a Dataset or DataArray.
+    If the independent axis is a datetime object, this converts it to
+    days since 1990. This allows for fitting to irregularly spaced time steps.
+
+    Args:
     """
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            ds_da_locs = dec_args[0]
-            if not isinstance(ds_da_locs, list):
-                ds_da_locs = [ds_da_locs]
-
-            for loc in ds_da_locs:
-                if isinstance(loc, int):
-                    ds_da = args[loc]
-                elif isinstance(loc, str):
-                    ds_da = kwargs[loc]
-
-                is_ds_da = isinstance(ds_da, (xr.Dataset, xr.DataArray))
-                if not is_ds_da:
-                    typecheck = type(ds_da)
-                    raise IOError(
-                        f"""The input data is not an xarray DataArray or
-                        Dataset.
-
-                        Your input was of type: {typecheck}"""
-                    )
-        except IndexError:
-            pass
-        # this is outside of the try/except so that the traceback is relevant
-        # to the actual function call rather than showing a simple Exception
-        # (probably IndexError from trying to subselect an empty dec_args list)
-        return func(*args, **kwargs)
-
-    return wrapper
+    # THROW WARNING THAT UNITS ARE NOW per YEAR
+    if np.issubdtype(x, np.datetime64):
+        # Convert into numeric years since an arbitrary reference period.
+        x = ((x - np.datetime64('1990-01-01')) / np.timedelta64(1, 'D')) / 365.25
+    elif isinstance(x.indexes[dim], xr.CFTimeIndex):
+        calendar = get_calendar(x, dim)
+        x = cftime.date2num(x, 'days since 1990-12-31', calendar=calendar) / 365.25
+    return x
 
 
-def get_dims(da):
+def get_days_per_month(time, calendar='standard'):
     """
-    Simple function to retrieve dimensions from a given dataset/datarray.
-    Currently returns as a list, but can add keyword to select tuple or
-    list if desired for any reason.
+    return a array of days per month corresponding to the months provided in `months`
     """
-    return list(da.dims)
+    month_length = np.zeros(len(time), dtype=np.int)
+
+    cal_days = DAYS_PER_MONTH[calendar]
+
+    for i, (month, year) in enumerate(zip(time.month, time.year)):
+        month_length[i] = cal_days[month]
+        if leap_year(year, calendar=calendar):
+            month_length[i] += 1
+    return month_length
+
+
+def leap_year(year, calendar='standard'):
+    """Determine if year is a leap year"""
+    leap = False
+    if (calendar in ['standard', 'gregorian', 'proleptic_gregorian', 'julian']) and (
+        year % 4 == 0
+    ):
+        leap = True
+        if (
+            (calendar == 'proleptic_gregorian')
+            and (year % 100 == 0)
+            and (year % 400 != 0)
+        ):
+            leap = False
+        elif (
+            (calendar in ['standard', 'gregorian'])
+            and (year % 100 == 0)
+            and (year % 400 != 0)
+            and (year < 1583)
+        ):
+            leap = False
+    return leap
+
+
+def get_calendar(ds, dim='time'):
+    """Attempt to pull calendar type automatically using cftime objects.
+
+    .. note::
+        This relies upon ``xarray``'s automatic conversion of time to ``cftime``.
+
+    Args:
+        ds (xarray object): Dataset being resampled.
+        dim (optional str): Time dimension.
+    """
+    example_time = ds[dim].values[0]
+    # Type of variable being used for time.
+    var_type = type(example_time).__name__
+    if var_type in CFTIME_TO_NETCDF:
+        # If this is a `cftime` object, infer what type of calendar it is.
+        return CFTIME_TO_NETCDF[var_type]
+    else:
+        raise ValueError(f'Please submit a calendar from {CALENDARS}')

@@ -1,4 +1,4 @@
-from .utils import check_xarray
+from .checks import check_xarray
 
 
 @check_xarray(0)
