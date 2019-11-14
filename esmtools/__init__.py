@@ -10,6 +10,7 @@ from . import (
     stats,
     temporal,
     testing,
+    utils,
 )
 from .accessor import GridAccessor
 from .versioning.print_versions import show_versions

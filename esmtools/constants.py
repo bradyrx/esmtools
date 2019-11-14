@@ -25,6 +25,18 @@ DAYS_PER_MONTH = {
     '360_day': [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
     'julian': [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
 }
+# Not as simple as summing since there's nuance here in which years get a quarter year.
+DAYS_PER_YEAR = {
+    'noleap': 365,
+    '365_day': 365.25,
+    'standard': 365.25,
+    'gregorian': 365.25,
+    'proleptic_gregorian': 365.25,
+    'all_leap': 366,
+    '366_day': 366,
+    '360_day': 360,
+    'julian': 365,
+}
 CALENDARS = [k for k in DAYS_PER_MONTH]
 
 # Converts from `cftime` class name to netCDF convention for calendar

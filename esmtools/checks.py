@@ -1,5 +1,6 @@
 from .exceptions import DimensionError
 from functools import wraps
+from pandas.core.indexes.datetimes import DatetimeIndex
 import xarray as xr
 
 
@@ -71,5 +72,20 @@ def has_dims(xobj, dims, kind):
         raise DimensionError(
             f'Your {kind} object must contain the '
             f'following dimensions at the minimum: {dims}'
+        )
+    return True
+
+
+def is_time_index(xobj, kind):
+    """
+    Checks that xobj coming through is a DatetimeIndex or CFTimeIndex.
+
+    This checks that `esmtools` is converting the DataArray to an index,
+    i.e. through .to_index()
+    """
+    if not (isinstance(xobj, xr.CFTimeIndex) or isinstance(xobj, DatetimeIndex)):
+        raise ValueError(
+            f'Your {kind} object must be either an xr.CFTimeIndex or '
+            f'pd.DatetimeIndex.'
         )
     return True
