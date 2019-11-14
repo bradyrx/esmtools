@@ -15,7 +15,6 @@ dependencies:
   - bottleneck
   - netcdf4
   - climpred
-  - cartopy
   - pytest-cov
   - sphinx_rtd_theme
   - sphinx

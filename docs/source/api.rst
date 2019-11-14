@@ -156,7 +156,6 @@ Functions related to visualization. Most of functions these are useless with the
 
     deseam
     discrete_cmap
-    make_cartopy
     add_box
     savefig
     meshgrid

@@ -1,66 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-from .vis import make_cartopy
-
-
-def scatter(
-    lon,
-    lat,
-    data,
-    cmap,
-    vmin,
-    vmax,
-    stride=5,
-    projection=ccrs.Robinson(),
-    colorbar=True,
-):
-    """Create map of MPAS output on the native unstructured grid.
-
-    .. note::
-      ``pcolormesh`` and ``contourf`` can't be used with the native output, since
-      it's on an unstructured grid. To visualize the unstructured grid in the most
-      straight forward fashion, it's best to use ParaView.
-
-    Args:
-        lon (xarray object): 1D da of longitudes (``lonCell``)
-        lat (xarray object): 1D da of latitudes (``latCell``)
-        data (xarray object): Data to plot
-        cmap (str): Colormap str.
-        vmin (float): Minimum color bound.
-        vmax (float): Maximum color bound.
-        stride (optional int):
-            Stride in plotting data to avoid plotting too much. Defaults to 5.
-        projection (cartopy map projection):
-            Map projection to use. Defaults to Robinson.
-        colorbar (optional bool):
-            Whether or not to add a colorbar to the figure. Generally want to set this
-            to off and do it manually if you need more advanced changes to it.
-
-    Examples:
-        >>> from esmtools.mpas import scatter
-        >>> import xarray as xr
-        >>> ds = xr.open_dataset('some_mpas_BGC_output.nc')
-        >>> scatter(ds.lonCell, ds.latCell, ds.FG_CO2, "RdBu_r",
-                    -5, 5)
-    """
-    f, ax = make_cartopy(projection=projection, grid_lines=False, frameon=False)
-    lon = lon[0::stride]
-    lat = lat[0::stride]
-    data = data[0::stride]
-
-    p = ax.scatter(
-        lon,
-        lat,
-        s=1,
-        c=data,
-        cmap=cmap,
-        transform=ccrs.PlateCarree(),
-        vmin=vmin,
-        vmax=vmax,
-    )
-    if colorbar:
-        plt.colorbar(p, orientation="horizontal", pad=0.05, fraction=0.08)
 
 
 def xyz_to_lat_lon(x, y, z, radians=False):
@@ -106,8 +44,8 @@ def convert_rad_to_deg(ds):
 
     Just set up for LIGHT for now.
     """
-    ds["latParticle"] = ds["latParticle"] * (180 / np.pi)
-    ds["lonParticle"] = ds["lonParticle"] * (180 / np.pi)
+    ds['latParticle'] = ds['latParticle'] * (180 / np.pi)
+    ds['lonParticle'] = ds['lonParticle'] * (180 / np.pi)
     return ds
 
 
@@ -116,6 +54,6 @@ def convert_deg_to_rad(ds):
 
     Just set up for LIGHT for now.
     """
-    ds["latParticle"] = ds["latParticle"] * (np.pi / 180)
-    ds["lonParticle"] = ds["lonParticle"] * (np.pi / 180)
+    ds['latParticle'] = ds['latParticle'] * (np.pi / 180)
+    ds['lonParticle'] = ds['lonParticle'] * (np.pi / 180)
     return ds
