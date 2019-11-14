@@ -1,18 +1,7 @@
 from pkg_resources import DistributionNotFound, get_distribution
 
 from .accessor import GridAccessor
-from . import (
-    carbon,
-    composite,
-    conversions,
-    spatial,
-    grid,
-    mpas,
-    physics,
-    stats,
-    temporal,
-    vis,
-)
+from . import carbon, composite, conversions, spatial, grid, physics, stats, temporal
 from .versioning.print_versions import show_versions
 
 try:

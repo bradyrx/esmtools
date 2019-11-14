@@ -56,23 +56,6 @@ Functions related to climate model grids.
     convert_lon
 
 
-MPAS Model Tools
-----------------
-
-``from esmtools.mpas import ...``
-
-.. currentmodule:: esmtools.mpas
-
-Functions related to analyzing output from the Model for Prediction Across Scales (MPAS) ocean model. Since the grid is comprised of unstructured hexagons, analysis and visualization is not as straight-forward as working with regularly gridded data. The best visualizations on the unstructured grid can be made in ParaView.
-
-.. autosummary::
-    :toctree: api/
-
-    scatter
-    xyz_to_lat_lon
-    convert_rad_to_deg
-    convert_deg_to_rad
-
 Physics
 -------
 
@@ -141,25 +124,3 @@ Functions related to time.
     :toctree: api/
 
     to_annual
-
-Visualization
--------------
-
-``from esmtools.vis import ...``
-
-.. currentmodule:: esmtools.vis
-
-Functions related to visualization. Most of functions these are useless with the advent of ``proplot``.
-
-.. autosummary::
-    :toctree: api/
-
-    deseam
-    discrete_cmap
-    make_cartopy
-    add_box
-    savefig
-    meshgrid
-    outer_legend
-    quick_pcolor
-    global_subplot_colorbar
