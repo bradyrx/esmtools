@@ -12,9 +12,48 @@ def dec_args_kwargs(wrapper):
     )
 
 
+def get_dims(da):
+    """
+    Simple function to retrieve dimensions from a given dataset/datarray.
+    Currently returns as a list, but can add keyword to select tuple or
+    list if desired for any reason.
+    """
+    return list(da.dims)
+
+
+def has_dims(xobj, dims, kind):
+    """
+    Checks that at the minimum, the object has provided dimensions.
+    """
+    if isinstance(dims, str):
+        dims = [dims]
+
+    if not all(dim in xobj.dims for dim in dims):
+        raise DimensionError(
+            f"Your {kind} object must contain the "
+            f"following dimensions at the minimum: {dims}"
+        )
+    return True
+
+
+def is_time_index(xobj, kind):
+    """
+    Checks that xobj coming through is a DatetimeIndex or CFTimeIndex.
+
+    This checks that `esmtools` is converting the DataArray to an index,
+    i.e. through .to_index()
+    """
+    if not (isinstance(xobj, xr.CFTimeIndex) or isinstance(xobj, DatetimeIndex)):
+        raise ValueError(
+            f"Your {kind} object must be either an xr.CFTimeIndex or "
+            f"pd.DatetimeIndex."
+        )
+    return True
+
+
 @dec_args_kwargs
 # Lifted from climpred. This was originally written by Andrew Huang.
-def check_xarray(func, *dec_args):
+def is_xarray(func, *dec_args):
     """
     Decorate a function to ensure the first arg being submitted is
     either a Dataset or DataArray.
@@ -50,42 +89,3 @@ def check_xarray(func, *dec_args):
         return func(*args, **kwargs)
 
     return wrapper
-
-
-def get_dims(da):
-    """
-    Simple function to retrieve dimensions from a given dataset/datarray.
-    Currently returns as a list, but can add keyword to select tuple or
-    list if desired for any reason.
-    """
-    return list(da.dims)
-
-
-def has_dims(xobj, dims, kind):
-    """
-    Checks that at the minimum, the object has provided dimensions.
-    """
-    if isinstance(dims, str):
-        dims = [dims]
-
-    if not all(dim in xobj.dims for dim in dims):
-        raise DimensionError(
-            f'Your {kind} object must contain the '
-            f'following dimensions at the minimum: {dims}'
-        )
-    return True
-
-
-def is_time_index(xobj, kind):
-    """
-    Checks that xobj coming through is a DatetimeIndex or CFTimeIndex.
-
-    This checks that `esmtools` is converting the DataArray to an index,
-    i.e. through .to_index()
-    """
-    if not (isinstance(xobj, xr.CFTimeIndex) or isinstance(xobj, DatetimeIndex)):
-        raise ValueError(
-            f'Your {kind} object must be either an xr.CFTimeIndex or '
-            f'pd.DatetimeIndex.'
-        )
-    return True

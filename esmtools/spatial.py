@@ -1,6 +1,6 @@
 import numpy as np
 
-from .checks import check_xarray
+from .checks import is_xarray
 
 
 def find_indices(xgrid, ygrid, xpoint, ypoint):
@@ -44,7 +44,7 @@ def find_indices(xgrid, ygrid, xpoint, ypoint):
     return i, j
 
 
-@check_xarray(0)
+@is_xarray(0)
 def extract_region(ds, xgrid, ygrid, coords, lat_dim="lat", lon_dim="lon"):
     """Extract a subset of some larger spatial data.
 

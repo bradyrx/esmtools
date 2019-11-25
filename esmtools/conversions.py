@@ -1,7 +1,7 @@
-from .checks import check_xarray
+from .checks import is_xarray
 
 
-@check_xarray(0)
+@is_xarray(0)
 def convert_mpas_fgco2(mpas_fgco2):
     """Convert native MPAS CO2 flux (mmol m-3 m s-1) to (molC m-2 yr-1)
 
