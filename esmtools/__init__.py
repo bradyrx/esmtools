@@ -1,7 +1,17 @@
 from pkg_resources import DistributionNotFound, get_distribution
 
+from . import (
+    carbon,
+    composite,
+    conversions,
+    grid,
+    physics,
+    spatial,
+    stats,
+    temporal,
+    testing,
+)
 from .accessor import GridAccessor
-from . import carbon, composite, conversions, spatial, grid, physics, stats, temporal
 from .versioning.print_versions import show_versions
 
 try:
