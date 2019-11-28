@@ -17,7 +17,7 @@ def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
         input_core_dims=[[], [], [], [], [], []],
         output_core_dims=[[], []],
         vectorize=True,
-        dask="parallelized",
+        dask='parallelized',
     )
 
 
@@ -50,7 +50,7 @@ def multipletest(p, alpha=0.05, method='fdr_bh', **multipletests_kwargs):
         pvals_corrected (xr.object): p-values corrected for multiple tests
 
     Example:
-        reject, xpvals_corrected = xr_multipletest(p)
+        reject, xpvals_corrected = xr_multipletest(p, method='fdr_bh')
     """
     # stack all to 1d array
     p_stacked = p.stack(s=p.dims)
@@ -61,9 +61,11 @@ def multipletest(p, alpha=0.05, method='fdr_bh', **multipletests_kwargs):
     reject = np.full(p_stacked.shape, np.nan)
     # apply test where mask
     reject[mask] = multipletests(
-        p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs)[0]
+        p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
+    )[0]
     pvals_corrected[mask] = multipletests(
-        p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs)[1]
+        p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
+    )[1]
 
     def unstack(reject, p_stacked):
         """Exchange values from p_stacked with reject (1darray) and unstack."""
