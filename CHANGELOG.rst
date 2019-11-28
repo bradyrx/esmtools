@@ -7,6 +7,7 @@ esmtools v1.1.1 (2019-11-##)
 
 Features
 --------
+- xarray implementation of ``statsmodels.stats.multitest.multipletests``. (:pr:`71`) `Aaron Spring`_
 
 Bug Fixes
 ---------
