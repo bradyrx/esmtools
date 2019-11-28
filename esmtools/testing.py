@@ -17,11 +17,11 @@ def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
         input_core_dims=[[], [], [], [], [], []],
         output_core_dims=[[], []],
         vectorize=True,
-        dask='parallelized',
+        dask="parallelized",
     )
 
 
-def xr_multipletest(p, alpha=0.05, method='fdr_bh', **multipletests_kwargs):
+def multipletest(p, alpha=0.05, method='fdr_bh', **multipletests_kwargs):
     """Apply statsmodels.stats.multitest.multipletests for multi-dimensional
     xr.objects.
 
@@ -61,11 +61,9 @@ def xr_multipletest(p, alpha=0.05, method='fdr_bh', **multipletests_kwargs):
     reject = np.full(p_stacked.shape, np.nan)
     # apply test where mask
     reject[mask] = multipletests(
-        p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
-    )[0]
+        p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs)[0]
     pvals_corrected[mask] = multipletests(
-        p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
-    )[1]
+        p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs)[1]
 
     def unstack(reject, p_stacked):
         """Exchange values from p_stacked with reject (1darray) and unstack."""
