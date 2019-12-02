@@ -67,8 +67,8 @@ def multipletest(p, alpha=0.05, method="fdr_bh", **multipletests_kwargs):
     # mask only where not nan:
     # https://github.com/statsmodels/statsmodels/issues/2899
     mask = np.isfinite(p_stacked)
-    pvals_corrected = np.full(p_stacked.shape, np.nan)
-    reject = np.full(p_stacked.shape, np.nan)
+    pvals_corrected = xr.full_like(p_stacked, np.nan)
+    reject = xr.full_like(p_stacked, np.nan)
     # apply test where mask
     reject[mask] = multipletests(
         p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
