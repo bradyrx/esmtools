@@ -24,13 +24,13 @@ def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
 
 
 @check_xarray(0)
-def multipletest(p, alpha=0.05, method="fdr_bh", **multipletests_kwargs):
+def multipletest(p, alpha=0.05, method=None, **multipletests_kwargs):
     """Apply statsmodels.stats.multitest.multipletests for multi-dimensional
     xr.objects.
 
     Args:
         p (xr.object): uncorrected p-values.
-        alpha (type): FWER, family-wise error rate. Defaults to 0.05.
+        alpha (optional float): FWER, family-wise error rate. Defaults to 0.05.
         method (str): Method used for testing and adjustment of pvalues. Can be
             either the full name or initial letters.  Available methods are:
             - bonferroni : one-step correction
@@ -43,7 +43,6 @@ def multipletest(p, alpha=0.05, method="fdr_bh", **multipletests_kwargs):
             - fdr_by : Benjamini/Yekutieli (negative)
             - fdr_tsbh : two stage fdr correction (non-negative)
             - fdr_tsbky : two stage fdr correction (non-negative)
-           Defaults to 'fdr_bh'.
         **multipletests_kwargs (optional dict): is_sorted, returnsorted
            see statsmodels.stats.multitest.multitest
 
@@ -55,7 +54,12 @@ def multipletest(p, alpha=0.05, method="fdr_bh", **multipletests_kwargs):
     Example:
         reject, xpvals_corrected = xr_multipletest(p, method='fdr_bh')
     """
-    if method not in MULTIPLE_TESTS:
+    if method is None:
+        raise ValueError(
+            f"Please indicate a method using the 'method=...' keyword. "
+            f"Select from {MULTIPLE_TESTS}"
+        )
+    elif method not in MULTIPLE_TESTS:
         raise ValueError(
             f"Your method '{method}' is not in the accepted methods: {MULTIPLE_TESTS}"
         )
