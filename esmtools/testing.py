@@ -17,11 +17,11 @@ def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
         input_core_dims=[[], [], [], [], [], []],
         output_core_dims=[[], []],
         vectorize=True,
-        dask='parallelized',
+        dask="parallelized",
     )
 
 
-def multipletest(p, alpha=0.05, method='fdr_bh', **multipletests_kwargs):
+def multipletest(p, alpha=0.05, method="fdr_bh", **multipletests_kwargs):
     """Apply statsmodels.stats.multitest.multipletests for multi-dimensional
     xr.objects.
 
@@ -52,6 +52,14 @@ def multipletest(p, alpha=0.05, method='fdr_bh', **multipletests_kwargs):
     Example:
         reject, xpvals_corrected = xr_multipletest(p, method='fdr_bh')
     """
+
+    def unstack(reject, p_stacked):
+        """Exchange values from p_stacked with reject (1darray) and unstack."""
+        xreject = p_stacked.copy()
+        xreject.values = reject
+        xreject = xreject.unstack()
+        return xreject
+
     # stack all to 1d array
     p_stacked = p.stack(s=p.dims)
     # mask only where not nan:
@@ -66,13 +74,6 @@ def multipletest(p, alpha=0.05, method='fdr_bh', **multipletests_kwargs):
     pvals_corrected[mask] = multipletests(
         p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
     )[1]
-
-    def unstack(reject, p_stacked):
-        """Exchange values from p_stacked with reject (1darray) and unstack."""
-        xreject = p_stacked.copy()
-        xreject.values = reject
-        xreject = xreject.unstack()
-        return xreject
 
     reject = unstack(reject, p_stacked)
     pvals_corrected = unstack(pvals_corrected, p_stacked)
