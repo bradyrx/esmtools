@@ -1,9 +1,12 @@
 import numpy as np
 import xarray as xr
 from scipy.stats import ttest_ind_from_stats as tti_from_stats
-from statsmodels.stats.multitest import multipletests
+from statsmodels.stats.multitest import multipletests as statsmodels_multipletests
 from .constants import MULTIPLE_TESTS
 from .utils import check_xarray
+
+
+__all__ = ["ttest_ind_from_stats", "multipletests"]
 
 
 def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
@@ -24,7 +27,7 @@ def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
 
 
 @check_xarray(0)
-def multipletest(p, alpha=0.05, method=None, **multipletests_kwargs):
+def multipletests(p, alpha=0.05, method=None, **multipletests_kwargs):
     """Apply statsmodels.stats.multitest.multipletests for multi-dimensional
     xr.objects.
 
@@ -74,7 +77,7 @@ def multipletest(p, alpha=0.05, method=None, **multipletests_kwargs):
     reject = xr.full_like(p_stacked, np.nan)
 
     # apply test where mask
-    reject[mask], pvals_corrected[mask], *_ = multipletests(
+    reject[mask], pvals_corrected[mask], *_ = statsmodels_multipletests(
         p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
     )
 
