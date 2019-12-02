@@ -71,10 +71,10 @@ def multipletest(p, alpha=0.05, method="fdr_bh", **multipletests_kwargs):
     reject = np.full(p_stacked.shape, np.nan)
     # apply test where mask
     reject[mask] = multipletests(
-        p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
+        p_stacked.where(mask), alpha=alpha, method=method, **multipletests_kwargs
     )[0]
     pvals_corrected[mask] = multipletests(
-        p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
+        p_stacked.where(mask), alpha=alpha, method=method, **multipletests_kwargs
     )[1]
 
     reject = unstack(reject, p_stacked)
