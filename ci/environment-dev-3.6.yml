@@ -23,6 +23,8 @@ dependencies:
   - coveralls
   - importlib_metadata
   - jupyterlab
+  - black
+  - flake8
   - pip
   - pip:
       - sphinxcontrib-napoleon
