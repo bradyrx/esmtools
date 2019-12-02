@@ -55,25 +55,18 @@ def multipletest(p, alpha=0.05, method="fdr_bh", **multipletests_kwargs):
         reject, xpvals_corrected = xr_multipletest(p, method='fdr_bh')
     """
 
-    def unstack(reject, p_stacked):
-        """Exchange values from p_stacked with reject (1darray) and unstack."""
-        xreject = p_stacked.copy()
-        xreject.values = reject
-        xreject = xreject.unstack()
-        return xreject
-
     # stack all to 1d array
     p_stacked = p.stack(s=p.dims)
+
     # mask only where not nan:
     # https://github.com/statsmodels/statsmodels/issues/2899
     mask = np.isfinite(p_stacked)
     pvals_corrected = xr.full_like(p_stacked, np.nan)
     reject = xr.full_like(p_stacked, np.nan)
+
     # apply test where mask
     reject[mask], pvals_corrected[mask], *_ = multipletests(
         p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
     )
 
-    reject = unstack(reject, p_stacked)
-    pvals_corrected = unstack(pvals_corrected, p_stacked)
-    return reject, pvals_corrected
+    return reject.unstack("s"), pvals_corrected.unstack("s")
