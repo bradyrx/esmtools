@@ -2,6 +2,7 @@ import numpy as np
 import xarray as xr
 from scipy.stats import ttest_ind_from_stats as tti_from_stats
 from statsmodels.stats.multitest import multipletests
+from .constants import MULTIPLE_TESTS
 from .utils import check_xarray
 
 
@@ -54,6 +55,10 @@ def multipletest(p, alpha=0.05, method="fdr_bh", **multipletests_kwargs):
     Example:
         reject, xpvals_corrected = xr_multipletest(p, method='fdr_bh')
     """
+    if method not in MULTIPLE_TESTS:
+        raise ValueError(
+            f"Your method '{method}' is not in the accepted methods: {MULTIPLE_TESTS}"
+        )
 
     # stack all to 1d array
     p_stacked = p.stack(s=p.dims)
