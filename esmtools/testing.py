@@ -2,6 +2,7 @@ import numpy as np
 import xarray as xr
 from scipy.stats import ttest_ind_from_stats as tti_from_stats
 from statsmodels.stats.multitest import multipletests
+from .utils import check_xarray
 
 
 def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
@@ -21,6 +22,7 @@ def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
     )
 
 
+@check_xarray(0)
 def multipletest(p, alpha=0.05, method="fdr_bh", **multipletests_kwargs):
     """Apply statsmodels.stats.multitest.multipletests for multi-dimensional
     xr.objects.
