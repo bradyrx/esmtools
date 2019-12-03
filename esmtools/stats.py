@@ -3,7 +3,6 @@ import numpy as np
 import numpy.polynomial.polynomial as poly
 import xarray as xr
 from scipy.stats import linregress as lreg
-from scipy.stats import ttest_ind_from_stats as tti_from_stats
 
 from .checks import has_dims
 from .utils import check_xarray, get_dims
@@ -507,20 +506,3 @@ def ACF(ds, dim="time", nlags=None):
         acf.append(res)
     acf = xr.concat(acf, dim=dim)
     return acf
-
-
-def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
-    """Parallelize scipy.stats.ttest_ind_from_stats."""
-    return xr.apply_ufunc(
-        tti_from_stats,
-        mean1,
-        std1,
-        nobs1,
-        mean2,
-        std2,
-        nobs2,
-        input_core_dims=[[], [], [], [], [], []],
-        output_core_dims=[[], []],
-        vectorize=True,
-        dask="parallelized",
-    )

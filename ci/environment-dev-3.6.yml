@@ -3,25 +3,31 @@ channels:
   - conda-forge
 dependencies:
   - python=3.6
-  - numpy
-  - xarray
-  - dask
-  - scipy
-  - matplotlib
-  - bottleneck
-  - netcdf4
-  - pytest
-  - cftime
-  - bottleneck
-  - netcdf4
-  - climpred
-  - pytest-cov
-  - sphinx_rtd_theme
-  - sphinx
-  - nbsphinx
+  # development
+  - black
   - coveralls
+  - flake8
   - importlib_metadata
   - jupyterlab
+  - nbsphinx
+  - pytest
+  - pytest-cov
+  - sphinx
+  - sphinx_rtd_theme
+  # input/output
+  - netcdf4
+  # numerics
+  - cftime
+  - bottleneck
+  - dask
+  - numpy
+  - xarray
+  # stats
+  - climpred
+  - scipy
+  - statsmodels
+  # visualization
+  - matplotlib
   - pip
   - pip:
       - sphinxcontrib-napoleon

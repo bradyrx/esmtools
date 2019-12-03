@@ -109,7 +109,21 @@ Statistical functions. A portion directly wrap functions from ``climpred``.
     rm_trend
     autocorr
     ACF
+
+Testing
+-------
+
+``from esmtools.testing import ...``
+
+.. currentmodule:: esmtools.testing
+
+Statistical tests.
+
+.. autosummary::
+    :toctree: api/
+
     ttest_ind_from_stats
+    multipletest
 
 Temporal
 --------
