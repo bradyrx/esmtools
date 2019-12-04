@@ -138,26 +138,21 @@ def area_weight(da, area_coord="area"):
 # TIME SERIES
 # -----------
 @is_xarray(0)
-def smooth_series(da, dim, length, center=True):
+def compute_slope(x, y, dim="time"):
+    """Returns the linear slope with y regressed onto x.
+
+    Args:
+        x (xarray object): Independent variable (predictor) for linear regression.
+        y (xarray object): Dependent variable (predictand) for linear regression.
+        dim (str, optional): Dimension to apply linear regression over.
+            Defaults to "time".
+
+    Returns:
+        xarray object: Slopes computed through a least-squares linear regression.
     """
-    Returns a smoothed version of the input timeseries.
-    NOTE: Currently explicitly writing `xr` as a prefix for xarray-specific
-    definitions. Since `esmtools` is supposed to be a wrapper for xarray,
-    this might be altered in the future.
-    Parameters
-    ----------
-    da : xarray DataArray
-    dim : str
-        dimension to smooth over (e.g. 'time')
-    length : int
-        number of steps to smooth over for the given dim
-    center : boolean (default to True)
-        whether to center the smoothing filter or start from the beginning
-    Returns
-    -------
-    smoothed : smoothed DataArray object
-    """
-    return da.rolling({dim: length}, center=center).mean()
+    # Return with attributes appended to it? datetime, package version, link to docs.
+    # Maybe also a note on units (try to pull .attrs['units'] and add per day to end)
+    pass
 
 
 @is_xarray(0)
