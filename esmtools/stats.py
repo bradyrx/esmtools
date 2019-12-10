@@ -156,6 +156,16 @@ def compute_slope(x, y, dim="time"):
     * Dataset (grid/ts) works
     * Dask works
     """
+    # Hacky fix. Should look into this. But need vectorize to be `False` on
+    # apply_ufunc if just a time series regressed. This makes sense since it doesn't
+    # need to be vectorized, but also this only seems to break when it's chunked.
+    # NOTE: Add tests.
+    if len(x.dims) == 1 and len(y.dims) == 1:
+        vectorize = False
+    else:
+        vectorize = True
+
+    # Add check that `x` and `y` have the requested dim.
 
     def _compute_slope(x, y):
         """Private function to wrap polyfit.
@@ -168,10 +178,19 @@ def compute_slope(x, y, dim="time"):
 
     # Converts time to days since 1990 to regress accounting for differences
     # in e.g. lengths of months.
-    if x.name == dim:
-        x = convert_time(x, dim)
-    if y.name == dim:
-        y = convert_time(y, dim)
+    # NOTE: Make this cleaner. Also test this bug?
+    if isinstance(x, xr.DataArray):
+        try:
+            if x.name == dim:
+                x = convert_time(x, dim)
+        except KeyError:
+            pass
+    if isinstance(y, xr.DataArray):
+        try:
+            if y.name == dim:
+                y = convert_time(y, dim)
+        except KeyError:
+            pass
 
     # NOTE: Add NaN control functionality. Will have subfunction but should
     # skip, interpoalte, etc.
@@ -180,7 +199,7 @@ def compute_slope(x, y, dim="time"):
         _compute_slope,
         x,
         y,
-        vectorize=True,
+        vectorize=vectorize,
         dask="parallelized",
         input_core_dims=[[dim], [dim]],
         output_dtypes=[float],
