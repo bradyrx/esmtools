@@ -3,7 +3,6 @@
 import numpy as np
 import xarray as xr
 
-
 # This supports all calendars used in netCDF.
 dpm = {
     "noleap": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],

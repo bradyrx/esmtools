@@ -1,7 +1,8 @@
 import numpy as np
-import xarray as xr
-from esmtools.stats import corr
 import pytest
+import xarray as xr
+
+from esmtools.stats import corr
 
 
 @pytest.fixture()
