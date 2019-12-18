@@ -2,7 +2,7 @@
 Changelog History
 =================
 
-esmtools v1.1.1 (2019-11-##)
+esmtools v1.1.1 (2019-12-##)
 ============================
 
 Features
@@ -14,6 +14,7 @@ Bug Fixes
 
 Internals/Minor Fixes
 ---------------------
+- Adds ``isort`` and ``nbstripout`` to CI for development. Blacken and isort code. (:pr:`73`) `Riley X. Brady`_
 
 Documentation
 -------------

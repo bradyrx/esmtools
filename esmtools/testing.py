@@ -2,9 +2,9 @@ import numpy as np
 import xarray as xr
 from scipy.stats import ttest_ind_from_stats as tti_from_stats
 from statsmodels.stats.multitest import multipletests as statsmodels_multipletests
+
 from .constants import MULTIPLE_TESTS
 from .utils import check_xarray
-
 
 __all__ = ["ttest_ind_from_stats", "multipletests"]
 

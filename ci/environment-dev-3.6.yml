@@ -8,8 +8,10 @@ dependencies:
   - coveralls
   - flake8
   - importlib_metadata
+  - isort
   - jupyterlab
   - nbsphinx
+  - nbstripout
   - pytest
   - pytest-cov
   - sphinx
