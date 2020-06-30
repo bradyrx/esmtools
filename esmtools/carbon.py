@@ -6,11 +6,11 @@ import pandas as pd
 import xarray as xr
 from tqdm import tqdm
 
+from .checks import is_xarray
 from .stats import linear_regression, nanmean, rm_poly
-from .utils import check_xarray
 
 
-@check_xarray([0, 1])
+@is_xarray([0, 1])
 def co2_sol(t, s):
     """Compute CO2 solubility per the equation used in CESM.
 
@@ -57,7 +57,7 @@ def co2_sol(t, s):
     return ff
 
 
-@check_xarray(0)
+@is_xarray(0)
 def schmidt(t):
     """Computes the dimensionless Schmidt number.
 
@@ -93,7 +93,7 @@ def schmidt(t):
     return Sc
 
 
-@check_xarray(0)
+@is_xarray(0)
 def temp_decomp_takahashi(ds, time_dim="time", temperature="tos", pco2="spco2"):
     """Decompose surface pCO2 into thermal and non-thermal components.
 
@@ -146,7 +146,7 @@ def temp_decomp_takahashi(ds, time_dim="time", temperature="tos", pco2="spco2"):
     return decomp
 
 
-@check_xarray([0, 1])
+@is_xarray([0, 1])
 def potential_pco2(t_insitu, pco2_insitu):
     """Calculate potential pCO2 in the interior ocean.
 
@@ -179,7 +179,7 @@ def potential_pco2(t_insitu, pco2_insitu):
     return pco2_potential
 
 
-@check_xarray(0)
+@is_xarray(0)
 def spco2_sensitivity(ds):
     """Compute sensitivity of surface pCO2 to changes in driver variables.
 
@@ -256,7 +256,7 @@ def spco2_sensitivity(ds):
 
 
 # TODO: adapt for CESM and MPI output.
-@check_xarray([0, 1])
+@is_xarray([0, 1])
 def spco2_decomposition_index(
     ds_terms,
     index,
@@ -355,7 +355,7 @@ def spco2_decomposition_index(
         return terms_in_pCO2_units
 
 
-@check_xarray(0)
+@is_xarray(0)
 def spco2_decomposition(ds_terms, detrend=True, order=1, deseasonalize=False):
     """Decompose oceanic surface pco2 in a first order Taylor-expansion.
 

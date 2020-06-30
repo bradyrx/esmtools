@@ -1,8 +1,8 @@
+from .checks import is_xarray
 from .exceptions import CoordinateError
-from .utils import check_xarray
 
 
-@check_xarray(0)
+@is_xarray(0)
 def _convert_lon_to_180to180(ds, coord="lon"):
     """Convert from 0 to 360 (degrees E) grid to -180 to 180 (W-E) grid.
 
@@ -27,7 +27,7 @@ def _convert_lon_to_180to180(ds, coord="lon"):
     return ds
 
 
-@check_xarray(0)
+@is_xarray(0)
 def _convert_lon_to_0to360(ds, coord="lon"):
     """Convert from -180 to 180 (W-E) to 0 to 360 (degrees E) grid.
 
@@ -54,7 +54,7 @@ def _convert_lon_to_0to360(ds, coord="lon"):
 
 # NOTE: Check weird POP grid that goes up to 240 or something. How do we deal with
 # that?
-@check_xarray(0)
+@is_xarray(0)
 def convert_lon(ds, coord="lon"):
     """Converts longitude grid from -180to180 to 0to360 and vice versa.
 

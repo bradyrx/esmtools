@@ -4,14 +4,14 @@ import numpy.polynomial.polynomial as poly
 import xarray as xr
 from scipy.stats import linregress as lreg
 
-from .checks import has_dims
-from .utils import check_xarray, get_dims
+from .checks import has_dims, is_xarray
+from .utils import get_dims
 
 
 # ------------------
 # GENERAL STATISTICS
 # ------------------
-@check_xarray(0)
+@is_xarray(0)
 def standardize(ds, dim="time"):
     """Standardize Dataset/DataArray
 
@@ -29,7 +29,7 @@ def standardize(ds, dim="time"):
     return stdized
 
 
-@check_xarray(0)
+@is_xarray(0)
 def nanmean(ds, dim="time"):
     """Compute mean NaNs and suppress warning from numpy"""
     if "time" in ds.dims:
@@ -44,7 +44,7 @@ def nanmean(ds, dim="time"):
 # --------------------------
 # AREA-WEIGHTING DEFINITIONS
 # --------------------------
-@check_xarray(0)
+@is_xarray(0)
 def cos_weight(da, lat_coord="lat", lon_coord="lon", one_dimensional=True):
     """
     Area-weights data on a regular (e.g. 360x180) grid that does not come with
@@ -87,7 +87,7 @@ def cos_weight(da, lat_coord="lat", lon_coord="lon", one_dimensional=True):
     return aw_da
 
 
-@check_xarray(0)
+@is_xarray(0)
 def area_weight(da, area_coord="area"):
     """
     Returns an area-weighted time series from the input xarray dataarray. This
@@ -138,7 +138,7 @@ def area_weight(da, area_coord="area"):
 # -----------
 # TIME SERIES
 # -----------
-@check_xarray(0)
+@is_xarray(0)
 def smooth_series(da, dim, length, center=True):
     """
     Returns a smoothed version of the input timeseries.
@@ -161,7 +161,7 @@ def smooth_series(da, dim, length, center=True):
     return da.rolling({dim: length}, center=center).mean()
 
 
-@check_xarray(0)
+@is_xarray(0)
 def fit_poly(ds, order, dim="time"):
     """Returns the fitted polynomial line of order N
 
@@ -253,7 +253,7 @@ def fit_poly(ds, order, dim="time"):
         return fit
 
 
-@check_xarray(0)
+@is_xarray(0)
 def linear_regression(da, dim="time", interpolate_na=False, compact=True, psig=None):
     """
     Computes the least-squares linear regression of an xr.DataArray x against
@@ -368,7 +368,7 @@ def linear_regression(da, dim="time", interpolate_na=False, compact=True, psig=N
         return ds["slope"], ds["intercept"], ds["rvalue"], ds["pvalue"], ds["stderr"]
 
 
-@check_xarray(0)
+@is_xarray(0)
 def corr(x, y, dim="time", lead=0, return_p=False):
     """
     Computes the Pearson product-momment coefficient of linear correlation.
@@ -418,7 +418,7 @@ def corr(x, y, dim="time", lead=0, return_p=False):
         return st.corr(x, y, dim=dim, lag=lead, return_p=return_p)
 
 
-@check_xarray(0)
+@is_xarray(0)
 def rm_poly(da, order, dim="time"):
     """
     Returns xarray object with nth-order fit removed from every time series.
@@ -440,7 +440,7 @@ def rm_poly(da, order, dim="time"):
     return st.rm_poly(da, order, dim=dim)
 
 
-@check_xarray(0)
+@is_xarray(0)
 def rm_trend(da, dim="time"):
     """
     Calls rm_poly with an order 1 argument.
@@ -448,7 +448,7 @@ def rm_trend(da, dim="time"):
     return st.rm_trend(da, dim=dim)
 
 
-@check_xarray(0)
+@is_xarray(0)
 def autocorr(ds, lag=1, dim="time", return_p=False):
     """
     Calculated lagged correlation of a xr.Dataset.
@@ -470,7 +470,7 @@ def autocorr(ds, lag=1, dim="time", return_p=False):
     return st.autocorr(ds, lag=lag, dim=dim, return_p=return_p)
 
 
-@check_xarray(0)
+@is_xarray(0)
 def ACF(ds, dim="time", nlags=None):
     """
     Compute the ACF of a time series to a specific lag.
