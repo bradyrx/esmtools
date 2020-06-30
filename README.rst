@@ -22,7 +22,8 @@ a toolbox for Earth System Model analysis
 Installation
 ============
 
-You can install the latest release of ``esmtools`` using ``pip``:
+You can install the latest release of ``esmtools`` using ``pip``.
+We will also release ``esmtools`` on conda for the next release.
 
 .. code-block:: bash
 
