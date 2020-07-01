@@ -81,10 +81,10 @@ def ts_monthly_da():
     # Wrapper so fixture can be called multiple times.
     # https://alysivji.github.io/pytest-fixures-with-function-arguments.html
     def _gen_data():
-        data = np.random.rand(120)
+        data = np.random.rand(60)
         da = xr.DataArray(data, dims=['time'])
         # Monthly resolution time axis for 10 years.
-        da['time'] = np.arange('1990-01', '2000-01', dtype='datetime64[M]')
+        da['time'] = np.arange('1990-01', '1995-01', dtype='datetime64[M]')
         return da
 
     return _gen_data

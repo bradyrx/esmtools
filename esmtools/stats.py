@@ -212,7 +212,7 @@ def linregress(x, y, dim='time'):
 
 
 @is_xarray(0)
-def fit_poly(x, y, order, dim='time'):
+def polyfit(x, y, order, dim='time'):
     """Returns the fitted polynomial line of order N
 
     .. note::
@@ -231,13 +231,13 @@ def fit_poly(x, y, order, dim='time'):
     """
     x, y = _preprocess_x_and_y(x, y, dim)
 
-    def _fit_poly(x, y, order):
+    def _polyfit(x, y, order):
         coefs = poly.polyfit(x, y, order)
         fit = poly.polyval(x, coefs)
         return fit
 
     return xr.apply_ufunc(
-        _fit_poly,
+        _polyfit,
         x,
         y,
         order,
