@@ -2,9 +2,9 @@ import warnings
 
 import xarray as xr
 
+from .checks import is_xarray
 from .stats import standardize
 from .testing import ttest_ind_from_stats
-from .utils import check_xarray
 
 
 def _create_composites(anomaly_field, index, threshold=1, dim="time"):
@@ -17,7 +17,7 @@ def _create_composites(anomaly_field, index, threshold=1, dim="time"):
     return composite
 
 
-@check_xarray([0, 1])
+@is_xarray([0, 1])
 def composite_analysis(
     field, index, threshold=1, plot=False, ttest=False, psig=0.05, **plot_kwargs
 ):
