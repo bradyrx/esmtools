@@ -3,22 +3,13 @@ from functools import wraps
 import xarray as xr
 from pandas.core.indexes.datetimes import DatetimeIndex
 
-from .exceptions import DimensionError
 
-
-def has_dims(xobj, dims, kind):
-    """
-    Checks that at the minimum, the object has provided dimensions.
-    """
-    if isinstance(dims, str):
-        dims = [dims]
-
-    if not all(dim in xobj.dims for dim in dims):
-        raise DimensionError(
-            f"Your {kind} object must contain the "
-            f"following dimensions at the minimum: {dims}"
-        )
-    return True
+# https://stackoverflow.com/questions/10610824/
+# python-shortcut-for-writing-decorators-which-accept-arguments
+def dec_args_kwargs(wrapper):
+    return lambda *dec_args, **dec_kwargs: lambda func: wrapper(
+        func, *dec_args, **dec_kwargs
+    )
 
 
 def is_time_index(xobj, kind):
@@ -30,8 +21,8 @@ def is_time_index(xobj, kind):
     """
     if not (isinstance(xobj, xr.CFTimeIndex) or isinstance(xobj, DatetimeIndex)):
         raise ValueError(
-            f"Your {kind} object must be either an xr.CFTimeIndex or "
-            f"pd.DatetimeIndex."
+            f'Your {kind} object must be either an xr.CFTimeIndex or '
+            f'pd.DatetimeIndex.'
         )
     return True
 
@@ -63,10 +54,7 @@ def is_xarray(func, *dec_args):
                     raise IOError(
                         f"""The input data is not an xarray DataArray or
                         Dataset.
-<<<<<<< HEAD
 
-=======
->>>>>>> 71c8de3... Updates xarray decorator and other minor fixes (#81)
                         Your input was of type: {typecheck}"""
                     )
         except IndexError:

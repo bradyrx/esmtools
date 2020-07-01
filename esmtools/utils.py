@@ -29,19 +29,10 @@ def convert_time(x, dim):
     # of np.timedelta64 part. Then can return in proper slope units per time step
     # (could add attribute with units for this).
     if isinstance(x.to_index(), DatetimeIndex):
-        warnings.warn(
-            'Slopes are automatically converted to units per day. '
-            'Multiply by 360, 365, or 365.25 to get to units per year, '
-            'depending on your calendar.'
-        )
         x = (x - np.datetime64('1990-01-01')) / np.timedelta64(1, 'D')
     elif isinstance(x.to_index(), xr.CFTimeIndex):
         calendar = get_calendar(x, dim)
-        warnings.warn(
-            f'Assuming calendar type {calendar}. Slopes are automatically converted to '
-            f'units per day. Multiply by 360, 365, or 365.25 to get to units per year, '
-            f'depending on your calendar.'
-        )
+        warnings.warn(f'Assuming calendar type {calendar}.')
         x = cftime.date2num(x, 'days since 1990-01-01', calendar=calendar)
     else:  # Numeric case, e.g. integer years.
         x = x

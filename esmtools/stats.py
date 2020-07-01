@@ -1,10 +1,13 @@
+import warnings
+
 import climpred.stats as st
 import numpy as np
 import numpy.polynomial.polynomial as poly
 import scipy
 import xarray as xr
+from pandas.core.indexes.datetimes import DatetimeIndex
 
-from .checks import has_dims, is_xarray
+from .checks import is_xarray
 from .utils import convert_time, get_dims
 
 
@@ -129,7 +132,7 @@ def area_weight(da, area_coord='area'):
     return aw_da
 
 
-def _preprocess_for_regression(x, y, dim):
+def _preprocess_x_and_y(x, y, dim):
     """Preprocesses ``x`` and ``y`` for regression functions.
 
     This checks that ``y`` is not the independent variable and converts the time
@@ -146,6 +149,14 @@ def _preprocess_for_regression(x, y, dim):
     if isinstance(x, xr.DataArray):
         try:
             if x.name == dim:
+                if isinstance(x.to_index(), DatetimeIndex) or isinstance(
+                    x.to_index(), xr.CFTimeIndex
+                ):
+                    warnings.warn(
+                        'Slopes are automatically converted to units per day. '
+                        'Multiply by 360, 365, or 365.25 to get to units per year, '
+                        'depending on your calendar.'
+                    )
                 x = convert_time(x, dim)
         except KeyError:
             pass
@@ -165,24 +176,23 @@ def linear_slope(x, y, dim='time'):
     Returns:
         xarray object: Slopes computed through a least-squares linear regression.
     """
-    x, y = _preprocess_for_regression(x, y, dim)
+    x, y = _preprocess_x_and_y(x, y, dim)
 
-    slopes = xr.apply_ufunc(
+    return xr.apply_ufunc(
         lambda x, y: np.polyfit(x, y, 1)[0],
         x,
         y,
         vectorize=True,
         dask='parallelized',
         input_core_dims=[[dim], [dim]],
-        output_dtypes=[float],
+        output_dtypes=['float64'],
     )
-    return slopes
 
 
 @is_xarray([0, 1])
 def linregress(x, y, dim='time'):
     """Applies the `scipy.stats` linregress to a grid."""
-    x, y = _preprocess_for_regression(x, y, dim)
+    x, y = _preprocess_x_and_y(x, y, dim)
 
     results = xr.apply_ufunc(
         lambda x, y: np.asarray(scipy.stats.linregress(x, y)),
@@ -202,7 +212,7 @@ def linregress(x, y, dim='time'):
 
 
 @is_xarray(0)
-def fit_poly(ds, order, dim='time'):
+def fit_poly(x, y, order, dim='time'):
     """Returns the fitted polynomial line of order N
 
     .. note::
@@ -219,78 +229,24 @@ def fit_poly(ds, order, dim='time'):
     References:
         This is a modification of @ahuang11's script `rm_poly` in `climpred`.
     """
-    has_dims(ds, dim, 'dataset')
+    x, y = _preprocess_x_and_y(x, y, dim)
 
-    # handle both datasets and dataarray
-    if isinstance(ds, xr.Dataset):
-        da = ds.to_array()
-        return_ds = True
-    else:
-        da = ds.copy()
-        return_ds = False
-
-    da_dims_orig = list(da.dims)  # orig -> original
-    if len(da_dims_orig) > 1:
-        # want independent axis to be the leading dimension
-        da_dims_swap = da_dims_orig.copy()  # copy to prevent contamination
-
-        # https://stackoverflow.com/questions/1014523/
-        # simple-syntax-for-bringing-a-list-element-to-the-front-in-python
-        da_dims_swap.insert(0, da_dims_swap.pop(da_dims_swap.index(dim)))
-        da = da.transpose(*da_dims_swap)
-
-        # hide other dims into a single dim
-        da = da.stack({'other_dims': da_dims_swap[1:]})
-        dims_swapped = True
-    else:
-        dims_swapped = False
-
-    # NaNs will make the polyfit fail--interpolate any NaNs in
-    # the provided dim to prevent poor fit, while other dims' NaNs
-    # will be filled with 0s; however, all NaNs will be replaced
-    # in the final output
-    nan_locs = np.isnan(da.values)
-
-    # any(nan_locs.sum(axis=0)) fails if not 2D
-    if nan_locs.ndim == 1:
-        nan_locs = nan_locs.reshape(len(nan_locs), 1)
-
-    # check if there's any NaNs in the provided dim because
-    # interpolate_na is computationally expensive to run regardless of NaNs
-    if any(nan_locs.sum(axis=0)) > 0:
-        # Could do a check to see if there's any NaNs that aren't bookended.
-        # [0, np.nan, 2], can interpolate.
-        da = da.interpolate_na(dim)
-        if any(nan_locs[0, :]):
-            # [np.nan, 1, 2], no first value to interpolate from; back fill
-            da = da.bfill(dim)
-        if any(nan_locs[-1, :]):
-            # [0, 1, np.nan], no last value to interpolate from; forward fill
-            da = da.ffill(dim)
-
-    # this handles the other axes; doesn't matter since it won't affect the fit
-    da = da.fillna(0)
-
-    # the actual operation of detrending
-    y = da.values
-    x = np.arange(0, len(y), 1)
-    coefs = poly.polyfit(x, y, order)
-    fit = poly.polyval(x, coefs)
-    fit = fit.transpose()
-    fit = xr.DataArray(fit, dims=da.dims, coords=da.coords)
-
-    if dims_swapped:
-        # revert the other dimensions to its original form and ordering
-        fit = fit.unstack('other_dims').transpose(*da_dims_orig)
-
-    if return_ds:
-        # revert back into a dataset
-        return xr.merge(
-            fit.sel(variable=var).rename(var).drop('variable')
-            for var in fit['variable'].values
-        )
-    else:
+    def _fit_poly(x, y, order):
+        coefs = poly.polyfit(x, y, order)
+        fit = poly.polyval(x, coefs)
         return fit
+
+    return xr.apply_ufunc(
+        _fit_poly,
+        x,
+        y,
+        order,
+        vectorize=True,
+        dask='parallelized',
+        input_core_dims=[[dim], [dim], []],
+        output_core_dims=[[dim]],
+        output_dtypes=['float64'],
+    )
 
 
 @is_xarray(0)
@@ -344,33 +300,37 @@ def corr(x, y, dim='time', lead=0, return_p=False):
 
 
 @is_xarray(0)
-def rm_poly(da, order, dim='time'):
+def rm_poly(x, y, order, dim='time'):
     """
-    Returns xarray object with nth-order fit removed from every time series.
-    Input
-    -----
-    da : xarray DataArray
-        Single time series or many gridded time series of object to be
-        detrended
-    order : int
-        Order of polynomial fit to be removed. If 1, this is functionally
-        the same as calling `rm_trend`
-    dim : str (default 'time')
-        Dimension over which to remove the polynomial fit.
-    Returns
-    -------
-    detrended_ts : xarray DataArray
-        DataArray with detrended time series.
+    Update description.
     """
-    return st.rm_poly(da, order, dim=dim)
+    x, y = _preprocess_x_and_y(x, y, dim)
+
+    def _rm_poly(x, y, order):
+        coefs = poly.polyfit(x, y, order)
+        fit = poly.polyval(x, coefs)
+        detrended = y - fit
+        return detrended
+
+    return xr.apply_ufunc(
+        _rm_poly,
+        x,
+        y,
+        order,
+        vectorize=True,
+        dask='parallelized',
+        input_core_dims=[[dim], [dim], []],
+        output_core_dims=[[dim]],
+        output_dtypes=['float64'],
+    )
 
 
 @is_xarray(0)
-def rm_trend(da, dim='time'):
+def rm_trend(x, y, dim='time'):
     """
-    Calls rm_poly with an order 1 argument.
+    Update description.
     """
-    return st.rm_trend(da, dim=dim)
+    return rm_poly(x, y, 1, dim=dim)
 
 
 @is_xarray(0)
