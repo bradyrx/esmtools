@@ -5,10 +5,10 @@ import numpy as np
 import numpy.polynomial.polynomial as poly
 import scipy
 import xarray as xr
-from pandas.core.indexes.datetimes import DatetimeIndex
 
 from .checks import is_xarray
-from .utils import convert_time, get_dims
+from .timeutils import TimeUtilAccessor
+from .utils import get_dims
 
 
 @is_xarray(0)
@@ -144,23 +144,29 @@ def _preprocess_x_and_y(x, y, dim):
             'applied over. Change your y variable to x.'
         )
 
-    # Converts time to days since 1990 to account for differences
-    # in e.g. lengths of months.
+    # If independent variable is a datetime axis (computing stats with reference to
+    # time), this converts to numeric time to account for differences in length of
+    # months, leap years, etc.
+    slope_factor = 1.0
     if isinstance(x, xr.DataArray):
-        try:
-            if x.name == dim:
-                if isinstance(x.to_index(), DatetimeIndex) or isinstance(
-                    x.to_index(), xr.CFTimeIndex
-                ):
-                    warnings.warn(
-                        'Slopes are automatically converted to units per day. '
-                        'Multiply by 360, 365, or 365.25 to get to units per year, '
-                        'depending on your calendar.'
-                    )
-                x = convert_time(x, dim)
-        except KeyError:
-            pass
-    return x, y
+        x_type = x.timeutils.type
+        if x_type in ['DatetimeIndex', 'CFTimeIndex']:
+            slope_factor = x.timeutils.slope_factor
+            x = x.timeutils.return_numeric_time()
+    return x, y, slope_factor
+
+
+def warn_if_not_converted_to_original_time_units(x):
+    if isinstance(x, xr.DataArray):
+        x_type = x.timeutils.type
+        if x_type in ['DatetimeIndex', 'CFTimeIndex']:
+            freq = x.timeutils.freq
+            if freq is None:
+                warnings.warn(
+                    'Datetime frequency not detected. Slope and std. errors will be '
+                    'in original units per day (e.g., degC per day). Multiply by '
+                    'e.g., 365.25 to convert to original units per year.'
+                )
 
 
 @is_xarray([0, 1])
@@ -176,9 +182,9 @@ def linear_slope(x, y, dim='time'):
     Returns:
         xarray object: Slopes computed through a least-squares linear regression.
     """
-    x, y = _preprocess_x_and_y(x, y, dim)
+    x, y, slope_factor = _preprocess_x_and_y(x, y, dim)
 
-    return xr.apply_ufunc(
+    slopes = xr.apply_ufunc(
         lambda x, y: np.polyfit(x, y, 1)[0],
         x,
         y,
@@ -187,20 +193,31 @@ def linear_slope(x, y, dim='time'):
         input_core_dims=[[dim], [dim]],
         output_dtypes=['float64'],
     )
+    warn_if_not_converted_to_original_time_units(x)
+    return slopes * slope_factor
 
 
 @is_xarray([0, 1])
 def linregress(x, y, dim='time'):
     """Applies the `scipy.stats` linregress to a grid."""
-    x, y = _preprocess_x_and_y(x, y, dim)
+    x, y, slope_factor = _preprocess_x_and_y(x, y, dim)
+
+    def _linregress(x, y, slope_factor):
+        m, b, r, p, e = scipy.stats.linregress(x, y)
+        # Multiply slope by factor. If time indices converted to numeric units, this
+        # gets them back to the original units.
+        m *= slope_factor
+        e *= slope_factor
+        return np.array([m, b, r, p, e])
 
     results = xr.apply_ufunc(
-        lambda x, y: np.asarray(scipy.stats.linregress(x, y)),
+        _linregress,
         x,
         y,
+        slope_factor,
         vectorize=True,
         dask='parallelized',
-        input_core_dims=[[dim], [dim]],
+        input_core_dims=[[dim], [dim], []],
         output_core_dims=[['parameter']],
         output_dtypes=['float64'],
         output_sizes={'parameter': 5},
@@ -208,6 +225,7 @@ def linregress(x, y, dim='time'):
     results = results.assign_coords(
         parameter=['slope', 'intercept', 'rvalue', 'pvalue', 'stderr']
     )
+    warn_if_not_converted_to_original_time_units(x)
     return results
 
 
@@ -229,7 +247,7 @@ def polyfit(x, y, order, dim='time'):
     References:
         This is a modification of @ahuang11's script `rm_poly` in `climpred`.
     """
-    x, y = _preprocess_x_and_y(x, y, dim)
+    x, y, _ = _preprocess_x_and_y(x, y, dim)
 
     def _polyfit(x, y, order):
         coefs = poly.polyfit(x, y, order)
@@ -304,7 +322,7 @@ def rm_poly(x, y, order, dim='time'):
     """
     Update description.
     """
-    x, y = _preprocess_x_and_y(x, y, dim)
+    x, y, _ = _preprocess_x_and_y(x, y, dim)
 
     def _rm_poly(x, y, order):
         coefs = poly.polyfit(x, y, order)

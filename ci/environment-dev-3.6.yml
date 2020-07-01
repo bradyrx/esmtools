@@ -19,7 +19,7 @@ dependencies:
   - bottleneck
   - dask
   - numpy
-  - xarray
+  # - xarray
   # Package Management
   - black
   - coveralls
@@ -39,3 +39,5 @@ dependencies:
   - pip
   - pip:
       - pytest-tldr
+      # Using until infer_freq is released in 0.15.2
+      - git+https://github.com/pydata/xarray@master

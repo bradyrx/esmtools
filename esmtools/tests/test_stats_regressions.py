@@ -131,7 +131,7 @@ def test_linear_slope_time_conversion_accurate(ts_annual_da):
     data2['time'] = np.arange(data2.time.size)
     slope_cftime = linear_slope(data['time'], data, 'time')
     slope_ints = linear_slope(data2['time'], data2, 'time')
-    diff = slope_cftime * 365.25 - slope_ints
+    diff = slope_cftime - slope_ints
     assert np.abs(diff) < 1e-4
 
 
