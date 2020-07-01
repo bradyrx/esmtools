@@ -2,8 +2,8 @@ import warnings
 
 import xarray as xr
 
-from .checks import is_xarray 
-from .stats import ttest_ind_from_stats, standardize
+from .checks import is_xarray
+from .stats import standardize
 from .testing import ttest_ind_from_stats
 
 

@@ -1,24 +1,9 @@
-from .exceptions import DimensionError
 from functools import wraps
-from pandas.core.indexes.datetimes import DatetimeIndex
+
 import xarray as xr
+from pandas.core.indexes.datetimes import DatetimeIndex
 
-
-# https://stackoverflow.com/questions/10610824/
-# python-shortcut-for-writing-decorators-which-accept-arguments
-def dec_args_kwargs(wrapper):
-    return lambda *dec_args, **dec_kwargs: lambda func: wrapper(
-        func, *dec_args, **dec_kwargs
-    )
-
-
-def get_dims(da):
-    """
-    Simple function to retrieve dimensions from a given dataset/datarray.
-    Currently returns as a list, but can add keyword to select tuple or
-    list if desired for any reason.
-    """
-    return list(da.dims)
+from .exceptions import DimensionError
 
 
 def has_dims(xobj, dims, kind):
@@ -78,7 +63,10 @@ def is_xarray(func, *dec_args):
                     raise IOError(
                         f"""The input data is not an xarray DataArray or
                         Dataset.
+<<<<<<< HEAD
 
+=======
+>>>>>>> 71c8de3... Updates xarray decorator and other minor fixes (#81)
                         Your input was of type: {typecheck}"""
                     )
         except IndexError:

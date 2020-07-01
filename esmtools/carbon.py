@@ -6,8 +6,8 @@ import pandas as pd
 import xarray as xr
 from tqdm import tqdm
 
-from .stats import linear_regression, nanmean, rm_poly
 from .checks import is_xarray
+from .stats import linregress, nanmean, rm_poly
 
 
 @is_xarray([0, 1])
@@ -51,9 +51,9 @@ def co2_sol(t, s):
         return ff
 
     ff = xr.apply_ufunc(
-        sol_calc, t, s, input_core_dims=[[], []], vectorize=True, dask="allowed"
+        sol_calc, t, s, input_core_dims=[[], []], vectorize=True, dask='allowed'
     )
-    ff.attrs["units"] = "mol/kg/atm"
+    ff.attrs['units'] = 'mol/kg/atm'
     return ff
 
 
@@ -88,7 +88,7 @@ def schmidt(t):
         return Sc
 
     Sc = xr.apply_ufunc(
-        calc_schmidt, t, input_core_dims=[[]], vectorize=True, dask="allowed"
+        calc_schmidt, t, input_core_dims=[[]], vectorize=True, dask='allowed'
     )
     return Sc
 
@@ -130,19 +130,19 @@ def temp_decomp_takahashi(ds, time_dim='time', temperature='tos', pco2='spco2'):
         >>> decomp = temp_decomp_takahashi(ds)
     """
     if temperature not in ds.data_vars:
-        raise ValueError(f"{temperature} is not a variable in your dataset.")
+        raise ValueError(f'{temperature} is not a variable in your dataset.')
     if pco2 not in ds.data_vars:
-        raise ValueError(f"{pco2} is not a variable in your dataset.")
+        raise ValueError(f'{pco2} is not a variable in your dataset.')
 
     fac = 0.0432
     tos_mean = ds[temperature].mean(time_dim)
     tos_diff = ds[temperature] - tos_mean
-    thermal = (ds[pco2].mean(time_dim) * (np.exp(tos_diff * fac))).rename("thermal")
-    non_thermal = (ds[pco2] * (np.exp(tos_diff * -fac))).rename("non_thermal")
+    thermal = (ds[pco2].mean(time_dim) * (np.exp(tos_diff * fac))).rename('thermal')
+    non_thermal = (ds[pco2] * (np.exp(tos_diff * -fac))).rename('non_thermal')
     decomp = xr.merge([thermal, non_thermal])
     decomp.attrs[
-        "description"
-    ] = "Takahashi decomposition of pCO2 into thermal and non-thermal components."
+        'description'
+    ] = 'Takahashi decomposition of pCO2 into thermal and non-thermal components.'
     return decomp
 
 
@@ -221,7 +221,7 @@ def spco2_sensitivity(ds):
     """
 
     def _check_variables(ds):
-        requiredVars = ["spco2", "tos", "sos", "talkos", "dissicos"]
+        requiredVars = ['spco2', 'tos', 'sos', 'talkos', 'dissicos']
         if not all(i in ds.data_vars for i in requiredVars):
             missingVars = [i for i in requiredVars if i not in ds.data_vars]
             raise ValueError(
@@ -234,23 +234,23 @@ def spco2_sensitivity(ds):
     # sensitivities at each grid cell.
     # TODO: Add keyword for sliding mean, as in N year chunks of time to
     # account for trends.
-    DIC = ds["dissicos"]
-    ALK = ds["talkos"]
-    SALT = ds["sos"]
-    pCO2 = ds["spco2"]
+    DIC = ds['dissicos']
+    ALK = ds['talkos']
+    SALT = ds['sos']
+    pCO2 = ds['spco2']
 
     buffer_factor = dict()
-    buffer_factor["ALK"] = -(ALK ** 2) / ((2 * DIC - ALK) * (ALK - DIC))
-    buffer_factor["DIC"] = (3 * ALK * DIC - 2 * DIC ** 2) / (
+    buffer_factor['ALK'] = -(ALK ** 2) / ((2 * DIC - ALK) * (ALK - DIC))
+    buffer_factor['DIC'] = (3 * ALK * DIC - 2 * DIC ** 2) / (
         (2 * DIC - ALK) * (ALK - DIC)
     )
 
     # Compute sensitivities
     sensitivity = dict()
-    sensitivity["tos"] = 0.0423
-    sensitivity["sos"] = 1 / SALT
-    sensitivity["talkos"] = (1 / ALK) * buffer_factor["ALK"]
-    sensitivity["dissicos"] = (1 / DIC) * buffer_factor["DIC"]
+    sensitivity['tos'] = 0.0423
+    sensitivity['sos'] = 1 / SALT
+    sensitivity['talkos'] = (1 / ALK) * buffer_factor['ALK']
+    sensitivity['dissicos'] = (1 / DIC) * buffer_factor['DIC']
     sensitivity = xr.Dataset(sensitivity) * pCO2
     return sensitivity
 
@@ -304,9 +304,9 @@ def spco2_decomposition_index(
     def regression_against_index(ds, index, psig=None):
         terms = dict()
         for term in ds.data_vars:
-            if term != "spco2":
-                reg = linear_regression(index, ds[term], psig=psig)
-                terms[term] = reg["slope"]
+            if term != 'spco2':
+                reg = linregress(index, ds[term], psig=psig)
+                terms[term] = reg['slope']
         terms = xr.Dataset(terms)
         return terms
 
@@ -317,16 +317,16 @@ def spco2_decomposition_index(
                        your time series if you are using detrend."""
         )
     elif detrend:
-        ds_terms_anomaly = rm_poly(ds_terms, order=order, dim="time")
+        ds_terms_anomaly = rm_poly(ds_terms, order=order, dim='time')
     else:
-        warnings.warn("Your data are not being detrended.")
+        warnings.warn('Your data are not being detrended.')
         ds_terms_anomaly = ds_terms - nanmean(ds_terms)
 
     if deseasonalize:
-        clim = ds_terms_anomaly.groupby("time.month").mean("time")
-        ds_terms_anomaly = ds_terms_anomaly.groupby("time.month") - clim
+        clim = ds_terms_anomaly.groupby('time.month').mean('time')
+        ds_terms_anomaly = ds_terms_anomaly.groupby('time.month') - clim
     else:
-        warnings.warn("Your data are not being deseasonalized.")
+        warnings.warn('Your data are not being deseasonalized.')
 
     # Apply sliding window to regressions. I.e., compute in N year chunks
     # then average the resulting dpCO2/dX.
@@ -334,8 +334,8 @@ def spco2_decomposition_index(
         terms = regression_against_index(ds_terms_anomaly, index)
         terms_in_pCO2_units = terms * nanmean(pco2_sensitivity)
     else:
-        years = [y for y in index.groupby("time.year").groups]
-        y_end = index["time.year"][-1]
+        years = [y for y in index.groupby('time.year').groups]
+        y_end = index['time.year'][-1]
         res = []
         for y1 in tqdm(years):
             y2 = y1 + sliding_window
@@ -345,11 +345,11 @@ def spco2_decomposition_index(
                 terms = regression_against_index(ds, ind)
                 sens = pco2_sensitivity.sel(time=slice(str(y1), str(y2)))
                 res.append(terms * nanmean(sens))
-        terms_in_pCO2_units = xr.concat(res, dim="time").mean("time")
+        terms_in_pCO2_units = xr.concat(res, dim='time').mean('time')
 
     if plot:
         terms_in_pCO2_units.to_array().plot(
-            col="variable", cmap="RdBu_r", robust=True, **plot_kwargs
+            col='variable', cmap='RdBu_r', robust=True, **plot_kwargs
         )
     else:
         return terms_in_pCO2_units
@@ -389,18 +389,18 @@ def spco2_decomposition(ds_terms, detrend=True, order=1, deseasonalize=False):
                        to remove from your time series."""
         )
     elif detrend:
-        ds_terms_anomaly = rm_poly(ds_terms, order=order, dim="time")
+        ds_terms_anomaly = rm_poly(ds_terms, order=order, dim='time')
     else:
-        warnings.warn("Your data are not being detrended.")
-        ds_terms_anomaly = ds_terms - ds_terms.mean("time")
+        warnings.warn('Your data are not being detrended.')
+        ds_terms_anomaly = ds_terms - ds_terms.mean('time')
 
     if deseasonalize:
-        clim = ds_terms_anomaly.groupby("time.month").mean("time")
-        ds_terms_anomaly = ds_terms_anomaly.groupby("time.month") - clim
+        clim = ds_terms_anomaly.groupby('time.month').mean('time')
+        ds_terms_anomaly = ds_terms_anomaly.groupby('time.month') - clim
     else:
-        warnings.warn("Your data are not being deseasonalized.")
+        warnings.warn('Your data are not being deseasonalized.')
 
-    terms_in_pCO2_units = pco2_sensitivity.mean("time") * ds_terms_anomaly
+    terms_in_pCO2_units = pco2_sensitivity.mean('time') * ds_terms_anomaly
     return terms_in_pCO2_units
 
 
@@ -422,8 +422,8 @@ def calculate_compatible_emissions(global_co2_flux, co2atm_forcing):
         Journal of Climate 26, no. 13 (February 1, 2013): 4398–4413.
         https://doi.org/10/f44bbn.
     """
-    compatible_emissions = co2atm_forcing.diff("time") * 2.12 - global_co2_flux
-    compatible_emissions.name = "compatible_emissions"
+    compatible_emissions = co2atm_forcing.diff('time') * 2.12 - global_co2_flux
+    compatible_emissions.name = 'compatible_emissions'
     return compatible_emissions
 
 
@@ -435,21 +435,21 @@ def get_iam_emissions():
 
     """
     ds = []
-    member = ["rcp26", "rcp45", "rcp85"]
+    member = ['rcp26', 'rcp45', 'rcp85']
     for r in member:
-        if r == "rcp26":
-            r = "rcp3pd"
+        if r == 'rcp26':
+            r = 'rcp3pd'
         r = r.upper()
-        link = f"http://www.pik-potsdam.de/~mmalte/rcps/data/{r}_EMISSIONS.xls"
-        e = pd.read_excel(link, sheet_name=f"{r}_EMISSIONS", skiprows=35, header=2)
+        link = f'http://www.pik-potsdam.de/~mmalte/rcps/data/{r}_EMISSIONS.xls'
+        e = pd.read_excel(link, sheet_name=f'{r}_EMISSIONS', skiprows=35, header=2)
         e = e.set_index(e.columns[0])
-        e.index.name = "Year"
-        ds.append(e[["FossilCO2", "OtherCO2"]].to_xarray())
-    ds = xr.concat(ds, "member")
-    ds = ds.sel(Year=slice(1850, 2100)).rename({"Year": "time"})
-    ds["member"] = member
-    ds["IAM_emissions"] = ds["FossilCO2"] + ds["OtherCO2"]
-    return ds["IAM_emissions"]
+        e.index.name = 'Year'
+        ds.append(e[['FossilCO2', 'OtherCO2']].to_xarray())
+    ds = xr.concat(ds, 'member')
+    ds = ds.sel(Year=slice(1850, 2100)).rename({'Year': 'time'})
+    ds['member'] = member
+    ds['IAM_emissions'] = ds['FossilCO2'] + ds['OtherCO2']
+    return ds['IAM_emissions']
 
 
 def plot_compatible_emissions(
@@ -484,54 +484,54 @@ def plot_compatible_emissions(
         fig, ax = plt.subplots(figsize=(10, 6))
     # hist
     alpha = 0.1
-    c = "gray"
+    c = 'gray'
     compatible_emissions.isel(member=0).sel(
         time=slice(None, 2005)
-    ).to_dataframe().unstack()["compatible_emissions"].plot(
+    ).to_dataframe().unstack()['compatible_emissions'].plot(
         ax=ax, legend=False, color=c, alpha=alpha
     )
     compatible_emissions.isel(member=0).sel(time=slice(None, 2005)).mean(
-        "initialization"
-    ).plot(ax=ax, color="w", lw=3)
+        'initialization'
+    ).plot(ax=ax, color='w', lw=3)
     compatible_emissions.isel(member=0).sel(time=slice(None, 2005)).mean(
-        "initialization"
+        'initialization'
     ).plot(ax=ax, color=c, lw=2)
     # rcps
-    colors = ["royalblue", "orange", "red"][::-1]
+    colors = ['royalblue', 'orange', 'red'][::-1]
     for i, m in enumerate(global_co2_flux.member.values[::-1]):
         c = colors[i]
         compatible_emissions.sel(member=m).sel(
             time=slice(2005, None)
-        ).to_dataframe().unstack()["compatible_emissions"].plot(
+        ).to_dataframe().unstack()['compatible_emissions'].plot(
             ax=ax, legend=False, color=c, alpha=alpha
         )
         compatible_emissions.sel(member=m).sel(time=slice(2005, None)).mean(
-            "initialization"
-        ).plot(ax=ax, color="w", lw=3)
+            'initialization'
+        ).plot(ax=ax, color='w', lw=3)
         compatible_emissions.sel(member=m).sel(time=slice(2005, None)).mean(
-            "initialization"
+            'initialization'
         ).plot(ax=ax, color=c, lw=2)
 
     if iam_emissions is not None:
         ls = (0, (5, 5))
         iam_emissions.isel(member=0).sel(time=slice(None, 2005)).plot(
-            ax=ax, color="white", lw=3
+            ax=ax, color='white', lw=3
         )
         iam_emissions.isel(member=0).sel(time=slice(None, 2005)).plot(
-            ax=ax, color="gray", lw=2, ls=ls
+            ax=ax, color='gray', lw=2, ls=ls
         )
         for i, m in enumerate(global_co2_flux.member.values[::-1]):
             c = colors[i]
             iam_emissions.sel(member=m).sel(time=slice(2005, None)).plot(
-                ax=ax, color="white", lw=3
+                ax=ax, color='white', lw=3
             )
             iam_emissions.sel(member=m).sel(time=slice(2005, None)).plot(
                 ax=ax, color=c, lw=2, ls=ls
             )
 
     # fig aestetics
-    ax.axhline(y=0, ls=":", c="gray")
-    ax.set_ylabel("Compatible emissions [PgC/yr]")
-    ax.set_xlabel("Time [year]")
-    ax.set_title("Compatible emissions")
+    ax.axhline(y=0, ls=':', c='gray')
+    ax.set_ylabel('Compatible emissions [PgC/yr]')
+    ax.set_xlabel('Time [year]')
+    ax.set_title('Compatible emissions')
     return ax

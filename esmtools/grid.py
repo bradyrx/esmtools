@@ -1,5 +1,5 @@
-from .exceptions import CoordinateError
 from .checks import is_xarray
+from .exceptions import CoordinateError
 
 
 @is_xarray(0)

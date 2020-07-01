@@ -1,18 +1,15 @@
 import climpred.stats as st
 import numpy as np
 import numpy.polynomial.polynomial as poly
+import scipy
 import xarray as xr
-from scipy.stats import linregress as lreg
 
-from .checks import is_xarray, get_dims, has_dims
-from .utils import convert_time
+from .checks import has_dims, is_xarray
+from .utils import convert_time, get_dims
 
 
-# ------------------
-# GENERAL STATISTICS
-# ------------------
 @is_xarray(0)
-def standardize(ds, dim="time"):
+def standardize(ds, dim='time'):
     """Standardize Dataset/DataArray
 
     .. math::
@@ -30,9 +27,9 @@ def standardize(ds, dim="time"):
 
 
 @is_xarray(0)
-def nanmean(ds, dim="time"):
+def nanmean(ds, dim='time'):
     """Compute mean NaNs and suppress warning from numpy"""
-    if "time" in ds.dims:
+    if 'time' in ds.dims:
         mask = ds.isnull().isel(time=0)
     else:
         mask = ds.isnull()
@@ -41,17 +38,12 @@ def nanmean(ds, dim="time"):
     return ds
 
 
-# --------------------------
-# AREA-WEIGHTING DEFINITIONS
-# --------------------------
 @is_xarray(0)
-def cos_weight(da, lat_coord="lat", lon_coord="lon", one_dimensional=True):
+def cos_weight(da, lat_coord='lat', lon_coord='lon', one_dimensional=True):
     """
     Area-weights data on a regular (e.g. 360x180) grid that does not come with
     cell areas. Uses cosine-weighting.
-    NOTE: Currently explicitly writing `xr` as a prefix for xarray-specific
-    definitions. Since `esmtools` is supposed to be a wrapper for xarray,
-    this might be altered in the future.
+
     Parameters
     ----------
     da : DataArray with longitude and latitude
@@ -61,9 +53,11 @@ def cos_weight(da, lat_coord="lat", lon_coord="lon", one_dimensional=True):
         Name of longitude coordinate
     one_dimensional : bool (optional)
         If true, assumes that lat and lon are 1D (i.e. not a meshgrid)
+
     Returns
     -------
     aw_da : Area-weighted DataArray
+
     Examples
     --------
     import esmtools as et
@@ -79,7 +73,7 @@ def cos_weight(da, lat_coord="lat", lon_coord="lon", one_dimensional=True):
     else:
         lat = da[lat_coord]
     # NaN out land to not go into area-weighting
-    lat = lat.astype("float")
+    lat = lat.astype('float')
     nan_mask = np.asarray(da.isel(filter_dict).isnull())
     lat[nan_mask] = np.nan
     cos_lat = np.cos(np.deg2rad(lat))
@@ -88,7 +82,7 @@ def cos_weight(da, lat_coord="lat", lon_coord="lon", one_dimensional=True):
 
 
 @is_xarray(0)
-def area_weight(da, area_coord="area"):
+def area_weight(da, area_coord='area'):
     """
     Returns an area-weighted time series from the input xarray dataarray. This
     automatically figures out spatial dimensions vs. other dimensions. I.e.,
@@ -127,7 +121,7 @@ def area_weight(da, area_coord="area"):
     aw_da = da * masked_area
     # Sum over arbitrary number of dimensions.
     while len(dimlist) > 0:
-        print(f"Summing over {dimlist[0]}")
+        print(f'Summing over {dimlist[0]}')
         aw_da = aw_da.sum(dimlist[0])
         dimlist.pop(0)
     # Finish area-weighting by dividing by sum of area coordinate.
@@ -135,11 +129,31 @@ def area_weight(da, area_coord="area"):
     return aw_da
 
 
-# -----------
-# TIME SERIES
-# -----------
+def _preprocess_for_regression(x, y, dim):
+    """Preprocesses ``x`` and ``y`` for regression functions.
+
+    This checks that ``y`` is not the independent variable and converts the time
+    dimension to numeric units to account for differences in, e.g., lengths of months.
+    """
+    if isinstance(y, xr.DataArray) and (y.name == dim):
+        raise ValueError(
+            f'Dependent variable y should not be the same as the dim {dim} being '
+            'applied over. Change your y variable to x.'
+        )
+
+    # Converts time to days since 1990 to account for differences
+    # in e.g. lengths of months.
+    if isinstance(x, xr.DataArray):
+        try:
+            if x.name == dim:
+                x = convert_time(x, dim)
+        except KeyError:
+            pass
+    return x, y
+
+
 @is_xarray([0, 1])
-def compute_slope(x, y, dim="time"):
+def linear_slope(x, y, dim='time'):
     """Returns the linear slope with y regressed onto x.
 
     Args:
@@ -150,57 +164,15 @@ def compute_slope(x, y, dim="time"):
 
     Returns:
         xarray object: Slopes computed through a least-squares linear regression.
-
-    TO TEST:
-    * DataArray (grid/ts) works
-    * Dataset (grid/ts) works
-    * Dask works
     """
-    # Hacky fix. Should look into this. But need vectorize to be `False` on
-    # apply_ufunc if just a time series regressed. This makes sense since it doesn't
-    # need to be vectorized, but also this only seems to break when it's chunked.
-    # NOTE: Add tests.
-    if len(x.dims) == 1 and len(y.dims) == 1:
-        vectorize = False
-    else:
-        vectorize = True
-
-    # Add check that `x` and `y` have the requested dim.
-
-    def _compute_slope(x, y):
-        """Private function to wrap polyfit.
-
-        Args:
-            x (ndarray): Independent variable for linear regression.
-            y (ndarray): Dependent variable for linear regression.
-        """
-        return np.polyfit(x, y, 1)[0]  # return only the slope.
-
-    # Converts time to days since 1990 to regress accounting for differences
-    # in e.g. lengths of months.
-    # NOTE: Make this cleaner. Also test this bug?
-    if isinstance(x, xr.DataArray):
-        try:
-            if x.name == dim:
-                x = convert_time(x, dim)
-        except KeyError:
-            pass
-    if isinstance(y, xr.DataArray):
-        try:
-            if y.name == dim:
-                y = convert_time(y, dim)
-        except KeyError:
-            pass
-
-    # NOTE: Add NaN control functionality. Will have subfunction but should
-    # skip, interpoalte, etc.
+    x, y = _preprocess_for_regression(x, y, dim)
 
     slopes = xr.apply_ufunc(
-        _compute_slope,
+        lambda x, y: np.polyfit(x, y, 1)[0],
         x,
         y,
-        vectorize=vectorize,
-        dask="parallelized",
+        vectorize=True,
+        dask='parallelized',
         input_core_dims=[[dim], [dim]],
         output_dtypes=[float],
     )
@@ -208,27 +180,29 @@ def compute_slope(x, y, dim="time"):
 
 
 @is_xarray([0, 1])
-def linear_regression(x, y, dim="time"):
+def linregress(x, y, dim='time'):
     """Applies the `scipy.stats` linregress to a grid."""
-    x = convert_time(x, dim)
-    # NOTE: Add NaN control.
-    # NOTE: Can't use `parallelized` with multiple outputs. Either look
-    # into `map_blocks` or think about other ways to get significance.
-    # Is it just significance you want here?
+    x, y = _preprocess_for_regression(x, y, dim)
+
     results = xr.apply_ufunc(
-        lreg,
+        lambda x, y: np.asarray(scipy.stats.linregress(x, y)),
         x,
         y,
-        input_core_dims=[[dim], [dim]],
-        output_core_dims=[[], [], [], [], []],
         vectorize=True,
-        dask="allowed",
+        dask='parallelized',
+        input_core_dims=[[dim], [dim]],
+        output_core_dims=[['parameter']],
+        output_dtypes=['float64'],
+        output_sizes={'parameter': 5},
+    )
+    results = results.assign_coords(
+        parameter=['slope', 'intercept', 'rvalue', 'pvalue', 'stderr']
     )
     return results
 
 
 @is_xarray(0)
-def fit_poly(ds, order, dim="time"):
+def fit_poly(ds, order, dim='time'):
     """Returns the fitted polynomial line of order N
 
     .. note::
@@ -245,7 +219,7 @@ def fit_poly(ds, order, dim="time"):
     References:
         This is a modification of @ahuang11's script `rm_poly` in `climpred`.
     """
-    has_dims(ds, dim, "dataset")
+    has_dims(ds, dim, 'dataset')
 
     # handle both datasets and dataarray
     if isinstance(ds, xr.Dataset):
@@ -266,7 +240,7 @@ def fit_poly(ds, order, dim="time"):
         da = da.transpose(*da_dims_swap)
 
         # hide other dims into a single dim
-        da = da.stack({"other_dims": da_dims_swap[1:]})
+        da = da.stack({'other_dims': da_dims_swap[1:]})
         dims_swapped = True
     else:
         dims_swapped = False
@@ -307,20 +281,20 @@ def fit_poly(ds, order, dim="time"):
 
     if dims_swapped:
         # revert the other dimensions to its original form and ordering
-        fit = fit.unstack("other_dims").transpose(*da_dims_orig)
+        fit = fit.unstack('other_dims').transpose(*da_dims_orig)
 
     if return_ds:
         # revert back into a dataset
         return xr.merge(
-            fit.sel(variable=var).rename(var).drop("variable")
-            for var in fit["variable"].values
+            fit.sel(variable=var).rename(var).drop('variable')
+            for var in fit['variable'].values
         )
     else:
         return fit
 
 
 @is_xarray(0)
-def corr(x, y, dim="time", lead=0, return_p=False):
+def corr(x, y, dim='time', lead=0, return_p=False):
     """
     Computes the Pearson product-momment coefficient of linear correlation.
 
@@ -370,7 +344,7 @@ def corr(x, y, dim="time", lead=0, return_p=False):
 
 
 @is_xarray(0)
-def rm_poly(da, order, dim="time"):
+def rm_poly(da, order, dim='time'):
     """
     Returns xarray object with nth-order fit removed from every time series.
     Input
@@ -392,7 +366,7 @@ def rm_poly(da, order, dim="time"):
 
 
 @is_xarray(0)
-def rm_trend(da, dim="time"):
+def rm_trend(da, dim='time'):
     """
     Calls rm_poly with an order 1 argument.
     """
@@ -400,7 +374,7 @@ def rm_trend(da, dim="time"):
 
 
 @is_xarray(0)
-def autocorr(ds, lag=1, dim="time", return_p=False):
+def autocorr(ds, lag=1, dim='time', return_p=False):
     """
     Calculated lagged correlation of a xr.Dataset.
     Parameters
@@ -422,7 +396,7 @@ def autocorr(ds, lag=1, dim="time", return_p=False):
 
 
 @is_xarray(0)
-def ACF(ds, dim="time", nlags=None):
+def ACF(ds, dim='time', nlags=None):
     """
     Compute the ACF of a time series to a specific lag.
 

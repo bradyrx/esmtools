@@ -3,18 +3,9 @@ channels:
   - conda-forge
 dependencies:
   - python=3.6
-  # development
-  - black
-  - coveralls
-  - flake8
-  - importlib_metadata
-  - isort
-  - jupyterlab
+  # Documentation
   - nbsphinx
   - nbstripout
-  - pytest
-  - pytest-cov
-  - sphinx
   - sphinx_rtd_theme
   - sphinx
   - sphinxcontrib-napoleon
@@ -34,6 +25,7 @@ dependencies:
   - coveralls
   - flake8
   - importlib_metadata
+  - isort
   - pre-commit
   - pytest
   - pytest-cov
