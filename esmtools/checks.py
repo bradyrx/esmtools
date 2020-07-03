@@ -1,7 +1,13 @@
 from functools import wraps
 
+import numpy as np
 import xarray as xr
-from pandas.core.indexes.datetimes import DatetimeIndex
+
+from .exceptions import DimensionError
+
+
+def has_missing(data):
+    return np.isnan(data).any()
 
 
 # https://stackoverflow.com/questions/10610824/
@@ -10,21 +16,6 @@ def dec_args_kwargs(wrapper):
     return lambda *dec_args, **dec_kwargs: lambda func: wrapper(
         func, *dec_args, **dec_kwargs
     )
-
-
-def is_time_index(xobj, kind):
-    """
-    Checks that xobj coming through is a DatetimeIndex or CFTimeIndex.
-
-    This checks that `esmtools` is converting the DataArray to an index,
-    i.e. through .to_index()
-    """
-    if not (isinstance(xobj, xr.CFTimeIndex) or isinstance(xobj, DatetimeIndex)):
-        raise ValueError(
-            f'Your {kind} object must be either an xr.CFTimeIndex or '
-            f'pd.DatetimeIndex.'
-        )
-    return True
 
 
 @dec_args_kwargs
