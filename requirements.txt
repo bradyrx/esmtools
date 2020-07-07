@@ -4,4 +4,4 @@ numpy
 scipy
 statsmodels
 tqdm
-xarray
+xarray>=0.15.1

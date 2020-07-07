@@ -7,6 +7,11 @@ from .exceptions import DimensionError
 
 
 def has_missing(data):
+    """Returns ``True`` if any NaNs in ``data`` and ``False`` otherwise.
+
+    Args:
+        data (ndarray or xarray object): Array to check for missing data.
+    """
     return np.isnan(data).any()
 
 
@@ -16,6 +21,26 @@ def dec_args_kwargs(wrapper):
     return lambda *dec_args, **dec_kwargs: lambda func: wrapper(
         func, *dec_args, **dec_kwargs
     )
+
+
+def has_dims(xobj, dims, kind):
+    """
+    Checks that at the minimum, the object has provided dimensions.
+
+    Args:
+        xobj (xarray object): Dataset or DataArray to check dimensions on.
+        dims (list or str): Dimensions being checked.
+        kind (str): String to precede "object" in the error message.
+    """
+    if isinstance(dims, str):
+        dims = [dims]
+
+    if not all(dim in xobj.dims for dim in dims):
+        raise DimensionError(
+            f"Your {kind} object must contain the "
+            f"following dimensions at the minimum: {dims}"
+        )
+    return True
 
 
 @dec_args_kwargs

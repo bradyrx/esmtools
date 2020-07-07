@@ -6,7 +6,7 @@ import numpy.polynomial.polynomial as poly
 import scipy
 import xarray as xr
 
-from .checks import has_missing, is_xarray
+from .checks import has_dims, has_missing, is_xarray
 from .timeutils import TimeUtilAccessor
 from .utils import get_dims, match_nans
 
@@ -153,8 +153,9 @@ def _check_y_not_independent_variable(y, dim):
 def _convert_time_and_return_slope_factor(x, dim):
     """Converts `x` to numeric time (if datetime) and returns slope factor.
 
-    This accounts for differences in length of months, leap years, etc. when fitting
-    a regression and also ensures that the numpy functions don't break with datetimes.
+    The numeric time accounts for differences in length of months, leap years, etc.
+    when fitting a regression and also ensures that the numpy functions don't break
+    with datetimes.
 
     Args:
         x (xr.DataArray or xr.Dataset): Independent variable from statistical functions.
@@ -162,7 +163,7 @@ def _convert_time_and_return_slope_factor(x, dim):
 
     Returns:
         x (xr.DataArray or xr.Dataset): If `x` is a time axis, converts to numeric
-            time.
+            time. Otherwise, return the original `x`.
         slope_factor (float): Factor to multiply slope by if returning regression
             results. This accounts for the fact that datetimes are converted to
             "days since 1990-01-01" numeric time and thus the answer comes out
@@ -172,8 +173,7 @@ def _convert_time_and_return_slope_factor(x, dim):
     """
     slope_factor = 1.0
     if isinstance(x, xr.DataArray):
-        x_type = x.timeutils.type
-        if x_type in ["DatetimeIndex", "CFTimeIndex"]:
+        if x.timeutils.is_temporal:
             slope_factor = x.timeutils.slope_factor
             x = x.timeutils.return_numeric_time()
     return x, slope_factor
@@ -195,9 +195,9 @@ def _handle_nans(x, y, nan_policy):
         x, y (xr.DataArray or ndarrays): Modified `x` and `y` datasets.
 
     Raises:
-        ValueError: If `nan_policy` is 'raise' and there are nans in either `x` or `y`,
-            if `nan_policy` is no one of ['none', 'propagate', 'raise', 'omit',
-            'drop'], or if `x` or `y` are larger than 1-dimensional.
+        ValueError: If `nan_policy` is 'raise' and there are nans in either `x` or `y`;
+            if `nan_policy` is not one of ['none', 'propagate', 'raise', 'omit',
+            'drop']; or if `x` or `y` are larger than 1-dimensional.
     """
     # Only support 1D, since we are doing `~np.isnan()` indexing for 'omit'/'drop'.
     if (x.ndim > 1) or (y.ndim > 1):
@@ -218,6 +218,8 @@ def _handle_nans(x, y, nan_policy):
     elif nan_policy in ["omit", "drop"]:
         if has_missing(x) or has_missing(y):
             x_mod, y_mod = match_nans(x, y)
+            # The above function pairwise-matches nans. Now we remove them so that we
+            # can compute the statistic without the nans.
             x_mod = x_mod[np.isfinite(x_mod)]
             y_mod = y_mod[np.isfinite(y_mod)]
             return x_mod, y_mod
@@ -247,13 +249,16 @@ def _polyfit(x, y, order, nan_policy):
                 compute the slope without it.
 
     Returns:
-        fit (ndarray): If ``nan_policy`` is 'none' or 'propagate' and a nan exists
-            in the time series, returns all nans. Otherwise, returns the polynomial
-            fit.
+        fit (ndarray, xarray object): If ``nan_policy`` is 'none' or 'propagate' and
+            a nan exists in the time series, returns all nans. Otherwise, returns the
+            polynomial fit.
     """
     x_mod, y_mod = _handle_nans(x, y, nan_policy)
+    # This catches cases where a given grid cell is full of nans, like in land masking.
     if (nan_policy in ['omit', 'drop']) and (x_mod.size == 0):
         return np.full(len(x), np.nan)
+    # This catches cases where there is missing values in the independent axis, which
+    # breaks polyfit.
     elif (nan_policy in ['none', 'propagate']) and (has_missing(x_mod)):
         return np.full(len(x), np.nan)
     else:
@@ -270,10 +275,8 @@ def _warn_if_not_converted_to_original_time_units(x):
         x (xr.DataArray or xr.Dataset): Independent variable for statistical functions.
     """
     if isinstance(x, xr.DataArray):
-        x_type = x.timeutils.type
-        if x_type in ["DatetimeIndex", "CFTimeIndex"]:
-            freq = x.timeutils.freq
-            if freq is None:
+        if x.timeutils.is_temporal:
+            if x.timeutils.freq is None:
                 warnings.warn(
                     "Datetime frequency not detected. Slope and std. errors will be "
                     "in original units per day (e.g., degC per day). Multiply by "
@@ -310,13 +313,19 @@ def linear_slope(x, y, dim="time", nan_policy="none"):
     Returns:
         xarray object: Slopes computed through a least-squares linear regression.
     """
+    has_dims(x, dim, 'predictor (x)')
+    has_dims(y, dim, 'predictand (y)')
     _check_y_not_independent_variable(y, dim)
     x, slope_factor = _convert_time_and_return_slope_factor(x, dim)
 
     def _linear_slope(x, y, nan_policy):
         x, y = _handle_nans(x, y, nan_policy)
+        # This catches cases where a given grid cell is full of nans, like in
+        # land masking.
         if (nan_policy in ['omit', 'drop']) and (x.size == 0):
             return np.asarray([np.nan])
+        # This catches cases where there is missing values in the independent axis,
+        # which breaks polyfit.
         elif (nan_policy in ['none', 'propagate']) and (has_missing(x)):
             return np.asarray([np.nan])
         else:
@@ -368,17 +377,21 @@ def linregress(x, y, dim="time", nan_policy="none"):
             "parameter".
 
     """
+    has_dims(x, dim, 'predictor (x)')
+    has_dims(y, dim, 'predictand (y)')
     _check_y_not_independent_variable(y, dim)
     x, slope_factor = _convert_time_and_return_slope_factor(x, dim)
 
     def _linregress(x, y, slope_factor, nan_policy):
         x, y = _handle_nans(x, y, nan_policy)
+        # This catches cases where a given grid cell is full of nans, like in
+        # land masking.
         if (nan_policy in ['omit', 'drop']) and (x.size == 0):
             return np.full(5, np.nan)
         else:
             m, b, r, p, e = scipy.stats.linregress(x, y)
-            # Multiply slope by factor. If time indices converted to numeric units, this
-            # gets them back to the original units.
+            # Multiply slope and standard error by factor. If time indices were
+            # converted to numeric units, this gets them back to the original units.
             m *= slope_factor
             e *= slope_factor
             return np.array([m, b, r, p, e])
@@ -407,6 +420,10 @@ def linregress(x, y, dim="time", nan_policy="none"):
 def polyfit(x, y, order, dim="time", nan_policy="none"):
     """Returns the fitted polynomial line of ``y`` regressed onto ``x``.
 
+    .. note::
+
+        This will be released as a standard ``xarray`` func in 0.15.2.
+
     Args:
         x, y (xr.DataArray or xr.Dataset): Independent and dependent variables used in
             the polynomial fit.
@@ -426,6 +443,8 @@ def polyfit(x, y, order, dim="time", nan_policy="none"):
         xarray object: The polynomial fit for ``y`` regressed onto ``x``. Has the same
             dimensions as ``y``.
     """
+    has_dims(x, dim, 'predictor (x)')
+    has_dims(y, dim, 'predictand (y)')
     _check_y_not_independent_variable(y, dim)
     x, _ = _convert_time_and_return_slope_factor(x, dim)
 
@@ -465,6 +484,8 @@ def rm_poly(x, y, order, dim="time", nan_policy="none"):
     Returns:
         xarray object: ``y`` with polynomial fit of order ``order`` removed.
     """
+    has_dims(x, dim, 'predictor (x)')
+    has_dims(y, dim, 'predictand (y)')
     _check_y_not_independent_variable(y, dim)
     x, _ = _convert_time_and_return_slope_factor(x, dim)
 
