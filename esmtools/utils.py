@@ -22,9 +22,6 @@ def match_nans(x, y):
             x = x.astype("float")
         if y.dtype == "int":
             y = y.astype("float")
-        # Need to do the following two lines, only if ndarrays.
-        x.setflags(write=1)
-        y.setflags(write=1)
         x[idx] = np.nan
         y[idx] = np.nan
     return x, y

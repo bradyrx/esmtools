@@ -254,6 +254,8 @@ def _polyfit(x, y, order, nan_policy):
     x_mod, y_mod = _handle_nans(x, y, nan_policy)
     if (nan_policy in ['omit', 'drop']) and (x_mod.size == 0):
         return np.full(len(x), np.nan)
+    elif (nan_policy in ['none', 'propagate']) and (has_missing(x_mod)):
+        return np.full(len(x), np.nan)
     else:
         # fit to data without nans, return applied to original independent axis.
         coefs = poly.polyfit(x_mod, y_mod, order)
@@ -314,6 +316,8 @@ def linear_slope(x, y, dim="time", nan_policy="none"):
     def _linear_slope(x, y, nan_policy):
         x, y = _handle_nans(x, y, nan_policy)
         if (nan_policy in ['omit', 'drop']) and (x.size == 0):
+            return np.asarray([np.nan])
+        elif (nan_policy in ['none', 'propagate']) and (has_missing(x)):
             return np.asarray([np.nan])
         else:
             return np.polyfit(x, y, 1)[0]
@@ -483,7 +487,7 @@ def rm_poly(x, y, order, dim="time", nan_policy="none"):
 
 
 @is_xarray(0)
-def rm_trend(x, y, dim="time"):
+def rm_trend(x, y, dim="time", nan_policy="none"):
     """Removes a linear fit from ``y`` regressed onto ``x``.
 
     Args:
@@ -503,7 +507,7 @@ def rm_trend(x, y, dim="time"):
     Returns:
         xarray object: ``y`` with linear fit removed.
     """
-    return rm_poly(x, y, 1, dim=dim)
+    return rm_poly(x, y, 1, dim=dim, nan_policy=nan_policy)
 
 
 @is_xarray(0)

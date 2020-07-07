@@ -19,6 +19,23 @@ def gridded_da_float():
 
 
 @pytest.fixture()
+def gridded_da_landmask(gridded_da_float):
+    data = gridded_da_float()
+    # Mask arbitrary chunk through all time to simulate land mask.
+    data = data.where((data.lat < 2) & (data.lon > 0))
+    return data
+
+
+@pytest.fixture()
+def gridded_da_missing_data(gridded_da_float):
+    data = gridded_da_float()
+    # Add nan to arbitrary time steps.
+    data[5, 0, 0] = np.nan
+    data[3, 1, 0] = np.nan
+    return data
+
+
+@pytest.fixture()
 def gridded_da_datetime():
     """Mock data of gridded time series in numpy datetime."""
     # Wrapper so fixture can be called multiple times.
@@ -101,3 +118,39 @@ def ts_annual_da():
         return da
 
     return _gen_data
+
+
+@pytest.fixture()
+def annual_all_leap():
+    data = xr.DataArray(np.random.rand(12,), dims=['time'])
+    data['time'] = xr.cftime_range(
+        '1990', freq='YS', periods=data.time.size, calendar='all_leap'
+    )
+    return data
+
+
+@pytest.fixture()
+def annual_no_leap():
+    data = xr.DataArray(np.random.rand(12,), dims=['time'])
+    data['time'] = xr.cftime_range(
+        '1990', freq='YS', periods=data.time.size, calendar='noleap'
+    )
+    return data
+
+
+@pytest.fixture()
+def annual_gregorian():
+    data = xr.DataArray(np.random.rand(12,), dims=['time'])
+    data['time'] = xr.cftime_range(
+        '1990', freq='YS', periods=data.time.size, calendar='gregorian'
+    )
+    return data
+
+
+@pytest.fixture()
+def annual_julian():
+    data = xr.DataArray(np.random.rand(12,), dims=['time'])
+    data['time'] = xr.cftime_range(
+        '1990', freq='YS', periods=data.time.size, calendar='julian'
+    )
+    return data
