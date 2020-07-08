@@ -38,7 +38,9 @@ def multipletests(p, alpha=0.05, method=None, **multipletests_kwargs):
         pvals_corrected (xr.object): p-values corrected for multiple tests
 
     Example:
-        reject, xpvals_corrected = xr_multipletest(p, method='fdr_bh')
+        >>> from esmtools.testing import multipletests
+        >>> reject, xpvals_corrected = multipletests(p, method='fdr_bh')
+
     """
     if method is None:
         raise ValueError(

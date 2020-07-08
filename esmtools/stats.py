@@ -398,6 +398,26 @@ def linregress(x, y, dim='time', nan_policy='none'):
 
 
 @is_xarray(0)
+def nanmean(ds, dim='time'):
+    """Compute mean of data with NaNs and suppress warning from numpy.
+
+    Args:
+        ds (xarray object): Dataset to compute mean over.
+        dim (str, optional): Dimension to compute mean over.
+
+    Returns
+        xarray object: Reduced by ``dim`` via mean operation.
+    """
+    if 'time' in ds.dims:
+        mask = ds.isnull().isel(time=0)
+    else:
+        mask = ds.isnull()
+    ds = ds.fillna(0).mean(dim)
+    ds = ds.where(~mask)
+    return ds
+
+
+@is_xarray(0)
 def polyfit(x, y, order, dim='time', nan_policy='none'):
     """Returns the fitted polynomial line of ``y`` regressed onto ``x``.
 

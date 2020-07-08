@@ -2,7 +2,8 @@ API Reference
 =============
 
 This page provides an auto-generated summary of esmtools's API.
-For more details and examples, refer to the relevant chapters in the main part of the documentation.
+For more details and examples, refer to the relevant chapters in the main part of the
+documentation.
 
 Carbon
 ------
@@ -16,16 +17,16 @@ Functions related to analyzing ocean (and perhaps terrestrial) biogeochemistry.
 .. autosummary::
     :toctree: api/
 
+    calculate_compatible_emissions
     co2_sol
-    schmidt
-    temp_decomp_takahashi
+    get_iam_emissions
+    plot_compatible_emissions
     potential_pco2
+    schmidt
     spco2_sensitivity
     spco2_decomposition_index
     spco2_decomposition
-    calculate_compatible_emissions
-    get_iam_emissions
-    plot_compatible_emissions
+    temp_decomp_takahashi
 
 Composite Analysis
 ------------------
@@ -42,6 +43,20 @@ some field (e.g., sea surface temperature) when some climate index
     :toctree: api/
 
     composite_analysis
+
+Conversions
+-----------
+
+``from esmtools.conversions import ...``
+
+.. currentmodule:: esmtools.conversions
+
+Functions related to unit conversions.
+
+.. autosummary::
+    :toctree: api/
+
+    convert_mpas_fgco2
 
 Grid Tools
 ----------
@@ -84,26 +99,24 @@ Functions related to spatial analysis.
 .. autosummary::
     :toctree: api/
 
-    find_indices
     extract_region
+    find_indices
 
-Stats
------
+Statistics
+----------
 
 ``from esmtools.stats import ...``
 
 .. currentmodule:: esmtools.stats
 
-Statistical functions. A portion directly wrap functions from ``climpred``.
+Functions dealing with statistics.
 
 .. autosummary::
     :toctree: api/
 
     ACF
-    area_weight
     autocorr
     corr
-    cos_weight
     linear_slope
     linregress
     polyfit
@@ -111,21 +124,6 @@ Statistical functions. A portion directly wrap functions from ``climpred``.
     rm_poly
     rm_trend
     standardize
-
-Testing
--------
-
-``from esmtools.testing import ...``
-
-.. currentmodule:: esmtools.testing
-
-Statistical tests.
-
-.. autosummary::
-    :toctree: api/
-
-    ttest_ind_from_stats
-    multipletests
 
 Temporal
 --------
@@ -140,3 +138,19 @@ Functions related to time.
     :toctree: api/
 
     to_annual
+
+
+Testing
+-------
+
+``from esmtools.testing import ...``
+
+.. currentmodule:: esmtools.testing
+
+Functions specifically focused on statistical testing.
+
+.. autosummary::
+    :toctree: api/
+
+    multipletests
+    ttest_ind_from_stats

@@ -33,6 +33,7 @@ You can install the latest release of ``esmtools`` using ``pip``:
 
 * :doc:`examples`
 * :doc:`accessors`
+
 .. toctree::
     :maxdepth: 1
     :hidden:
@@ -49,6 +50,7 @@ You can install the latest release of ``esmtools`` using ``pip``:
 * :doc:`release_procedure`
 * :doc:`contributors`
 * :doc:`additional_packages`
+
 .. toctree::
     :maxdepth: 1
     :hidden:
