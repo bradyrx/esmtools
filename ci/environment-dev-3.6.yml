@@ -31,7 +31,7 @@ dependencies:
   - pytest-cov
   - pytest-sugar
   # Statistics
-  - climpred
+  - climpred>=2.1.0
   - scipy
   - statsmodels
   # Visualization
