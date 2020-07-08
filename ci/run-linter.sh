@@ -13,4 +13,4 @@ echo "[black]"
 black --check --line-length=88 -S esmtools
 
 echo "[isort]"
-isort --recursive -w 88 --check-only esmtools
+isort -w 88 --check-only esmtools
