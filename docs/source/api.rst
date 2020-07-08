@@ -34,7 +34,9 @@ Composite Analysis
 
 .. currentmodule:: esmtools.composite
 
-Functions pertaining to composite analysis. Composite analysis takes the mean view of some field (e.g., sea surface temperature) when some climate index (e.g., El Nino Southern Oscillation) is in its negative or positive mode.
+Functions pertaining to composite analysis. Composite analysis takes the mean view of
+some field (e.g., sea surface temperature) when some climate index
+(e.g., El Nino Southern Oscillation) is in its negative or positive mode.
 
 .. autosummary::
     :toctree: api/
@@ -97,18 +99,18 @@ Statistical functions. A portion directly wrap functions from ``climpred``.
 .. autosummary::
     :toctree: api/
 
-    standardize
-    nanmean
-    cos_weight
+    ACF
     area_weight
-    smooth_series
-    fit_poly
-    linear_regression
+    autocorr
     corr
+    cos_weight
+    linear_slope
+    linregress
+    polyfit
+    nanmean
     rm_poly
     rm_trend
-    autocorr
-    ACF
+    standardize
 
 Testing
 -------
@@ -123,7 +125,7 @@ Statistical tests.
     :toctree: api/
 
     ttest_ind_from_stats
-    multipletest
+    multipletests
 
 Temporal
 --------
