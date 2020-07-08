@@ -6,24 +6,7 @@ from statsmodels.stats.multitest import multipletests as statsmodels_multipletes
 from .checks import is_xarray
 from .constants import MULTIPLE_TESTS
 
-__all__ = ["ttest_ind_from_stats", "multipletests"]
-
-
-def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2):
-    """Parallelize scipy.stats.ttest_ind_from_stats."""
-    return xr.apply_ufunc(
-        tti_from_stats,
-        mean1,
-        std1,
-        nobs1,
-        mean2,
-        std2,
-        nobs2,
-        input_core_dims=[[], [], [], [], [], []],
-        output_core_dims=[[], []],
-        vectorize=True,
-        dask="parallelized",
-    )
+__all__ = ['ttest_ind_from_stats', 'multipletests']
 
 
 @is_xarray(0)
@@ -55,12 +38,14 @@ def multipletests(p, alpha=0.05, method=None, **multipletests_kwargs):
         pvals_corrected (xr.object): p-values corrected for multiple tests
 
     Example:
-        reject, xpvals_corrected = xr_multipletest(p, method='fdr_bh')
+        >>> from esmtools.testing import multipletests
+        >>> reject, xpvals_corrected = multipletests(p, method='fdr_bh')
+
     """
     if method is None:
         raise ValueError(
             f"Please indicate a method using the 'method=...' keyword. "
-            f"Select from {MULTIPLE_TESTS}"
+            f'Select from {MULTIPLE_TESTS}'
         )
     elif method not in MULTIPLE_TESTS:
         raise ValueError(
@@ -81,4 +66,35 @@ def multipletests(p, alpha=0.05, method=None, **multipletests_kwargs):
         p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
     )
 
-    return reject.unstack("s"), pvals_corrected.unstack("s")
+    return reject.unstack('s'), pvals_corrected.unstack('s')
+
+
+def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2, equal_var=True):
+    """Parallelize scipy.stats.ttest_ind_from_stats and make dask-compatible.
+
+    Args:
+        mean1, mean2 (array_like): The means of samples 1 and 2.
+        std1, std2 (array_like): The standard deviations of samples 1 and 2.
+        nobs1, nobs2 (array_like): The number of observations for samples 1 and 2.
+        equal_var (bool, optional): If True (default), perform a standard independent
+            2 sample test that assumes equal population variances. If False, perform
+            Welch's t-test, which does not assume equal population variance.
+
+    Returns:
+        statistic (float or array): The calculated t-statistics.
+        pvalue (float or array): The two-tailed p-value.
+    """
+    return xr.apply_ufunc(
+        tti_from_stats,
+        mean1,
+        std1,
+        nobs1,
+        mean2,
+        std2,
+        nobs2,
+        equal_var,
+        input_core_dims=[[], [], [], [], [], [], []],
+        output_core_dims=[[], []],
+        vectorize=True,
+        dask='parallelized',
+    )

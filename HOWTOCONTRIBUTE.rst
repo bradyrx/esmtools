@@ -4,7 +4,7 @@ Contribution Guide
 
 Contributions are highly welcomed and appreciated.  Every little help counts,
 so do not hesitate! You can make a high impact on ``esmtools`` just by using it and
-reporting `issues <https://github.com/bradyrx/esmtools/issues>`_.
+reporting `issues <https://github.com/bradyrx/esmtools/issues>`__.
 
 The following sections cover some general guidelines
 regarding development in ``esmtools`` for maintainers and contributors.
@@ -25,7 +25,7 @@ Feature requests and feedback
 
 We are eager to hear about your requests for new features and any suggestions about the
 API, infrastructure, and so on. Feel free to submit these as
-`issues <https://github.com/bradyrx/esmtools/issues/new>`_ with the label "feature request."
+`issues <https://github.com/bradyrx/esmtools/issues/new>`__ with the label "feature request."
 
 Please make sure to explain in detail how the feature should work and keep the scope as
 narrow as possible. This will make it easier to implement in small PRs.
@@ -36,7 +36,7 @@ narrow as possible. This will make it easier to implement in small PRs.
 Report bugs
 -----------
 
-Report bugs for ``esmtools`` in the `issue tracker <https://github.com/bradyrx/esmtools/issues>`_
+Report bugs for ``esmtools`` in the `issue tracker <https://github.com/bradyrx/esmtools/issues>`__
 with the label "bug".
 
 If you are reporting a bug, please include:
@@ -68,12 +68,15 @@ Write documentation
 
 * More complementary documentation.  Have you perhaps found something unclear?
 * Docstrings.  There can never be too many of them.
-* Example notebooks with different Earth System Models, lead times, etc. -- they're all very appreciated.
 
 You can also edit documentation files directly in the GitHub web interface,
 without using a local copy.  This can be convenient for small fixes.
 
-Our documentation is written in reStructuredText. You can follow our conventions in already written documents. Some helpful guides are located `here <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_ and `here <https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst>`_.
+Our documentation is written in reStructuredText. You can follow our conventions in
+already written documents. Some helpful guides are
+located `here <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`__
+and
+`here <https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst>`__.
 
 .. note::
     Build the documentation locally with the following command:
@@ -86,9 +89,12 @@ Our documentation is written in reStructuredText. You can follow our conventions
 
     The built documentation should be available in the ``docs/build/``.
 
-If you need to add new functions to the API, add the functions to ``api.rst`` then run ``sphinx-autogen -o api api.rst`` from the ``docs/source`` directory. You might need to run ``make clean`` from the ``docs/`` directory and then ``make html`` again to get the links to build properly.
+If you need to add new functions to the API, add the functions to ``api.rst`` then
+run ``sphinx-autogen -o api api.rst`` from the ``docs/source`` directory. You might
+need to run ``make clean`` from the ``docs/`` directory and then ``make html`` again
+to get the links to build properly.
 
- .. _`pull requests`:
+.. _`pull requests`:
 .. _pull-requests:
 
 Preparing Pull Requests
@@ -123,23 +129,25 @@ Preparing Pull Requests
 
     $ pip install -e .
 
-#. Install `pre-commit <https://pre-commit.com>`_ and its hook on the ``esmtools`` repo::
+#. Install `pre-commit <https://pre-commit.com>`_ and its hook on the ``esmtools``
+   repo::
 
      $ pip install --user pre-commit
      $ pre-commit install
 
    Afterwards ``pre-commit`` will run whenever you commit.
 
-   https://pre-commit.com/ is a framework for managing and maintaining multi-language pre-commit hooks
-   to ensure code-style and code formatting is consistent.
+   https://pre-commit.com/ is a framework for managing and maintaining multi-language
+   pre-commit hooks to ensure code-style and code formatting is consistent.
 
     Now you have an environment called ``esmtools-dev`` that you can work in.
     You’ll need to make sure to activate that environment next time you want
     to use it after closing the terminal or your system.
 
-    You can now edit your local working copy and run/add tests as necessary. Please follow
-    PEP-8 for naming. When committing, ``pre-commit`` will modify the files as needed, or
-    will generally be quite clear about what you need to do to pass the commit test.
+    You can now edit your local working copy and run/add tests as necessary. Please
+    follow PEP-8 for naming. When committing, ``pre-commit`` will modify the files as
+    needed, or will generally be quite clear about what you need to do to pass the
+    commit test.
 
 #. Break your edits up into reasonably sized commits.
 
@@ -162,21 +170,26 @@ Preparing Pull Requests
 
     <description> (``:pr:`#<pull request number>```) ```<author's names>`_``
 
-    where ``<description>`` is the description of the PR related to the change and ``<pull request number>`` is
-    the pull request number and ``<author's names>`` are your first and last names.
+    where ``<description>`` is the description of the PR related to the change and
+    ``<pull request number>`` is the pull request number and ``<author's names>`` are
+    your first and last names.
 
-   - Add yourself to list of authors at the end of ``CHANGELOG.rst`` file if not there yet, in alphabetical order.
+   - Add yourself to list of authors at the end of ``CHANGELOG.rst`` file if not there
+     yet, in alphabetical order.
 
- #. Add yourself to the `contributors <https://esmtools.readthedocs.io/en/latest/contributors.html>_` list via ``docs/source/contributors.rst``.
+ #. Add yourself to the
+    `contributors <https://esmtools.readthedocs.io/en/latest/contributors.html>_`
+    list via ``docs/source/contributors.rst``.
 
- #. Finally, submit a pull request through the GitHub website using this data::
+ #. Finally, submit a pull request through the GitHub website using this data
 
-    head-fork: YOUR_GITHUB_USERNAME/esmtools
-    compare: your-branch-name
+    ..code::
+        head-fork: YOUR_GITHUB_USERNAME/esmtools
+        compare: your-branch-name
 
-    base-fork: bradyrx/esmtools
-    base: master
+        base-fork: bradyrx/esmtools
+        base: master
 
-Note that you can create the Pull Request while you're working on this. The PR will update
-as you add more commits. ``esmtools`` developers and contributors can then review your code
-and offer suggestions.
+Note that you can create the Pull Request while you're working on this. The PR will
+update as you add more commits. ``esmtools`` developers and contributors can then
+review your code and offer suggestions.
