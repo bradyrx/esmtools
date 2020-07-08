@@ -255,11 +255,11 @@ def _polyfit(x, y, order, nan_policy):
     """
     x_mod, y_mod = _handle_nans(x, y, nan_policy)
     # This catches cases where a given grid cell is full of nans, like in land masking.
-    if (nan_policy in ['omit', 'drop']) and (x_mod.size == 0):
+    if (nan_policy in ["omit", "drop"]) and (x_mod.size == 0):
         return np.full(len(x), np.nan)
     # This catches cases where there is missing values in the independent axis, which
     # breaks polyfit.
-    elif (nan_policy in ['none', 'propagate']) and (has_missing(x_mod)):
+    elif (nan_policy in ["none", "propagate"]) and (has_missing(x_mod)):
         return np.full(len(x), np.nan)
     else:
         # fit to data without nans, return applied to original independent axis.
@@ -313,8 +313,8 @@ def linear_slope(x, y, dim="time", nan_policy="none"):
     Returns:
         xarray object: Slopes computed through a least-squares linear regression.
     """
-    has_dims(x, dim, 'predictor (x)')
-    has_dims(y, dim, 'predictand (y)')
+    has_dims(x, dim, "predictor (x)")
+    has_dims(y, dim, "predictand (y)")
     _check_y_not_independent_variable(y, dim)
     x, slope_factor = _convert_time_and_return_slope_factor(x, dim)
 
@@ -322,11 +322,11 @@ def linear_slope(x, y, dim="time", nan_policy="none"):
         x, y = _handle_nans(x, y, nan_policy)
         # This catches cases where a given grid cell is full of nans, like in
         # land masking.
-        if (nan_policy in ['omit', 'drop']) and (x.size == 0):
+        if (nan_policy in ["omit", "drop"]) and (x.size == 0):
             return np.asarray([np.nan])
         # This catches cases where there is missing values in the independent axis,
         # which breaks polyfit.
-        elif (nan_policy in ['none', 'propagate']) and (has_missing(x)):
+        elif (nan_policy in ["none", "propagate"]) and (has_missing(x)):
             return np.asarray([np.nan])
         else:
             return np.polyfit(x, y, 1)[0]
@@ -377,8 +377,8 @@ def linregress(x, y, dim="time", nan_policy="none"):
             "parameter".
 
     """
-    has_dims(x, dim, 'predictor (x)')
-    has_dims(y, dim, 'predictand (y)')
+    has_dims(x, dim, "predictor (x)")
+    has_dims(y, dim, "predictand (y)")
     _check_y_not_independent_variable(y, dim)
     x, slope_factor = _convert_time_and_return_slope_factor(x, dim)
 
@@ -386,7 +386,7 @@ def linregress(x, y, dim="time", nan_policy="none"):
         x, y = _handle_nans(x, y, nan_policy)
         # This catches cases where a given grid cell is full of nans, like in
         # land masking.
-        if (nan_policy in ['omit', 'drop']) and (x.size == 0):
+        if (nan_policy in ["omit", "drop"]) and (x.size == 0):
             return np.full(5, np.nan)
         else:
             m, b, r, p, e = scipy.stats.linregress(x, y)
@@ -443,8 +443,8 @@ def polyfit(x, y, order, dim="time", nan_policy="none"):
         xarray object: The polynomial fit for ``y`` regressed onto ``x``. Has the same
             dimensions as ``y``.
     """
-    has_dims(x, dim, 'predictor (x)')
-    has_dims(y, dim, 'predictand (y)')
+    has_dims(x, dim, "predictor (x)")
+    has_dims(y, dim, "predictand (y)")
     _check_y_not_independent_variable(y, dim)
     x, _ = _convert_time_and_return_slope_factor(x, dim)
 
@@ -484,8 +484,8 @@ def rm_poly(x, y, order, dim="time", nan_policy="none"):
     Returns:
         xarray object: ``y`` with polynomial fit of order ``order`` removed.
     """
-    has_dims(x, dim, 'predictor (x)')
-    has_dims(y, dim, 'predictand (y)')
+    has_dims(x, dim, "predictor (x)")
+    has_dims(y, dim, "predictand (y)")
     _check_y_not_independent_variable(y, dim)
     x, _ = _convert_time_and_return_slope_factor(x, dim)
 

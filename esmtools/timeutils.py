@@ -4,7 +4,7 @@ import pandas as pd
 import xarray as xr
 from xarray.core.common import contains_cftime_datetimes, is_np_datetime_like
 
-from .constants import CALENDARS, DAYS_PER_MONTH, DAYS_PER_YEAR
+from .constants import DAYS_PER_MONTH, DAYS_PER_YEAR
 
 
 @xr.register_dataarray_accessor("timeutils")

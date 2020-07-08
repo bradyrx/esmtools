@@ -376,10 +376,11 @@ def spco2_decomposition(ds_terms, detrend=True, order=1, deseasonalize=False):
         terms_in_pCO2_units (xr.Dataset): terms of spco2 decomposition
 
     References:
-    * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
-        “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
-        the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
-        (2007). https://doi.org/10/fpv2wt.
+        * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
+          “Enhanced CO2 Outgassing in the Southern Ocean from a Positive Phase of
+          the Southern Annular Mode.” Global Biogeochemical Cycles 21, no. 2
+          (2007). https://doi.org/10/fpv2wt.
+
     """
     pco2_sensitivity = spco2_sensitivity(ds_terms)
 
@@ -414,13 +415,14 @@ def calculate_compatible_emissions(global_co2_flux, co2atm_forcing):
     Returns:
         xr.object: compatible emissions in PgC/yr.
 
-    References:
-    * Jones, Chris, Eddy Robertson, Vivek Arora, Pierre Friedlingstein, Elena
-        Shevliakova, Laurent Bopp, Victor Brovkin, et al. “Twenty-First-Century
-        Compatible CO2 Emissions and Airborne Fraction Simulated by CMIP5 Earth
-        System Models under Four Representative Concentration Pathways.”
-        Journal of Climate 26, no. 13 (February 1, 2013): 4398–4413.
-        https://doi.org/10/f44bbn.
+    Reference:
+        * Jones, Chris, Eddy Robertson, Vivek Arora, Pierre Friedlingstein, Elena
+          Shevliakova, Laurent Bopp, Victor Brovkin, et al. “Twenty-First-Century
+          Compatible CO2 Emissions and Airborne Fraction Simulated by CMIP5 Earth
+          System Models under Four Representative Concentration Pathways.”
+          Journal of Climate 26, no. 13 (February 1, 2013): 4398–4413.
+          https://doi.org/10/f44bbn.
+
     """
     compatible_emissions = co2atm_forcing.diff("time") * 2.12 - global_co2_flux
     compatible_emissions.name = "compatible_emissions"

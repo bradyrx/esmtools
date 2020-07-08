@@ -45,7 +45,8 @@ def composite_analysis(
 
     References:
         * Motivated from Ryan Abernathy's notebook here:
-        https://rabernat.github.io/research_computing/xarray.html
+          https://rabernat.github.io/research_computing/xarray.html
+
     """
 
     def compute_ttest_for_composite(composite, index, psig):

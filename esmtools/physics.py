@@ -10,8 +10,7 @@ import xarray as xr
 
 
 def stress_to_speed(x, y):
-    """
-    This converts ocean wind stress to wind speed at 10m over the ocean so
+    """This converts ocean wind stress to wind speed at 10m over the ocean so
     that one can use the native ocean grid rather than trying to interpolate between
     ocean and atmosphere grids.
 

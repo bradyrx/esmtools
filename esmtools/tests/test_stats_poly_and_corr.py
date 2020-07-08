@@ -3,7 +3,7 @@ import numpy.polynomial.polynomial as poly
 import pytest
 from xarray.testing import assert_allclose
 
-from esmtools.stats import corr, linear_slope, linregress, polyfit, rm_poly, rm_trend
+from esmtools.stats import corr, polyfit, rm_poly, rm_trend
 
 TIME_TYPES = ["datetime", "cftime", "float"]
 

@@ -127,9 +127,9 @@ def ts_annual_da():
 @pytest.fixture()
 def annual_all_leap():
     """Mock annual 12-year time series with an all leap calendar."""
-    data = xr.DataArray(np.random.rand(12,), dims=['time'])
-    data['time'] = xr.cftime_range(
-        '1990', freq='YS', periods=data.time.size, calendar='all_leap'
+    data = xr.DataArray(np.random.rand(12,), dims=["time"])
+    data["time"] = xr.cftime_range(
+        "1990", freq="YS", periods=data.time.size, calendar="all_leap"
     )
     return data
 
@@ -137,9 +137,9 @@ def annual_all_leap():
 @pytest.fixture()
 def annual_no_leap():
     """Mock annual 12-year time series with a no leap calendar."""
-    data = xr.DataArray(np.random.rand(12,), dims=['time'])
-    data['time'] = xr.cftime_range(
-        '1990', freq='YS', periods=data.time.size, calendar='noleap'
+    data = xr.DataArray(np.random.rand(12,), dims=["time"])
+    data["time"] = xr.cftime_range(
+        "1990", freq="YS", periods=data.time.size, calendar="noleap"
     )
     return data
 
@@ -147,9 +147,9 @@ def annual_no_leap():
 @pytest.fixture()
 def annual_gregorian():
     """Mock annual 12-year time series with a Gregorian calendar."""
-    data = xr.DataArray(np.random.rand(12,), dims=['time'])
-    data['time'] = xr.cftime_range(
-        '1990', freq='YS', periods=data.time.size, calendar='gregorian'
+    data = xr.DataArray(np.random.rand(12,), dims=["time"])
+    data["time"] = xr.cftime_range(
+        "1990", freq="YS", periods=data.time.size, calendar="gregorian"
     )
     return data
 
@@ -157,8 +157,8 @@ def annual_gregorian():
 @pytest.fixture()
 def annual_julian():
     """Mock annual 12-year time series with a Julian calendar."""
-    data = xr.DataArray(np.random.rand(12,), dims=['time'])
-    data['time'] = xr.cftime_range(
-        '1990', freq='YS', periods=data.time.size, calendar='julian'
+    data = xr.DataArray(np.random.rand(12,), dims=["time"])
+    data["time"] = xr.cftime_range(
+        "1990", freq="YS", periods=data.time.size, calendar="julian"
     )
     return data

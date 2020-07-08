@@ -161,9 +161,9 @@ def test_missing_independent_data_propagate_nans(gridded_da_float, func):
     y = gridded_da_float()
     x[3, 0, 0] = np.nan
     args = (
-        {"order": 1, "nan_policy": 'propagate'}
+        {"order": 1, "nan_policy": "propagate"}
         if func in [polyfit, rm_poly]
-        else {"nan_policy": 'propagate'}
+        else {"nan_policy": "propagate"}
     )
     result = func(x, y, **args)
     assert result.isel(lat=0, lon=0).isnull().all()

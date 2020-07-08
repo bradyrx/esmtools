@@ -39,8 +39,8 @@ def test_match_nans_doesnt_modify_original(ts_annual_da):
 def test_int_arrays_apply_nans():
     """Tests that match nans converts int arrays into floats when adding nans to avoid
     returning an int nan (which is a crazy number)."""
-    x = np.array([1, 2, 3, 4, 5]).astype('int')
+    x = np.array([1, 2, 3, 4, 5]).astype("int")
     y = np.array([3, np.nan, 4, 5, 6])
     x, y = match_nans(x, y)
-    assert x.dtype == 'float'
+    assert x.dtype == "float"
     assert np.isnan(x).sum() > 0
