@@ -20,6 +20,8 @@ def gridded_da_float():
 
 @pytest.fixture()
 def gridded_da_landmask(gridded_da_float):
+    """Mock data for gridded time series in float time with land mask (nans over
+    all time in some grid cells)."""
     data = gridded_da_float()
     # Mask arbitrary chunk through all time to simulate land mask.
     data = data.where((data.lat < 2) & (data.lon > 0))
@@ -28,6 +30,8 @@ def gridded_da_landmask(gridded_da_float):
 
 @pytest.fixture()
 def gridded_da_missing_data(gridded_da_float):
+    """Mock data for gridded time series in float time with missing data (nans over
+    some time points in different grid cells)."""
     data = gridded_da_float()
     # Add nan to arbitrary time steps.
     data[5, 0, 0] = np.nan
@@ -67,7 +71,7 @@ def gridded_da_cftime():
 
 @pytest.fixture()
 def gridded_ds_float(gridded_da_float):
-    """Mock data of a gridded time series as an xarray Dataset."""
+    """Mock data of a gridded time series as an xarray Dataset with float time."""
     data = xr.Dataset()
     data["foo"] = gridded_da_float()
     data["bar"] = gridded_da_float()
@@ -76,7 +80,7 @@ def gridded_ds_float(gridded_da_float):
 
 @pytest.fixture()
 def gridded_ds_datetime(gridded_da_datetime):
-    """Mock data of a gridded time series as an xarray Dataset."""
+    """Mock data of a gridded time series as an xarray Dataset with numpy datetime."""
     data = xr.Dataset()
     data["foo"] = gridded_da_datetime()
     data["bar"] = gridded_da_datetime()
@@ -85,7 +89,7 @@ def gridded_ds_datetime(gridded_da_datetime):
 
 @pytest.fixture()
 def gridded_ds_cftime(gridded_da_cftime):
-    """Mock data of a gridded time series as an xarray Dataset."""
+    """Mock data of a gridded time series as an xarray Dataset with cftime."""
     data = xr.Dataset()
     data["foo"] = gridded_da_cftime()
     data["bar"] = gridded_da_cftime()
@@ -122,6 +126,7 @@ def ts_annual_da():
 
 @pytest.fixture()
 def annual_all_leap():
+    """Mock annual 12-year time series with an all leap calendar."""
     data = xr.DataArray(np.random.rand(12,), dims=['time'])
     data['time'] = xr.cftime_range(
         '1990', freq='YS', periods=data.time.size, calendar='all_leap'
@@ -131,6 +136,7 @@ def annual_all_leap():
 
 @pytest.fixture()
 def annual_no_leap():
+    """Mock annual 12-year time series with a no leap calendar."""
     data = xr.DataArray(np.random.rand(12,), dims=['time'])
     data['time'] = xr.cftime_range(
         '1990', freq='YS', periods=data.time.size, calendar='noleap'
@@ -140,6 +146,7 @@ def annual_no_leap():
 
 @pytest.fixture()
 def annual_gregorian():
+    """Mock annual 12-year time series with a Gregorian calendar."""
     data = xr.DataArray(np.random.rand(12,), dims=['time'])
     data['time'] = xr.cftime_range(
         '1990', freq='YS', periods=data.time.size, calendar='gregorian'
@@ -149,6 +156,7 @@ def annual_gregorian():
 
 @pytest.fixture()
 def annual_julian():
+    """Mock annual 12-year time series with a Julian calendar."""
     data = xr.DataArray(np.random.rand(12,), dims=['time'])
     data['time'] = xr.cftime_range(
         '1990', freq='YS', periods=data.time.size, calendar='julian'

@@ -17,9 +17,7 @@ def test_linear_regression_time_da(
     time."""
     data = eval(f"gridded_da_{time_type}")()
     x = data["time"]
-    y = data
-    if not gridded:
-        y = y.isel(lat=0, lon=0)
+    y = data if gridded else data.isel(lat=0, lon=0)
     result = func(x, y, "time")
     assert not result.isnull().any()
     if func == linear_slope:
@@ -39,9 +37,7 @@ def test_linear_regression_singular_data_da(
     another singular data (e.g., a Nino index)."""
     data = eval(f"gridded_da_{time_type}")()
     x = data.isel(lat=0, lon=0)
-    y = data
-    if not gridded:
-        y = y.isel(lat=0, lon=0)
+    y = data if gridded else data.isel(lat=0, lon=0)
     result = func(x, y, "time")
     assert not result.isnull().any()
     if func == linear_slope:
@@ -99,9 +95,7 @@ def test_linear_regression_da_dask(
     """Tests that linear slope can be computed on a dask DataArray."""
     data = eval(f"gridded_da_{time_type}")().chunk()
     x = data["time"]
-    y = data
-    if not gridded:
-        y = y.isel(lat=0, lon=0)
+    y = data if gridded else data.isel(lat=0, lon=0)
     expected = func(x.load(), y.load(), "time")
     actual = func(x, y, "time").compute()
     assert_allclose(expected, actual)

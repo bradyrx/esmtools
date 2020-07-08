@@ -35,6 +35,6 @@ DAYS_PER_YEAR = {
     "all_leap": 366,
     "366_day": 366,
     "360_day": 360,
-    "julian": 365,
+    "julian": 365.25,
 }
 CALENDARS = [k for k in DAYS_PER_MONTH]
