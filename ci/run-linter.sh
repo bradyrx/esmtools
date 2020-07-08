@@ -11,6 +11,3 @@ flake8 esmtools --max-line-length=88 --exclude=__init__.py --ignore=W605,W503,F7
 
 echo "[black]"
 black --check --line-length=88 -S esmtools
-
-echo "[isort]"
-isort -w 88 --check-only esmtools
