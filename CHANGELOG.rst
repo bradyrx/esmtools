@@ -9,8 +9,9 @@ Features
 --------
 - ``xarray`` implementation of ``statsmodels.stats.multitest.multipletests``.
   (:pr:`71`) `Aaron Spring`_
-- Implements ``nan_policy=...`` keyword for ``stats.linear_slope``,
-  ``stats.linregress``, ``stats.polyfit``, ``stats.rm_poly``, ``stats.rm_trend``.
+- Implements ``nan_policy=...`` keyword for :py:func:`~esmtools.stats.linear_slope`,
+  :py:func:`~esmtools.stats.linregress`, :py:func:`~esmtools.stats.polyfit`,
+  :py:func:`~esmtools.stats.rm_poly`, :py:func:`~esmtools.stats.rm_trend`.
   (:pr:`70`) `Riley X. Brady`_.
 
   * ``'none', 'propagate'``: Propagate nans through function. I.e., return a nan for
@@ -19,14 +20,16 @@ Features
   * ``'drop', 'omit'``: Like ``skipna``, compute statistical function after removing
     nans.
 
-- Adds support for datetime axes in ``stats.linear_slope``, ``stats.linregress``,
-  ``stats.polyfit``, ``stats.rm_poly``, ``stats.rm_trend``. Converts datetimes to
-  numeric time, computes function, and then converts back to datetime.
+- Adds support for datetime axes in :py:func:`~esmtools.stats.linear_slope`,
+  :py:func:`~esmtools.stats.linregress`, :py:func:`~esmtools.stats.polyfit`,
+  :py:func:`~esmtools.stats.rm_poly`, :py:func:`~esmtools.stats.rm_trend`. Converts
+  datetimes to numeric time, computes function, and then converts back to datetime.
   (:pr:`70`)`Riley X. Brady`_.
-- ``stats.linear_slope``, ``stats.linregress``, ``stats.polyfit``, ``stats.rm_poly``,
-  and ``stats.rm_trend`` are now dask-compatible and vectorized better.
+- :py:func:`~esmtools.stats.linear_slope`,
+  :py:func:`~esmtools.stats.linregress`, :py:func:`~esmtools.stats.polyfit`,
+  :py:func:`~esmtools.stats.rm_poly`, :py:func:`~esmtools.stats.rm_trend` are now
+  dask-compatible and vectorized better.
   (:pr:`70`) `Riley X. Brady`_.
-
 
 Bug Fixes
 ---------
@@ -53,6 +56,8 @@ Deprecations
   (:pr:`70`) `Riley X. Brady`_.
 - Changes ``stats.compute_slope`` to ``stats.linear_slope``.
   (:pr:`70`) `Riley X. Brady`_.
+- Removes ``stats.area_weight`` and ``stats.cos_weight`` since they are available
+  through ``xarray``. (:pr:`83`) `Riley X. Brady`_.
 
 esmtools v1.1 (2019-09-04)
 ==========================
