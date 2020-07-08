@@ -10,6 +10,7 @@ from .checks import is_xarray
 from .stats import linregress, nanmean, rm_poly
 
 
+
 @is_xarray([0, 1])
 def co2_sol(t, s):
     """Compute CO2 solubility per the equation used in CESM.

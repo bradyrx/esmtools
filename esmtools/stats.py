@@ -142,6 +142,7 @@ def _check_y_not_independent_variable(y, dim):
     Raises:
         ValueError: If `y` is a DataArray and equal to `dim`. This infers that something
             like a time axis is being placed in the dependent variable.
+
     """
     if isinstance(y, xr.DataArray) and (y.name == dim):
         raise ValueError(
