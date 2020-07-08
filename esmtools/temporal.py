@@ -3,87 +3,11 @@
 import numpy as np
 import xarray as xr
 
-# This supports all calendars used in netCDF.
-dpm = {
-    "noleap": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    "365_day": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    "standard": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    "gregorian": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    "proleptic_gregorian": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    "all_leap": [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    "366_day": [0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-    "360_day": [0, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
-    "julian": [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31],
-}
-# Converts from `cftime` class name to netCDF convention for calendar
-cftime_to_netcdf = {
-    "DatetimeJulian": "julian",
-    "DatetimeProlepticGregorian": "proleptic_gregorian",
-    "DatetimeNoLeap": "noleap",
-    "DatetimeAllLeap": "all_leap",
-    "DatetimeGregorian": "gregorian",
-}
-CALENDARS = [k for k in dpm]
-resolutions = {"annual": "time.year"}
-RESOLUTIONS = [k for k in resolutions]
+from .constants import CALENDARS
+from .timeutils import get_calendar, get_days_per_month
 
-
-def _leap_year(year, calendar="standard"):
-    """Determine if year is a leap year"""
-    leap = False
-    if (calendar in ["standard", "gregorian", "proleptic_gregorian", "julian"]) and (
-        year % 4 == 0
-    ):
-        leap = True
-        if (
-            (calendar == "proleptic_gregorian")
-            and (year % 100 == 0)
-            and (year % 400 != 0)
-        ):
-            leap = False
-        elif (
-            (calendar in ["standard", "gregorian"])
-            and (year % 100 == 0)
-            and (year % 400 != 0)
-            and (year < 1583)
-        ):
-            leap = False
-    return leap
-
-
-def _get_dpm(time, calendar="standard"):
-    """
-    return a array of days per month corresponding to the months provided in `months`
-    """
-    month_length = np.zeros(len(time), dtype=np.int)
-
-    cal_days = dpm[calendar]
-
-    for i, (month, year) in enumerate(zip(time.month, time.year)):
-        month_length[i] = cal_days[month]
-        if _leap_year(year, calendar=calendar):
-            month_length[i] += 1
-    return month_length
-
-
-def _retrieve_calendar(ds, dim="time"):
-    """Attempt to pull calendar type automatically using cftime objects.
-
-    .. note::
-        This relies upon ``xarray``'s automatic conversion of time to ``cftime``.
-
-    Args:
-        ds (xarray object): Dataset being resampled.
-        dim (optional str): Time dimension.
-    """
-    example_time = ds[dim].values[0]
-    # Type of variable being used for time.
-    var_type = type(example_time).__name__
-    if var_type in cftime_to_netcdf:
-        # If this is a `cftime` object, infer what type of calendar it is.
-        return cftime_to_netcdf[var_type]
-    else:
-        raise ValueError(f"Please submit a calendar from {CALENDARS}")
+GROUPBY_TIMES = {"annual": "time.year"}
+TIME_RESOLUTIONS = [k for k in GROUPBY_TIMES]
 
 
 def _weighted_resample(ds, calendar=None, dim="time", resample_resolution=None):
@@ -101,18 +25,18 @@ def _weighted_resample(ds, calendar=None, dim="time", resample_resolution=None):
                                      resolution with weighting.
     """
     if (calendar is None) or (calendar not in CALENDARS):
-        calendar = _retrieve_calendar(ds, dim=dim)
+        calendar = get_calendar(ds[dim])
 
-    if resample_resolution not in RESOLUTIONS:
-        raise ValueError(f"Please submit a temporal resolution from {RESOLUTIONS}")
+    if resample_resolution not in TIME_RESOLUTIONS:
+        raise ValueError(f"Please submit a temporal resolution from {TIME_RESOLUTIONS}")
 
     time_length = xr.DataArray(
-        _get_dpm(ds.time.to_index(), calendar=calendar),
+        get_days_per_month(ds.time.to_index(), calendar=calendar),
         coords=[ds.time],
         name="time_length",
     )
 
-    time_res = resolutions[resample_resolution]
+    time_res = GROUPBY_TIMES[resample_resolution]
     # Get weights of each time unit (e.g., daily, monthly)
     weights = time_length.groupby(time_res) / time_length.groupby(time_res).sum()
 

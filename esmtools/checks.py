@@ -1,8 +1,18 @@
 from functools import wraps
 
+import numpy as np
 import xarray as xr
 
 from .exceptions import DimensionError
+
+
+def has_missing(data):
+    """Returns ``True`` if any NaNs in ``data`` and ``False`` otherwise.
+
+    Args:
+        data (ndarray or xarray object): Array to check for missing data.
+    """
+    return np.isnan(data).any()
 
 
 # https://stackoverflow.com/questions/10610824/
@@ -16,6 +26,11 @@ def dec_args_kwargs(wrapper):
 def has_dims(xobj, dims, kind):
     """
     Checks that at the minimum, the object has provided dimensions.
+
+    Args:
+        xobj (xarray object): Dataset or DataArray to check dimensions on.
+        dims (list or str): Dimensions being checked.
+        kind (str): String to precede "object" in the error message.
     """
     if isinstance(dims, str):
         dims = [dims]
@@ -55,6 +70,7 @@ def is_xarray(func, *dec_args):
                     raise IOError(
                         f"""The input data is not an xarray DataArray or
                         Dataset.
+
                         Your input was of type: {typecheck}"""
                     )
         except IndexError:
