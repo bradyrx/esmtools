@@ -53,7 +53,9 @@ def _convert_time_and_return_slope_factor(x, dim):
     """
     slope_factor = 1.0
     if isinstance(x, xr.DataArray):
-        if x.timeutils.is_temporal:
+        # Calling `TimeUtilAccessor` directly in the first case, so we don't trigger
+        # `flake8` F401 since we'd import a module but not use it.
+        if TimeUtilAccessor(x).is_temporal:
             slope_factor = x.timeutils.slope_factor
             x = x.timeutils.return_numeric_time()
     return x, slope_factor
