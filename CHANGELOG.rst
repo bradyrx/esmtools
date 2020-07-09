@@ -9,6 +9,7 @@ Internals/Minor Fixes
 ---------------------
 - Fix ``flake8`` F401 error by using ``TimeUtilAccessor`` directly in first instance
   in code. (:pr:`86`) `Riley X. Brady`_.
+- Add ``conda`` badge and ``conda`` installation instructions. (:pr:`87`) `Riley X. Brady`_.
 
 esmtools v1.1.1 (2020-07-08)
 ============================

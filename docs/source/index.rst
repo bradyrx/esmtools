@@ -8,6 +8,10 @@ esmtools: a toolbox for Earth system model analysis
 .. image:: https://img.shields.io/pypi/v/esmtools.svg
     :target: https://pypi.python.org/pypi/esmtools/
 
+.. image:: https://img.shields.io/conda/vn/conda-forge/esmtools.svg
+    :target: https://anaconda.org/conda-forge/esmtools
+    :alt: Conda Version
+
 .. image:: https://coveralls.io/repos/github/bradyrx/esmtools/badge.svg?branch=master
     :target: https://coveralls.io/github/bradyrx/esmtools?branch=master
 
@@ -36,11 +40,21 @@ datetimes on the independent (x) axis:
 Installation
 ============
 
-You can install the latest release of ``esmtools`` using ``pip``:
+You can install the latest release of ``esmtools`` using ``pip`` or ``conda``:
 
 .. code-block:: bash
 
     pip install esmtools
+
+.. code-block:: bash
+
+    conda install -c conda-forge esmtools
+
+You can also install the bleeding edge (pre-release versions) by running
+
+.. code-block:: bash
+
+    pip install git+https://github.com/bradyrx/esmtools@master --upgrade
 
 **Getting Started**
 
