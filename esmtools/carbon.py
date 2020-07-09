@@ -7,6 +7,7 @@ import xarray as xr
 from tqdm import tqdm
 
 from .checks import is_xarray
+from .constants import CONCAT_KWARGS
 from .stats import linregress, nanmean, rm_poly
 
 
@@ -98,7 +99,7 @@ def get_iam_emissions():
         e = e.set_index(e.columns[0])
         e.index.name = 'Year'
         ds.append(e[['FossilCO2', 'OtherCO2']].to_xarray())
-    ds = xr.concat(ds, 'member')
+    ds = xr.concat(ds, 'member', **CONCAT_KWARGS)
     ds = ds.sel(Year=slice(1850, 2100)).rename({'Year': 'time'})
     ds['member'] = member
     ds['IAM_emissions'] = ds['FossilCO2'] + ds['OtherCO2']

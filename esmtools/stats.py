@@ -1,12 +1,13 @@
 import warnings
 
-import climpred.stats as st
 import numpy as np
 import numpy.polynomial.polynomial as poly
 import scipy
 import xarray as xr
+from xskillscore import pearson_r, pearson_r_p_value
 
 from .checks import has_dims, has_missing, is_xarray
+from .constants import CONCAT_KWARGS
 from .timeutils import TimeUtilAccessor
 from .utils import match_nans
 
@@ -167,104 +168,97 @@ def _warn_if_not_converted_to_original_time_units(x):
 
 
 @is_xarray(0)
-def ACF(ds, dim='time', nlags=None):
-    """Compute the ACF of a time series to a specific lag.
+def autocorr(ds, dim='time', nlags=None):
+    """Compute the autocorrelation function of a time series to a specific lag.
+
+    .. note::
+
+        The correlation coefficients presented here are from the lagged
+        cross correlation of ``ds`` with itself. This means that the
+        correlation coefficients are normalized by the variance contained
+        in the sub-series of ``x``. This is opposed to a true ACF, which
+        uses the entire series' to compute the variance. See
+        https://stackoverflow.com/questions/36038927/
+        whats-the-difference-between-pandas-acf-and-statsmodel-acf
 
     Args:
-      ds (xarray object): dataset/dataarray containing the time series.
-      dim (str): dimension to apply ACF over.
-      nlags (optional int): number of lags to compute ACF over. If None,
+      ds (xarray object): Dataset or DataArray containing the time series.
+      dim (str, optional): Dimension to apply ``autocorr`` over. Defaults to 'time'.
+      nlags (int, optional): Number of lags to compute ACF over. If None,
                             compute for length of `dim` on `ds`.
 
     Returns:
       Dataset or DataArray with ACF results.
 
-    Notes:
-      This is preferred over ACF functions from MATLAB/scipy, since it doesn't
-      use FFT methods.
     """
-    # Drop variables that don't have requested dimension, so this can be
-    # applied over the full dataset.
-    if isinstance(ds, xr.Dataset):
-        dropVars = [i for i in ds if dim not in ds[i].dims]
-        ds = ds.drop(dropVars)
-
-    # Loop through every step in `dim`
     if nlags is None:
-        nlags = ds[dim].size
+        nlags = ds[dim].size - 2
 
     acf = []
-    # The 2 factor accounts for fact that time series reduces in size for
+    # The factor of 2 accounts for fact that time series reduces in size for
     # each lag.
-    for i in range(nlags - 2):
-        res = autocorr(ds, lag=i, dim=dim)
+    for i in range(nlags):
+        res = corr(ds, ds, lead=i, dim=dim)
         acf.append(res)
-    acf = xr.concat(acf, dim=dim)
+    acf = xr.concat(acf, dim='lead', **CONCAT_KWARGS)
     return acf
-
-
-@is_xarray(0)
-def autocorr(ds, lag=1, dim='time', return_p=False):
-    """Calculated lagged correlation of a xr.Dataset.
-
-    Args:
-        ds (xarray object): Dataset to compute autocorrelation with.
-        lag (int, optional): Lag to compute autocorrelation at. Defaults to 1.
-        dim (str, optional): Dimension to compute autocorrelation over.
-            Default to 'time'.
-        return_p (bool, optional): If True, return just the correlation coefficient.
-            If False, return both the correlation coefficient and p value.
-
-    Returns:
-        r (xarray object): Pearson correlation coefficient.
-        p (xarray object): P value, if ``return_p`` is True.
-    """
-    return st.autocorr(ds, lag=lag, dim=dim, return_p=return_p)
 
 
 @is_xarray(0)
 def corr(x, y, dim='time', lead=0, return_p=False):
     """Computes the Pearson product-moment coefficient of linear correlation.
 
-    This version calculates the effective degrees of freedom, accounting
-    for autocorrelation within each time series that could fluff the
-    significance of the correlation.
-
     Args:
-        x, y (xarray.DataArray): Time series being correlated.
+        x, y (xarray object): Time series being correlated.
         dim (str, optional): Dimension to calculate correlation over. Defaults to
             'time'.
         lead (int, optional): If lead > 0, ``x`` leads ``y`` by that many time steps.
             If lead < 0, ``x`` lags ``y`` by that many time steps. Defaults to 0.
-        return_p (bool, optional). If True, return both ``r`` and ``p``. Otherwise,
-            just return ``r``. Defaults to False.
+        return_p (bool, optional). If True, return both the correlation coefficient
+            and p value. Otherwise, just returns the correlation coefficient.
 
     Returns:
-        r (xarray object): Pearson correlation coefficient.
-        p (xarray object): P value, if ``return_p`` is True.
-
-    References:
-        * Wilks, Daniel S. Statistical methods in the atmospheric sciences.
-          Vol. 100. Academic press, 2011.
-        * Lovenduski, Nicole S., and Nicolas Gruber. "Impact of the Southern
-          Annular Mode on Southern Ocean circulation and biology." Geophysical
-          Research Letters 32.11 (2005).
-        * Brady, R. X., Lovenduski, N. S., Alexander, M. A., Jacox, M., and
-          Gruber, N.: On the role of climate modes in modulating the air-sea CO2
-          fluxes in Eastern Boundary Upwelling Systems, Biogeosciences Discuss.,
-          https://doi.org/10.5194/bg-2018-415, 2019.
+        corrcoef (xarray object): Pearson correlation coefficient.
+        pval (xarray object): p value, if ``return_p`` is True.
 
     """
+
+    def _lag_correlate(x, y, dim, lead, return_p):
+        """Helper function to shift the two time series and correlate."""
+        N = x[dim].size
+        normal = x.isel({dim: slice(0, N - lead)})
+        shifted = y.isel({dim: slice(0 + lead, N)})
+        # Align dimensions for xarray operation.
+        shifted[dim] = normal[dim]
+        corrcoef = pearson_r(normal, shifted, dim)
+        if return_p:
+            pval = pearson_r_p_value(normal, shifted, dim)
+            return corrcoef, pval
+        else:
+            return corrcoef
+
     # Broadcasts a time series to the same coordinates/size as the grid. If they
     # are both grids, this function does nothing and isn't expensive.
     x, y = xr.broadcast(x, y)
 
-    # Negative lead should have y lead x.
+    # I don't want to guess coordinates for the user.
+    if (dim not in list(x.coords)) or (dim not in list(y.coords)):
+        raise ValueError(
+            f'Make sure that the dimension {dim} has coordinates. '
+            "`xarray` apply_ufunc alignments break when they can't reference "
+            " coordinates. If your coordinates don't matter just do "
+            ' `x[dim] = np.arange(x[dim].size).'
+        )
+
+    N = x[dim].size
+    assert (
+        np.abs(lead) <= N
+    ), f'Requested lead [{lead}] is larger than dim [{dim}] size.'
+
     if lead < 0:
-        lead = np.abs(lead)
-        return st.corr(y, x, dim=dim, lag=lead, return_p=return_p)
+        return _lag_correlate(y, x, dim, np.abs(lead), return_p)
     else:
-        return st.corr(x, y, dim=dim, lag=lead, return_p=return_p)
+        return _lag_correlate(x, y, dim, lead, return_p)
 
 
 @is_xarray([0, 1])

@@ -1,7 +1,7 @@
 cftime
-climpred>=2.1.0
 numpy
 scipy
 statsmodels
 tqdm
 xarray>=0.15.1
+xskillscore
