@@ -2,7 +2,7 @@
 Changelog History
 =================
 
-esmtools v1.1.2 (2020-##-##)
+esmtools v1.1.2 (2020-07-09)
 ============================
 
 Internals/Minor Fixes
