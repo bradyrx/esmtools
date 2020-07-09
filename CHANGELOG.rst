@@ -10,6 +10,14 @@ Internals/Minor Fixes
 - Fix ``flake8`` F401 error by using ``TimeUtilAccessor`` directly in first instance
   in code. (:pr:`86`) `Riley X. Brady`_.
 - Add ``conda`` badge and ``conda`` installation instructions. (:pr:`87`) `Riley X. Brady`_.
+- Migrate ``corr`` and ``autocorr`` from ``climpred`` to ``esmtools`` with some light edits to
+  the code. (:pr:`88`) `Riley X. Brady`_.
+
+Deprecated
+----------
+- ``climpred`` removed as a dependency for ``esmtools``. (:pr:`88`) `Riley X. Brady`_.
+- ``autocorr`` deprecated, since it can be run via ``corr(x, x)``. ``ACF`` renamed to
+  ``autocorr``, which reflects ``pandas``-style naming. (:pr:`88`) `Riley X. Brady`_.
 
 esmtools v1.1.1 (2020-07-08)
 ============================
