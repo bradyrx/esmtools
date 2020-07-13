@@ -19,7 +19,7 @@ dependencies:
   - bottleneck
   - dask
   - numpy
-  - xarray
+  - xarray>=0.16.0
   # Package Management
   - black
   - coveralls
@@ -33,7 +33,7 @@ dependencies:
   # Statistics
   - scipy
   - statsmodels
-  - xskillscore >= 0.16.0
+  - xskillscore
   # Visualization
   - matplotlib
   - pip

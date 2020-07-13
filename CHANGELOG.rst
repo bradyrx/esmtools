@@ -2,6 +2,14 @@
 Changelog History
 =================
 
+esmtools v1.1.3 (2020-##-##)
+============================
+
+Internals/Minor Fixes
+---------------------
+- Update required ``xarray`` version to v0.16.0 to allow for use of
+  ``xr.infer_freq``. (:pr:`92`) `Riley X. Brady`_.
+
 esmtools v1.1.2 (2020-07-09)
 ============================
 
