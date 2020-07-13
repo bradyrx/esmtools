@@ -33,7 +33,7 @@ dependencies:
   # Statistics
   - scipy
   - statsmodels
-  - xskillscore
+  - xskillscore >= 0.16.0
   # Visualization
   - matplotlib
   - pip
