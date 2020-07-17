@@ -3,5 +3,5 @@ numpy
 scipy
 statsmodels
 tqdm
-xarray>=0.15.1
+xarray>=0.16.0
 xskillscore

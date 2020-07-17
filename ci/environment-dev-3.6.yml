@@ -19,7 +19,7 @@ dependencies:
   - bottleneck
   - dask
   - numpy
-  - xarray
+  - xarray>=0.16.0
   # Package Management
   - black
   - coveralls
