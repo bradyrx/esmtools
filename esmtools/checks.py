@@ -3,8 +3,6 @@ from functools import wraps
 import numpy as np
 import xarray as xr
 
-from .exceptions import DimensionError
-
 
 def has_missing(data):
     """Returns ``True`` if any NaNs in ``data`` and ``False`` otherwise.
@@ -36,9 +34,9 @@ def has_dims(xobj, dims, kind):
         dims = [dims]
 
     if not all(dim in xobj.dims for dim in dims):
-        raise DimensionError(
-            f"Your {kind} object must contain the "
-            f"following dimensions at the minimum: {dims}"
+        raise ValueError(
+            f'Your {kind} object must contain the '
+            f'following dimensions at the minimum: {dims}'
         )
     return True
 
