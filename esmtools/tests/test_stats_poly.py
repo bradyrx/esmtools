@@ -17,28 +17,48 @@ def _np_rm_poly(x, y, order):
 @pytest.mark.parametrize('gridded', (True, False))
 @pytest.mark.parametrize('time_type', TIME_TYPES)
 @pytest.mark.parametrize('order', (1, 2, 3, 4))
+@pytest.mark.parametrize('single_arg', (True, False))
 def test_rm_poly_against_time(
-    gridded_da_datetime, gridded_da_cftime, gridded_da_float, time_type, gridded, order
+    gridded_da_datetime,
+    gridded_da_cftime,
+    gridded_da_float,
+    time_type,
+    gridded,
+    order,
+    single_arg,
 ):
     """Tests that ``rm_poly`` works against a time index."""
     data = eval(f'gridded_da_{time_type}')()
     x = data['time']
     y = data if gridded else data.isel(lat=0, lon=0)
-    detrended = rm_poly(x, y, order)
+    if single_arg:
+        detrended = rm_poly(y, order=order)
+    else:
+        detrended = rm_poly(x, y, order)
     assert (detrended != y).all()
 
 
 @pytest.mark.parametrize('gridded', (True, False))
 @pytest.mark.parametrize('time_type', TIME_TYPES)
+@pytest.mark.parametrize('single_arg', (True, False))
 def test_rm_poly_against_time_dask(
-    gridded_da_datetime, gridded_da_cftime, gridded_da_float, time_type, gridded
+    gridded_da_datetime,
+    gridded_da_cftime,
+    gridded_da_float,
+    time_type,
+    gridded,
+    single_arg,
 ):
     """Tests that ``rm_poly`` works against a time index with dask arrays."""
     data = eval(f'gridded_da_{time_type}')()
     x = data['time']
     y = data if gridded else data.isel(lat=0, lon=0)
-    expected = rm_poly(x, y, 2)
-    actual = rm_poly(x.chunk(), y.chunk(), 2).compute()
+    if single_arg:
+        expected = rm_poly(y, order=2)
+        actual = rm_poly(y.chunk(), order=2).compute()
+    else:
+        expected = rm_poly(x, y, 2)
+        actual = rm_poly(x.chunk(), y.chunk(), 2).compute()
     assert_allclose(expected, actual)
 
 
@@ -95,16 +115,26 @@ def test_rm_poly_validity_dask(gridded_da_float, order):
 
 @pytest.mark.parametrize('gridded', (True, False))
 @pytest.mark.parametrize('time_type', TIME_TYPES)
+@pytest.mark.parametrize('single_arg', (True, False))
 def test_rm_trend_against_time(
-    gridded_da_datetime, gridded_da_cftime, gridded_da_float, time_type, gridded
+    gridded_da_datetime,
+    gridded_da_cftime,
+    gridded_da_float,
+    time_type,
+    gridded,
+    single_arg,
 ):
     """Tests that ``rm_trend`` is equivelant to ``rm_poly`` with order=1 against time
     series."""
     data = eval(f'gridded_da_{time_type}')()
     x = data['time']
     y = data if gridded else data.isel(lat=0, lon=0)
-    expected = rm_poly(x, y, 1)
-    actual = rm_trend(x, y)
+    if single_arg:
+        expected = rm_poly(y, order=1)
+        actual = rm_trend(y)
+    else:
+        expected = rm_poly(x, y, order=1)
+        actual = rm_trend(x, y)
     assert_allclose(expected, actual)
 
 
@@ -122,32 +152,53 @@ def test_rm_trend_against_data(gridded_da_float, gridded):
 @pytest.mark.parametrize('gridded', (True, False))
 @pytest.mark.parametrize('time_type', TIME_TYPES)
 @pytest.mark.parametrize('order', (1, 2, 3, 4))
+@pytest.mark.parametrize('single_arg', (True, False))
 def test_polyfit_against_time(
-    gridded_da_datetime, gridded_da_cftime, gridded_da_float, time_type, gridded, order
+    gridded_da_datetime,
+    gridded_da_cftime,
+    gridded_da_float,
+    time_type,
+    gridded,
+    order,
+    single_arg,
 ):
     """Tests that ``polyfit`` plus ``rm_poly`` equals the original time series when
     fitting against time."""
     data = eval(f'gridded_da_{time_type}')()
     x = data['time']
     y = data if gridded else data.isel(lat=0, lon=0)
-    dt = rm_poly(x, y, order)
-    fit = polyfit(x, y, order)
+    if single_arg:
+        dt = rm_poly(y, order=order)
+        fit = polyfit(y, order=order)
+    else:
+        dt = rm_poly(x, y, order)
+        fit = polyfit(x, y, order)
     diff = np.abs((dt + fit) - y)
     assert (diff < 1e-15).all()
 
 
 @pytest.mark.parametrize('gridded', (True, False))
 @pytest.mark.parametrize('time_type', TIME_TYPES)
+@pytest.mark.parametrize('single_arg', (True, False))
 def test_polyfit_against_time_dask(
-    gridded_da_datetime, gridded_da_cftime, gridded_da_float, time_type, gridded
+    gridded_da_datetime,
+    gridded_da_cftime,
+    gridded_da_float,
+    time_type,
+    gridded,
+    single_arg,
 ):
     """Tests that ``polyfit`` plus ``rm_poly`` equals the original time series when
     fitting against time with dask arrays."""
     data = eval(f'gridded_da_{time_type}')().chunk()
     x = data['time']
     y = data if gridded else data.isel(lat=0, lon=0)
-    dt = rm_poly(x, y, 2)
-    fit = polyfit(x, y, 2)
+    if single_arg:
+        dt = rm_poly(y, order=2)
+        fit = polyfit(y, order=2)
+    else:
+        dt = rm_poly(x, y, 2)
+        fit = polyfit(x, y, 2)
     diff = np.abs((dt + fit) - y)
     assert (diff.compute() < 1e-15).all()
 
