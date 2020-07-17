@@ -262,7 +262,7 @@ def corr(x, y, dim='time', lead=0, return_p=False):
 
 
 @is_xarray([0, 1])
-def linear_slope(x, y, dim='time', nan_policy='none'):
+def linear_slope(x, y=None, dim='time', nan_policy='none'):
     """Returns the linear slope with y regressed onto x.
 
     .. note::
@@ -275,7 +275,10 @@ def linear_slope(x, y, dim='time', nan_policy='none'):
 
     Args:
         x (xarray object): Independent variable (predictor) for linear regression.
-        y (xarray object): Dependent variable (predictand) for linear regression.
+            If ``y`` is ``None``, treat ``x`` as the dependent variable and remove
+            slope over ``dim``.
+        y (xarray object, optional): Dependent variable (predictand) for linear
+            regression. If ``None``, treat ``x`` as the predictand.
         dim (str, optional): Dimension to apply linear regression over.
             Defaults to "time".
         nan_policy (str, optional): Policy to use when handling nans. Defaults to
@@ -290,10 +293,16 @@ def linear_slope(x, y, dim='time', nan_policy='none'):
     Returns:
         xarray object: Slopes computed through a least-squares linear regression.
     """
-    has_dims(x, dim, 'predictor (x)')
-    has_dims(y, dim, 'predictand (y)')
-    _check_y_not_independent_variable(y, dim)
-    x, slope_factor = _convert_time_and_return_slope_factor(x, dim)
+    if y is None:
+        has_dims(x, dim, 'predictand (x)')
+        X, slope_factor = _convert_time_and_return_slope_factor(x[dim], dim)
+        Y = x
+    else:
+        has_dims(x, dim, 'predictor (x)')
+        has_dims(y, dim, 'predictand (y)')
+        _check_y_not_independent_variable(y, dim)
+        X, slope_factor = _convert_time_and_return_slope_factor(x, dim)
+        Y = y
 
     def _linear_slope(x, y, nan_policy):
         x, y = _handle_nans(x, y, nan_policy)
@@ -310,20 +319,20 @@ def linear_slope(x, y, dim='time', nan_policy='none'):
 
     slopes = xr.apply_ufunc(
         _linear_slope,
-        x,
-        y,
+        X,
+        Y,
         nan_policy,
         vectorize=True,
         dask='parallelized',
         input_core_dims=[[dim], [dim], []],
         output_dtypes=['float64'],
     )
-    _warn_if_not_converted_to_original_time_units(x)
+    _warn_if_not_converted_to_original_time_units(X)
     return slopes * slope_factor
 
 
 @is_xarray([0, 1])
-def linregress(x, y, dim='time', nan_policy='none'):
+def linregress(x, y=None, dim='time', nan_policy='none'):
     """Vectorized applciation of ``scipy.stats.linregress``.
 
     .. note::
@@ -336,7 +345,10 @@ def linregress(x, y, dim='time', nan_policy='none'):
 
     Args:
         x (xarray object): Independent variable (predictor) for linear regression.
-        y (xarray object): Dependent variable (predictand) for linear regression.
+            If ``y`` is ``None``, treat ``x`` as the dependent variable and remove
+            slope over ``dim``.
+        y (xarray object, optional): Dependent variable (predictand) for linear
+            regression. If ``None``, treat ``x`` as the predictand.
         dim (str, optional): Dimension to apply linear regression over.
             Defaults to "time".
         nan_policy (str, optional): Policy to use when handling nans. Defaults to
@@ -354,10 +366,16 @@ def linregress(x, y, dim='time', nan_policy='none'):
             "parameter".
 
     """
-    has_dims(x, dim, 'predictor (x)')
-    has_dims(y, dim, 'predictand (y)')
-    _check_y_not_independent_variable(y, dim)
-    x, slope_factor = _convert_time_and_return_slope_factor(x, dim)
+    if y is None:
+        has_dims(x, dim, 'predictand (x)')
+        X, slope_factor = _convert_time_and_return_slope_factor(x[dim], dim)
+        Y = x
+    else:
+        has_dims(x, dim, 'predictor (x)')
+        has_dims(y, dim, 'predictand (y)')
+        _check_y_not_independent_variable(y, dim)
+        X, slope_factor = _convert_time_and_return_slope_factor(x, dim)
+        Y = y
 
     def _linregress(x, y, slope_factor, nan_policy):
         x, y = _handle_nans(x, y, nan_policy)
@@ -375,8 +393,8 @@ def linregress(x, y, dim='time', nan_policy='none'):
 
     results = xr.apply_ufunc(
         _linregress,
-        x,
-        y,
+        X,
+        Y,
         slope_factor,
         nan_policy,
         vectorize=True,
@@ -389,7 +407,7 @@ def linregress(x, y, dim='time', nan_policy='none'):
     results = results.assign_coords(
         parameter=['slope', 'intercept', 'rvalue', 'pvalue', 'stderr']
     )
-    _warn_if_not_converted_to_original_time_units(x)
+    _warn_if_not_converted_to_original_time_units(X)
     return results
 
 
@@ -414,7 +432,7 @@ def nanmean(ds, dim='time'):
 
 
 @is_xarray(0)
-def polyfit(x, y, order, dim='time', nan_policy='none'):
+def polyfit(x, y=None, order=None, dim='time', nan_policy='none'):
     """Returns the fitted polynomial line of ``y`` regressed onto ``x``.
 
     .. note::
@@ -422,8 +440,10 @@ def polyfit(x, y, order, dim='time', nan_policy='none'):
         This will be released as a standard ``xarray`` func in 0.15.2.
 
     Args:
-        x, y (xr.DataArray or xr.Dataset): Independent and dependent variables used in
-            the polynomial fit.
+        x (xarray object): Independent variable used in the polynomial fit.
+            If ``y`` is ``None``, treat ``x`` as dependent variable.
+        y (xarray object): Dependent variable used in the polynomial fit.
+            If ``None``, treat ``x`` as the independent variable.
         order (int): Order of polynomial fit to perform.
         dim (str, optional): Dimension to apply polynomial fit over.
             Defaults to "time".
@@ -440,15 +460,23 @@ def polyfit(x, y, order, dim='time', nan_policy='none'):
         xarray object: The polynomial fit for ``y`` regressed onto ``x``. Has the same
             dimensions as ``y``.
     """
-    has_dims(x, dim, 'predictor (x)')
-    has_dims(y, dim, 'predictand (y)')
-    _check_y_not_independent_variable(y, dim)
-    x, _ = _convert_time_and_return_slope_factor(x, dim)
+    if order is None:
+        raise ValueError('Please enter an order of polynomial to fit.')
+    if y is None:
+        has_dims(x, dim, 'predictand (x)')
+        X, _ = _convert_time_and_return_slope_factor(x[dim], dim)
+        Y = x
+    else:
+        has_dims(x, dim, 'predictor (x)')
+        has_dims(y, dim, 'predictand (y)')
+        _check_y_not_independent_variable(y, dim)
+        X, _ = _convert_time_and_return_slope_factor(x, dim)
+        Y = y
 
     return xr.apply_ufunc(
         _polyfit,
-        x,
-        y,
+        X,
+        Y,
         order,
         nan_policy,
         vectorize=True,
@@ -460,12 +488,14 @@ def polyfit(x, y, order, dim='time', nan_policy='none'):
 
 
 @is_xarray(0)
-def rm_poly(x, y, order, dim='time', nan_policy='none'):
+def rm_poly(x, y=None, order=None, dim='time', nan_policy='none'):
     """Removes a polynomial fit from ``y`` regressed onto ``x``.
 
     Args:
-        x, y (xr.DataArray or xr.Dataset): Independent and dependent variables used in
-            the polynomial fit.
+        x (xarray object): Independent variable used in the polynomial fit.
+            If ``y`` is ``None``, treat ``x`` as dependent variable.
+        y (xarray object): Dependent variable used in the polynomial fit.
+            If ``None``, treat ``x`` as the independent variable.
         order (int): Order of polynomial fit to perform.
         dim (str, optional): Dimension to apply polynomial fit over.
             Defaults to "time".
@@ -481,10 +511,18 @@ def rm_poly(x, y, order, dim='time', nan_policy='none'):
     Returns:
         xarray object: ``y`` with polynomial fit of order ``order`` removed.
     """
-    has_dims(x, dim, 'predictor (x)')
-    has_dims(y, dim, 'predictand (y)')
-    _check_y_not_independent_variable(y, dim)
-    x, _ = _convert_time_and_return_slope_factor(x, dim)
+    if order is None:
+        raise ValueError('Please enter an order of polynomial to remove.')
+    if y is None:
+        has_dims(x, dim, 'predictand (x)')
+        X, _ = _convert_time_and_return_slope_factor(x[dim], dim)
+        Y = x
+    else:
+        has_dims(x, dim, 'predictor (x)')
+        has_dims(y, dim, 'predictand (y)')
+        _check_y_not_independent_variable(y, dim)
+        X, _ = _convert_time_and_return_slope_factor(x, dim)
+        Y = y
 
     def _rm_poly(x, y, order, nan_policy):
         fit = _polyfit(x, y, order, nan_policy)
@@ -492,8 +530,8 @@ def rm_poly(x, y, order, dim='time', nan_policy='none'):
 
     return xr.apply_ufunc(
         _rm_poly,
-        x,
-        y,
+        X,
+        Y,
         order,
         nan_policy,
         vectorize=True,
@@ -505,12 +543,14 @@ def rm_poly(x, y, order, dim='time', nan_policy='none'):
 
 
 @is_xarray(0)
-def rm_trend(x, y, dim='time', nan_policy='none'):
+def rm_trend(x, y=None, dim='time', nan_policy='none'):
     """Removes a linear fit from ``y`` regressed onto ``x``.
 
     Args:
-        x, y (xr.DataArray or xr.Dataset): Independent and dependent variables used in
-            the linear fit.
+        x (xarray object): Independent variable used in the linear fit.
+            If ``y`` is ``None``, treat ``x`` as dependent variable.
+        y (xarray object): Dependent variable used in the linear fit.
+            If ``None``, treat ``x`` as the independent variable.
         dim (str, optional): Dimension to apply linear fit over.
             Defaults to "time".
         nan_policy (str, optional): Policy to use when handling nans. Defaults to

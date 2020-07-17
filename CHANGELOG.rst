@@ -5,6 +5,14 @@ Changelog History
 esmtools v1.1.3 (2020-##-##)
 ============================
 
+Bug Fixes
+---------
+- Revert to old ``esmtools`` behavior for stats functions. This allows one to pass
+  single Datasets and DataArrays to ``linear_slope``, ``linregress``, ``polyfit``,
+  ``rm_poly``, and ``rm_trend``. In this case, the fit is performed over ``dim``
+  from the given ``xarray`` object. This still retains the e.g.
+  ``rm_trend(x, y)`` behavior as well. (:pr:`93`) `Riley X. Brady`_.
+
 Internals/Minor Fixes
 ---------------------
 - Update required ``xarray`` version to v0.16.0 to allow for use of
