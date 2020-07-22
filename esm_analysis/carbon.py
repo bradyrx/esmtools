@@ -444,7 +444,7 @@ def decomposition(
                          ['co2_flx_ocean', 'spco2']
 
     Return:
-        terms_in_decompose_units (xr.Dataset): terms of spco2 decomposition
+        terms_in_decompose_units (xr.Dataset): terms of decomposition
 
     References:
     * Lovenduski, Nicole S., Nicolas Gruber, Scott C. Doney, and Ivan D. Lima.
