@@ -6,11 +6,11 @@ import xarray as xr
 from .constants import CALENDARS
 from .timeutils import get_calendar, get_days_per_month
 
-GROUPBY_TIMES = {"annual": "time.year"}
+GROUPBY_TIMES = {'annual': 'time.year'}
 TIME_RESOLUTIONS = [k for k in GROUPBY_TIMES]
 
 
-def _weighted_resample(ds, calendar=None, dim="time", resample_resolution=None):
+def _weighted_resample(ds, calendar=None, dim='time', resample_resolution=None):
     """Generalized function for time-weighted resampling.
 
     Args:
@@ -28,12 +28,12 @@ def _weighted_resample(ds, calendar=None, dim="time", resample_resolution=None):
         calendar = get_calendar(ds[dim])
 
     if resample_resolution not in TIME_RESOLUTIONS:
-        raise ValueError(f"Please submit a temporal resolution from {TIME_RESOLUTIONS}")
+        raise ValueError(f'Please submit a temporal resolution from {TIME_RESOLUTIONS}')
 
     time_length = xr.DataArray(
         get_days_per_month(ds.time.to_index(), calendar=calendar),
         coords=[ds.time],
-        name="time_length",
+        name='time_length',
     )
 
     time_res = GROUPBY_TIMES[resample_resolution]
@@ -45,11 +45,12 @@ def _weighted_resample(ds, calendar=None, dim="time", resample_resolution=None):
     np.testing.assert_allclose(weights_sum, np.ones(len(weights_sum)))
 
     # Calculate the weighted average
-    ds_weighted = (ds * weights).groupby(time_res).sum(dim=dim)
+    # `skipna=False` ensures that masked locations like land remain nan.
+    ds_weighted = (ds * weights).groupby(time_res).sum(dim=dim, skipna=False)
     return ds_weighted
 
 
-def to_annual(ds, calendar=None, how="mean", dim="time"):
+def to_annual(ds, calendar=None, how='mean', dim='time'):
     """Resample sub-annual temporal resolution to annual resolution with weighting.
 
     .. note::
@@ -80,11 +81,11 @@ def to_annual(ds, calendar=None, how="mean", dim="time"):
     Returns:
         ds_weighted (xarray object): Dataset or DataArray resampled to annual resolution
     """
-    if how != "mean":
+    if how != 'mean':
         raise NotImplementedError(
-            "Only annual-weighted averaging is currently"
+            'Only annual-weighted averaging is currently'
             + "supported. Please change `how` keyword to 'mean'"
         )
     return _weighted_resample(
-        ds, calendar=calendar, dim=dim, resample_resolution="annual"
+        ds, calendar=calendar, dim=dim, resample_resolution='annual'
     )
