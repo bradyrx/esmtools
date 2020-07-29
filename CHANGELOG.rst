@@ -2,6 +2,14 @@
 Changelog History
 =================
 
+esmtools v1.1.4 (2020-##-##)
+============================
+
+Bug Fixes
+---------
+- :py:func:`~esmtools.temporal.to_annual` no longer returns ``0.0`` where the original
+  dataset had NaNs. (:issue:`75`) (:pr:`95`) `Riley X. Brady`_.
+
 esmtools v1.1.3 (2020-07-17)
 ============================
 
