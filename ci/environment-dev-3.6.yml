@@ -29,6 +29,7 @@ dependencies:
   - pre-commit
   - pytest
   - pytest-cov
+  - pytest-lazy-fixture
   - pytest-sugar
   # Statistics
   - scipy

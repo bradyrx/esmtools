@@ -1,13 +1,20 @@
+import numpy as np
 import pytest
 import xarray as xr
 
 from esmtools.temporal import to_annual
 
 
-@pytest.mark.parametrize('time_type', ('datetime', 'cftime'))
-def test_to_annual(gridded_da_datetime, gridded_da_cftime, time_type):
+@pytest.mark.parametrize(
+    'dataset',
+    (
+        pytest.lazy_fixture('gridded_da_datetime'),
+        pytest.lazy_fixture('gridded_da_cftime'),
+    ),
+)
+def test_to_annual(dataset):
     """General checks that `to_annual` time conversion is working as expected."""
-    data = eval(f'gridded_da_{time_type}')()
+    data = dataset()
     result = to_annual(data)
     assert result.notnull().all()
     assert 'year' in result.dims
@@ -22,7 +29,7 @@ def test_to_annual_accuracy(ts_monthly_da):
         manual_sum.append(data[i].values * MONTH_LENGTHS[i] / 365)
     expected = sum(manual_sum)
     actual = to_annual(data)
-    assert actual.values == expected
+    assert np.abs(actual.values - expected) < 1e-5
 
 
 def test_to_annual_retains_nans(gridded_da_landmask):
