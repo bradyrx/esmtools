@@ -344,10 +344,11 @@ def linregress(x, y=None, dim="time", nan_policy="none"):
         the original units per day (e.g. SST per day).
 
     Args:
-        y (xarray object): Dependent variable (predictand) for linear
-            regression.
-        x (xarray object, optional): Independent variable (predictor) for linear
-            regression. If ``x`` is ``None`` remove slope over ``dim``.
+        x (xarray object): Independent variable (predictor) for linear regression.
+            If ``y`` is ``None``, treat ``x`` as the dependent variable and remove
+            slope over ``dim``.
+        y (xarray object, optional): Dependent variable (predictand) for linear
+            regression. If ``None``, treat ``x`` as the predictand.
         dim (str, optional): Dimension to apply linear regression over.
             Defaults to "time".
         nan_policy (str, optional): Policy to use when handling nans. Defaults to
