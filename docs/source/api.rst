@@ -114,7 +114,6 @@ Functions dealing with statistics.
 .. autosummary::
     :toctree: api/
 
-    ACF
     autocorr
     corr
     linear_slope
