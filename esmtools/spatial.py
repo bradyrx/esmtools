@@ -4,7 +4,7 @@ from .checks import is_xarray
 
 
 @is_xarray(0)
-def extract_region(ds, xgrid, ygrid, coords, lat_dim='lat', lon_dim='lon'):
+def extract_region(ds, xgrid, ygrid, coords, lat_dim="lat", lon_dim="lon"):
     """Extract a subset of some larger spatial data.
 
     Args:

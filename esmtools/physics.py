@@ -36,5 +36,5 @@ def stress_to_speed(x, y):
         i = np.imag(r)
         good = np.where(i == 0)
         U10[t] = np.real(r[good])
-    U10 = xr.DataArray(U10, dims=['time'], coords=[tau['time']])
+    U10 = xr.DataArray(U10, dims=["time"], coords=[tau["time"]])
     return U10

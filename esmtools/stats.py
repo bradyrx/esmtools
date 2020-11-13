@@ -26,8 +26,8 @@ def _check_y_not_independent_variable(y, dim):
     """
     if isinstance(y, xr.DataArray) and (y.name == dim):
         raise ValueError(
-            f'Dependent variable y should not be the same as the dim {dim} being '
-            'applied over. Change your y variable to x.'
+            f"Dependent variable y should not be the same as the dim {dim} being "
+            "applied over. Change your y variable to x."
         )
 
 
@@ -85,12 +85,12 @@ def _handle_nans(x, y, nan_policy):
     # Only support 1D, since we are doing `~np.isnan()` indexing for 'omit'/'drop'.
     if (x.ndim > 1) or (y.ndim > 1):
         raise ValueError(
-            f'x and y must be 1-dimensional. Got {x.ndim} for x and {y.ndim} for y.'
+            f"x and y must be 1-dimensional. Got {x.ndim} for x and {y.ndim} for y."
         )
 
-    if nan_policy in ['none', 'propagate']:
+    if nan_policy in ["none", "propagate"]:
         return x, y
-    elif nan_policy == 'raise':
+    elif nan_policy == "raise":
         if has_missing(x) or has_missing(y):
             raise ValueError(
                 "Input data contains NaNs. Consider changing `nan_policy` to 'none' "
@@ -98,7 +98,7 @@ def _handle_nans(x, y, nan_policy):
             )
         else:
             return x, y
-    elif nan_policy in ['omit', 'drop']:
+    elif nan_policy in ["omit", "drop"]:
         if has_missing(x) or has_missing(y):
             x_mod, y_mod = match_nans(x, y)
             # The above function pairwise-matches nans. Now we remove them so that we
@@ -138,11 +138,11 @@ def _polyfit(x, y, order, nan_policy):
     """
     x_mod, y_mod = _handle_nans(x, y, nan_policy)
     # This catches cases where a given grid cell is full of nans, like in land masking.
-    if (nan_policy in ['omit', 'drop']) and (x_mod.size == 0):
+    if (nan_policy in ["omit", "drop"]) and (x_mod.size == 0):
         return np.full(len(x), np.nan)
     # This catches cases where there is missing values in the independent axis, which
     # breaks polyfit.
-    elif (nan_policy in ['none', 'propagate']) and (has_missing(x_mod)):
+    elif (nan_policy in ["none", "propagate"]) and (has_missing(x_mod)):
         return np.full(len(x), np.nan)
     else:
         # fit to data without nans, return applied to original independent axis.
@@ -161,14 +161,14 @@ def _warn_if_not_converted_to_original_time_units(x):
         if x.timeutils.is_temporal:
             if x.timeutils.freq is None:
                 warnings.warn(
-                    'Datetime frequency not detected. Slope and std. errors will be '
-                    'in original units per day (e.g., degC per day). Multiply by '
-                    'e.g., 365.25 to convert to original units per year.'
+                    "Datetime frequency not detected. Slope and std. errors will be "
+                    "in original units per day (e.g., degC per day). Multiply by "
+                    "e.g., 365.25 to convert to original units per year."
                 )
 
 
 @is_xarray(0)
-def autocorr(ds, dim='time', nlags=None):
+def autocorr(ds, dim="time", nlags=None):
     """Compute the autocorrelation function of a time series to a specific lag.
 
     .. note::
@@ -200,12 +200,12 @@ def autocorr(ds, dim='time', nlags=None):
     for i in range(nlags):
         res = corr(ds, ds, lead=i, dim=dim)
         acf.append(res)
-    acf = xr.concat(acf, dim='lead', **CONCAT_KWARGS)
+    acf = xr.concat(acf, dim="lead", **CONCAT_KWARGS)
     return acf
 
 
 @is_xarray(0)
-def corr(x, y, dim='time', lead=0, return_p=False):
+def corr(x, y, dim="time", lead=0, return_p=False):
     """Computes the Pearson product-moment coefficient of linear correlation.
 
     Args:
@@ -244,16 +244,16 @@ def corr(x, y, dim='time', lead=0, return_p=False):
     # I don't want to guess coordinates for the user.
     if (dim not in list(x.coords)) or (dim not in list(y.coords)):
         raise ValueError(
-            f'Make sure that the dimension {dim} has coordinates. '
+            f"Make sure that the dimension {dim} has coordinates. "
             "`xarray` apply_ufunc alignments break when they can't reference "
             " coordinates. If your coordinates don't matter just do "
-            ' `x[dim] = np.arange(x[dim].size).'
+            " `x[dim] = np.arange(x[dim].size)."
         )
 
     N = x[dim].size
     assert (
         np.abs(lead) <= N
-    ), f'Requested lead [{lead}] is larger than dim [{dim}] size.'
+    ), f"Requested lead [{lead}] is larger than dim [{dim}] size."
 
     if lead < 0:
         return _lag_correlate(y, x, dim, np.abs(lead), return_p)
@@ -262,7 +262,7 @@ def corr(x, y, dim='time', lead=0, return_p=False):
 
 
 @is_xarray([0, 1])
-def linear_slope(x, y=None, dim='time', nan_policy='none'):
+def linear_slope(x, y=None, dim="time", nan_policy="none"):
     """Returns the linear slope with y regressed onto x.
 
     .. note::
@@ -294,12 +294,12 @@ def linear_slope(x, y=None, dim='time', nan_policy='none'):
         xarray object: Slopes computed through a least-squares linear regression.
     """
     if y is None:
-        has_dims(x, dim, 'predictand (x)')
+        has_dims(x, dim, "predictand (x)")
         X, slope_factor = _convert_time_and_return_slope_factor(x[dim], dim)
         Y = x
     else:
-        has_dims(x, dim, 'predictor (x)')
-        has_dims(y, dim, 'predictand (y)')
+        has_dims(x, dim, "predictor (x)")
+        has_dims(y, dim, "predictand (y)")
         _check_y_not_independent_variable(y, dim)
         X, slope_factor = _convert_time_and_return_slope_factor(x, dim)
         Y = y
@@ -308,11 +308,11 @@ def linear_slope(x, y=None, dim='time', nan_policy='none'):
         x, y = _handle_nans(x, y, nan_policy)
         # This catches cases where a given grid cell is full of nans, like in
         # land masking.
-        if (nan_policy in ['omit', 'drop']) and (x.size == 0):
+        if (nan_policy in ["omit", "drop"]) and (x.size == 0):
             return np.asarray([np.nan])
         # This catches cases where there is missing values in the independent axis,
         # which breaks polyfit.
-        elif (nan_policy in ['none', 'propagate']) and (has_missing(x)):
+        elif (nan_policy in ["none", "propagate"]) and (has_missing(x)):
             return np.asarray([np.nan])
         else:
             return np.polyfit(x, y, 1)[0]
@@ -323,16 +323,16 @@ def linear_slope(x, y=None, dim='time', nan_policy='none'):
         Y,
         nan_policy,
         vectorize=True,
-        dask='parallelized',
+        dask="parallelized",
         input_core_dims=[[dim], [dim], []],
-        output_dtypes=['float64'],
+        output_dtypes=["float64"],
     )
     _warn_if_not_converted_to_original_time_units(X)
     return slopes * slope_factor
 
 
 @is_xarray([0, 1])
-def linregress(x, y=None, dim='time', nan_policy='none'):
+def linregress(x, y=None, dim="time", nan_policy="none"):
     """Vectorized applciation of ``scipy.stats.linregress``.
 
     .. note::
@@ -367,12 +367,12 @@ def linregress(x, y=None, dim='time', nan_policy='none'):
 
     """
     if y is None:
-        has_dims(x, dim, 'predictand (x)')
+        has_dims(x, dim, "predictand (x)")
         X, slope_factor = _convert_time_and_return_slope_factor(x[dim], dim)
         Y = x
     else:
-        has_dims(x, dim, 'predictor (x)')
-        has_dims(y, dim, 'predictand (y)')
+        has_dims(x, dim, "predictor (x)")
+        has_dims(y, dim, "predictand (y)")
         _check_y_not_independent_variable(y, dim)
         X, slope_factor = _convert_time_and_return_slope_factor(x, dim)
         Y = y
@@ -381,7 +381,7 @@ def linregress(x, y=None, dim='time', nan_policy='none'):
         x, y = _handle_nans(x, y, nan_policy)
         # This catches cases where a given grid cell is full of nans, like in
         # land masking.
-        if (nan_policy in ['omit', 'drop']) and (x.size == 0):
+        if (nan_policy in ["omit", "drop"]) and (x.size == 0):
             return np.full(5, np.nan)
         else:
             m, b, r, p, e = scipy.stats.linregress(x, y)
@@ -398,21 +398,21 @@ def linregress(x, y=None, dim='time', nan_policy='none'):
         slope_factor,
         nan_policy,
         vectorize=True,
-        dask='parallelized',
+        dask="parallelized",
         input_core_dims=[[dim], [dim], [], []],
-        output_core_dims=[['parameter']],
-        output_dtypes=['float64'],
-        output_sizes={'parameter': 5},
+        output_core_dims=[["parameter"]],
+        output_dtypes=["float64"],
+        output_sizes={"parameter": 5},
     )
     results = results.assign_coords(
-        parameter=['slope', 'intercept', 'rvalue', 'pvalue', 'stderr']
+        parameter=["slope", "intercept", "rvalue", "pvalue", "stderr"]
     )
     _warn_if_not_converted_to_original_time_units(X)
     return results
 
 
 @is_xarray(0)
-def nanmean(ds, dim='time'):
+def nanmean(ds, dim="time"):
     """Compute mean of data with NaNs and suppress warning from numpy.
 
     Args:
@@ -422,7 +422,7 @@ def nanmean(ds, dim='time'):
     Returns
         xarray object: Reduced by ``dim`` via mean operation.
     """
-    if 'time' in ds.dims:
+    if "time" in ds.dims:
         mask = ds.isnull().isel(time=0)
     else:
         mask = ds.isnull()
@@ -432,7 +432,7 @@ def nanmean(ds, dim='time'):
 
 
 @is_xarray(0)
-def polyfit(x, y=None, order=None, dim='time', nan_policy='none'):
+def polyfit(x, y=None, order=None, dim="time", nan_policy="none"):
     """Returns the fitted polynomial line of ``y`` regressed onto ``x``.
 
     .. note::
@@ -461,14 +461,14 @@ def polyfit(x, y=None, order=None, dim='time', nan_policy='none'):
             dimensions as ``y``.
     """
     if order is None:
-        raise ValueError('Please enter an order of polynomial to fit.')
+        raise ValueError("Please enter an order of polynomial to fit.")
     if y is None:
-        has_dims(x, dim, 'predictand (x)')
+        has_dims(x, dim, "predictand (x)")
         X, _ = _convert_time_and_return_slope_factor(x[dim], dim)
         Y = x
     else:
-        has_dims(x, dim, 'predictor (x)')
-        has_dims(y, dim, 'predictand (y)')
+        has_dims(x, dim, "predictor (x)")
+        has_dims(y, dim, "predictand (y)")
         _check_y_not_independent_variable(y, dim)
         X, _ = _convert_time_and_return_slope_factor(x, dim)
         Y = y
@@ -480,15 +480,15 @@ def polyfit(x, y=None, order=None, dim='time', nan_policy='none'):
         order,
         nan_policy,
         vectorize=True,
-        dask='parallelized',
+        dask="parallelized",
         input_core_dims=[[dim], [dim], [], []],
         output_core_dims=[[dim]],
-        output_dtypes=['float'],
+        output_dtypes=["float"],
     )
 
 
 @is_xarray(0)
-def rm_poly(x, y=None, order=None, dim='time', nan_policy='none'):
+def rm_poly(x, y=None, order=None, dim="time", nan_policy="none"):
     """Removes a polynomial fit from ``y`` regressed onto ``x``.
 
     Args:
@@ -512,14 +512,14 @@ def rm_poly(x, y=None, order=None, dim='time', nan_policy='none'):
         xarray object: ``y`` with polynomial fit of order ``order`` removed.
     """
     if order is None:
-        raise ValueError('Please enter an order of polynomial to remove.')
+        raise ValueError("Please enter an order of polynomial to remove.")
     if y is None:
-        has_dims(x, dim, 'predictand (x)')
+        has_dims(x, dim, "predictand (x)")
         X, _ = _convert_time_and_return_slope_factor(x[dim], dim)
         Y = x
     else:
-        has_dims(x, dim, 'predictor (x)')
-        has_dims(y, dim, 'predictand (y)')
+        has_dims(x, dim, "predictor (x)")
+        has_dims(y, dim, "predictand (y)")
         _check_y_not_independent_variable(y, dim)
         X, _ = _convert_time_and_return_slope_factor(x, dim)
         Y = y
@@ -535,15 +535,15 @@ def rm_poly(x, y=None, order=None, dim='time', nan_policy='none'):
         order,
         nan_policy,
         vectorize=True,
-        dask='parallelized',
+        dask="parallelized",
         input_core_dims=[[dim], [dim], [], []],
         output_core_dims=[[dim]],
-        output_dtypes=['float64'],
+        output_dtypes=["float64"],
     )
 
 
 @is_xarray(0)
-def rm_trend(x, y=None, dim='time', nan_policy='none'):
+def rm_trend(x, y=None, dim="time", nan_policy="none"):
     """Removes a linear fit from ``y`` regressed onto ``x``.
 
     Args:
@@ -569,7 +569,7 @@ def rm_trend(x, y=None, dim='time', nan_policy='none'):
 
 
 @is_xarray(0)
-def standardize(ds, dim='time'):
+def standardize(ds, dim="time"):
     """Standardize Dataset/DataArray
 
     .. math::

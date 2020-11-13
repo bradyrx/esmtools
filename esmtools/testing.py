@@ -6,7 +6,7 @@ from statsmodels.stats.multitest import multipletests as statsmodels_multipletes
 from .checks import is_xarray
 from .constants import MULTIPLE_TESTS
 
-__all__ = ['ttest_ind_from_stats', 'multipletests']
+__all__ = ["ttest_ind_from_stats", "multipletests"]
 
 
 @is_xarray(0)
@@ -45,7 +45,7 @@ def multipletests(p, alpha=0.05, method=None, **multipletests_kwargs):
     if method is None:
         raise ValueError(
             f"Please indicate a method using the 'method=...' keyword. "
-            f'Select from {MULTIPLE_TESTS}'
+            f"Select from {MULTIPLE_TESTS}"
         )
     elif method not in MULTIPLE_TESTS:
         raise ValueError(
@@ -66,7 +66,7 @@ def multipletests(p, alpha=0.05, method=None, **multipletests_kwargs):
         p_stacked[mask], alpha=alpha, method=method, **multipletests_kwargs
     )
 
-    return reject.unstack('s'), pvals_corrected.unstack('s')
+    return reject.unstack("s"), pvals_corrected.unstack("s")
 
 
 def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2, equal_var=True):
@@ -96,5 +96,5 @@ def ttest_ind_from_stats(mean1, std1, nobs1, mean2, std2, nobs2, equal_var=True)
         input_core_dims=[[], [], [], [], [], [], []],
         output_core_dims=[[], []],
         vectorize=True,
-        dask='parallelized',
+        dask="parallelized",
     )

@@ -3,8 +3,8 @@ import xarray as xr
 from .grid import convert_lon
 
 
-@xr.register_dataarray_accessor('grid')
-@xr.register_dataset_accessor('grid')
+@xr.register_dataarray_accessor("grid")
+@xr.register_dataset_accessor("grid")
 class GridAccessor:
     """Allows functions to be called directly on an xarray dataset for the grid module.
 
@@ -14,7 +14,7 @@ class GridAccessor:
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
 
-    def convert_lon(self, coord='lon'):
+    def convert_lon(self, coord="lon"):
         """Converts longitude grid from -180to180 to 0to360 and vice versa.
 
         .. note::
