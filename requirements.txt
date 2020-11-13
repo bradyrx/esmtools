@@ -1,4 +1,5 @@
 cftime
+matplotlib
 numpy
 scipy
 statsmodels
