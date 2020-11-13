@@ -30,7 +30,7 @@ a toolbox for Earth System Model analysis
      :target: https://requires.io/github/bradyrx/esmtools/requirements/?branch=master
      :alt: Requirements Status
 
-.. |codecov| image:: https://codecov.io/gh/bradyrx/esmtools/branch/master/graph/badge.svg?token=e53kXaaOqS
+.. |codecov| image:: https://codecov.io/gh/bradyrx/esmtools/branch/master/graph/badge.svg
       :target: https://codecov.io/gh/bradyrx/esmtools
 
 .. |conda| image:: https://img.shields.io/conda/vn/conda-forge/esmtools.svg
@@ -42,7 +42,7 @@ a toolbox for Earth System Model analysis
 
 .. |license| image:: https://img.shields.io/github/license/bradyrx/esmtools.svg
     :alt: license
-    :target: ../../LICENSE.txt
+    :target: LICENSE.txt
 
 .. |contributors| image:: https://img.shields.io/github/contributors/bradyrx/esmtools
     :alt: GitHub contributors

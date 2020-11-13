@@ -30,7 +30,7 @@ esmtools: a toolbox for Earth system model analysis
      :target: https://requires.io/github/bradyrx/esmtools/requirements/?branch=master
      :alt: Requirements Status
 
-.. |codecov| image:: https://codecov.io/gh/bradyrx/esmtools/branch/master/graph/badge.svg?token=e53kXaaOqS
+.. |codecov| image:: https://codecov.io/gh/bradyrx/esmtools/branch/master/graph/badge.svg
       :target: https://codecov.io/gh/bradyrx/esmtools
 
 .. |conda| image:: https://img.shields.io/conda/vn/conda-forge/esmtools.svg
