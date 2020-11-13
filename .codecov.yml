@@ -1,0 +1,8 @@
+coverage:
+  status:
+    project:
+      default:
+        # Require 50% coverage.
+        target: 50
+    patch: false
+    changes: false

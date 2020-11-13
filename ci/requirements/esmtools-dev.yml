@@ -2,7 +2,6 @@ name: esmtools-dev
 channels:
   - conda-forge
 dependencies:
-  - python=3.6
   # Documentation
   - nbsphinx
   - nbstripout

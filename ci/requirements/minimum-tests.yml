@@ -1,0 +1,19 @@
+name: esmtools-minimum-tests
+channels:
+  - conda-forge
+dependencies:
+  - cftime
+  - coveralls
+  - dask
+  - ipython
+  - nc-time-axis
+  - netcdf4
+  - pip
+  - pytest
+  - pytest-cov
+  - scipy
+  - xarray
+  - xskillscore
+  - pip:
+    - pytest-lazy-fixture
+    - -e ../..
