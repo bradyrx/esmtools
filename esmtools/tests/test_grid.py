@@ -22,13 +22,13 @@ def da_1D():
         elif not degreesEast:
             lon = np.linspace(-179.5, 179.5, 360)
         else:
-            raise ValueError('Please specify `degreesEast` as either True or False.')
+            raise ValueError("Please specify `degreesEast` as either True or False.")
         # Template for broadcasting to
         empty = xr.DataArray(
-            np.empty((180, 360)), dims=['lat', 'lon'], coords=[lat, lon]
+            np.empty((180, 360)), dims=["lat", "lon"], coords=[lat, lon]
         )
         # Data is roughly the longitude at each grid cell.
-        data = xr.DataArray(np.linspace(-180, 180, 360), dims=['lon'], coords=[lon])
+        data = xr.DataArray(np.linspace(-180, 180, 360), dims=["lon"], coords=[lon])
         # Simple broadcasting up to 180x360 dimensions.
         data, _ = xr.broadcast(data, empty)
         data = data.T
@@ -54,19 +54,19 @@ def da_2D():
         elif not degreesEast:
             x = np.linspace(-179.5, 179.5, 360)
         else:
-            raise ValueError('Please specify `degreesEast` as either True or False.')
+            raise ValueError("Please specify `degreesEast` as either True or False.")
         # Meshgrid into a 2-dimensional lon/lat.
         lon, lat = np.meshgrid(x, y)
         # Template for broadcasting to
-        empty = xr.DataArray(np.empty((180, 360)), dims=['y', 'x'])
+        empty = xr.DataArray(np.empty((180, 360)), dims=["y", "x"])
         # Data is roughly the longitude at each grid cell.
-        data = xr.DataArray(np.linspace(-180, 180, 360), dims=['x'])
+        data = xr.DataArray(np.linspace(-180, 180, 360), dims=["x"])
         # Simple broadcasting up to 180x360 dimensions.
         data, _ = xr.broadcast(data, empty)
         data = data.T
         # Add 2D coordinates.
-        data['lon'] = (('y', 'x'), lon)
-        data['lat'] = (('y', 'x'), lat)
+        data["lon"] = (("y", "x"), lon)
+        data["lat"] = (("y", "x"), lat)
         return data
 
     return _gen_data
@@ -128,5 +128,5 @@ def test_coordinate_error(da_1D):
     data = da_1D(degreesEast=True)
     with pytest.raises(ValueError) as e:
         # Purposefully call nonexistant coordinate.
-        convert_lon(data, coord='foo')
-    assert 'not found in coordinates' in str(e.value)
+        convert_lon(data, coord="foo")
+    assert "not found in coordinates" in str(e.value)
