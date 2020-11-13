@@ -2,7 +2,7 @@ from .checks import is_xarray
 
 
 @is_xarray(0)
-def _convert_lon_to_180to180(ds, coord='lon'):
+def _convert_lon_to_180to180(ds, coord="lon"):
     """Convert from 0 to 360 (degrees E) grid to -180 to 180 (W-E) grid.
 
     .. note::
@@ -27,7 +27,7 @@ def _convert_lon_to_180to180(ds, coord='lon'):
 
 
 @is_xarray(0)
-def _convert_lon_to_0to360(ds, coord='lon'):
+def _convert_lon_to_0to360(ds, coord="lon"):
     """Convert from -180 to 180 (W-E) to 0 to 360 (degrees E) grid.
 
     .. note::
@@ -54,7 +54,7 @@ def _convert_lon_to_0to360(ds, coord='lon'):
 # NOTE: Check weird POP grid that goes up to 240 or something. How do we deal with
 # that?
 @is_xarray(0)
-def convert_lon(ds, coord='lon'):
+def convert_lon(ds, coord="lon"):
     """Converts longitude grid from -180to180 to 0to360 and vice versa.
 
     .. note::
@@ -86,7 +86,7 @@ def convert_lon(ds, coord='lon'):
        >>> converted = convert_lon(data, coord='lon')
     """
     if coord not in ds.coords:
-        raise ValueError(f'{coord} not found in coordinates.')
+        raise ValueError(f"{coord} not found in coordinates.")
     if ds[coord].min() < 0:
         ds = _convert_lon_to_0to360(ds, coord=coord)
     else:

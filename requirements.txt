@@ -1,7 +1,9 @@
 cftime
+matplotlib
 numpy
 scipy
 statsmodels
+toolz
 tqdm
 xarray>=0.16.0
 xskillscore

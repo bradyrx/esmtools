@@ -35,8 +35,8 @@ def has_dims(xobj, dims, kind):
 
     if not all(dim in xobj.dims for dim in dims):
         raise ValueError(
-            f'Your {kind} object must contain the '
-            f'following dimensions at the minimum: {dims}'
+            f"Your {kind} object must contain the "
+            f"following dimensions at the minimum: {dims}"
         )
     return True
 

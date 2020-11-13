@@ -1,0 +1,44 @@
+name: esmtools testing
+
+on: pull_request
+
+jobs:
+  test:  # Runs testing suite on various python versions.
+    name: Test esmtools, python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    defaults:
+        run:
+          shell: bash -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+      - name: Set up conda
+        uses: conda-incubator/setup-miniconda@v1
+        with:
+          auto-update-conda: true
+          channels: conda-forge
+          mamba-version: '*'
+          activate-environment: esmtools-minimum-tests
+          python-version: ${{ matrix.python-version }}
+      - name: Set up conda environment
+        run: |
+          mamba env update -f ci/requirements/minimum-tests.yml
+      - name: Conda info
+        run: conda info
+      - name: Conda list
+        run: conda list
+      - name: Run tests
+        run: |
+          pytest --cov=esmtools --cov-report=xml --verbose
+      - name: Upload coverage to codecov
+        uses: codecov/codecov-action@v1.0.7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.xml
+          fail_ci_if_error: false

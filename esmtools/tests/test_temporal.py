@@ -6,10 +6,10 @@ from esmtools.temporal import to_annual
 
 
 @pytest.mark.parametrize(
-    'dataset',
+    "dataset",
     (
-        pytest.lazy_fixture('gridded_da_datetime'),
-        pytest.lazy_fixture('gridded_da_cftime'),
+        pytest.lazy_fixture("gridded_da_datetime"),
+        pytest.lazy_fixture("gridded_da_cftime"),
     ),
 )
 def test_to_annual(dataset):
@@ -17,7 +17,7 @@ def test_to_annual(dataset):
     data = dataset()
     result = to_annual(data)
     assert result.notnull().all()
-    assert 'year' in result.dims
+    assert "year" in result.dims
 
 
 def test_to_annual_accuracy(ts_monthly_da):
@@ -41,8 +41,8 @@ def test_to_annual_retains_nans(gridded_da_landmask):
         to be nans.
     """
     data = gridded_da_landmask
-    data['time'] = xr.cftime_range(
-        start='1990-01', freq='MS', periods=data['time'].size
+    data["time"] = xr.cftime_range(
+        start="1990-01", freq="MS", periods=data["time"].size
     )
     result = to_annual(data)
     assert result.isel(lat=0, lon=0).isnull().all()

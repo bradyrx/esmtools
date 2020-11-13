@@ -19,9 +19,9 @@ def match_nans(x, y):
         x, y = x.copy(), y.copy()
         idx = np.logical_or(np.isnan(x), np.isnan(y))
         # NaNs cannot be added to `int` arrays.
-        if x.dtype == 'int':
-            x = x.astype('float')
-        if y.dtype == 'int':
-            y = y.astype('float')
+        if x.dtype == "int":
+            x = x.astype("float")
+        if y.dtype == "int":
+            y = y.astype("float")
         x[idx], y[idx] = np.nan, np.nan
     return x, y
