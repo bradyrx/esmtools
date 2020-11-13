@@ -37,7 +37,6 @@ script:
   - nbstripout source/*.ipynb
   - make html
   - popd
-  - ./ci/run-linter.sh
 
 after_success:
   - coveralls
