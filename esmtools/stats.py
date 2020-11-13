@@ -473,13 +473,15 @@ def polyfit(x, y=None, order=None, dim="time", nan_policy="none"):
         X, _ = _convert_time_and_return_slope_factor(x, dim)
         Y = y
 
+    vectorize = False if len(Y.dims) == 1 else True
+
     return xr.apply_ufunc(
         _polyfit,
         X,
         Y,
         order,
         nan_policy,
-        vectorize=True,
+        vectorize=vectorize,
         dask="parallelized",
         input_core_dims=[[dim], [dim], [], []],
         output_core_dims=[[dim]],
@@ -528,13 +530,15 @@ def rm_poly(x, y=None, order=None, dim="time", nan_policy="none"):
         fit = _polyfit(x, y, order, nan_policy)
         return y - fit
 
+    vectorize = False if len(Y.dims) == 1 else True
+
     return xr.apply_ufunc(
         _rm_poly,
         X,
         Y,
         order,
         nan_policy,
-        vectorize=True,
+        vectorize=vectorize,
         dask="parallelized",
         input_core_dims=[[dim], [dim], [], []],
         output_core_dims=[[dim]],
