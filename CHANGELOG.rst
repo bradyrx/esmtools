@@ -9,6 +9,14 @@ Bug Fixes
 ---------
 - :py:func:`~esmtools.temporal.to_annual` no longer returns ``0.0`` where the original
   dataset had NaNs. (:issue:`75`) (:pr:`95`) `Riley X. Brady`_.
+- :py:func:`~esmtools.stats.rm_poly` and :py:func:`~esmtools.stats.polyfit` now work
+  with newest ``dask`` and ``xarray`` versions. There was an issue with ``vectorize=True``
+  breaking ``xarray.apply_ufunc`` with a single time series. (:pr:`103`) `Riley X. Brady`_.
+
+Internals
+---------
+- We now use Github Actions to do Continuous Integration instead of Travis, similar to
+  ``climpred`` and ``xskillscore`` (:pr:`103`) `Riley X. Brady`_.
 
 esmtools v1.1.3 (2020-07-17)
 ============================
