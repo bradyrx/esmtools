@@ -332,11 +332,7 @@ def linear_slope(x, y=None, dim="time", nan_policy="none"):
 
 
 @is_xarray([0, 1])
-<<<<<<< HEAD
 def linregress(x, y=None, dim="time", nan_policy="none"):
-=======
-def linregress(x, y=None, dim='time', nan_policy='none'):
->>>>>>> Revert "linregress so y always predicant and x predictor"
     """Vectorized applciation of ``scipy.stats.linregress``.
 
     .. note::
@@ -371,11 +367,7 @@ def linregress(x, y=None, dim='time', nan_policy='none'):
 
     """
     if y is None:
-<<<<<<< HEAD
         has_dims(x, dim, "predictand (x)")
-=======
-        has_dims(x, dim, 'predictand (x)')
->>>>>>> Revert "linregress so y always predicant and x predictor"
         X, slope_factor = _convert_time_and_return_slope_factor(x[dim], dim)
         Y = x
     else:
