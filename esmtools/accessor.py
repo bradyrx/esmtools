@@ -35,7 +35,7 @@ class GridAccessor:
         return convert_lon(self._obj, coord=coord)
 
 
-@xr.register_dataarray_accessor('stats')
+@xr.register_dataarray_accessor("stats")
 class StatsAccessor:
     """Allows functions to be called directly on an xarray dataset for the stats module.
 
@@ -45,7 +45,7 @@ class StatsAccessor:
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
 
-    def corr(self, arr, dim='time', lead=0, return_p=False):
+    def corr(self, arr, dim="time", lead=0, return_p=False):
         """Computes the Pearson product-moment coefficient of linear correlation.
 
         Args:
@@ -68,7 +68,7 @@ class StatsAccessor:
 
         return corr(x, y, dim=dim, lead=lead, return_p=return_p)
 
-    def linregress(self, dim='time', nan_policy='none'):
+    def linregress(self, dim="time", nan_policy="none"):
         """Vectorized applciation of ``scipy.stats.linregress``.
 
         .. note::
@@ -102,7 +102,7 @@ class StatsAccessor:
         """
         return linregress(self._obj, dim=dim, nan_policy=nan_policy)
 
-    def linear_slope(self, dim='time', nan_policy='none'):
+    def linear_slope(self, dim="time", nan_policy="none"):
         """Returns the linear slope with data array regressed onto dimension.
 
         .. note::
@@ -135,7 +135,7 @@ class StatsAccessor:
         """
         return linear_slope(self._obj, dim=dim, nan_policy=nan_policy)
 
-    def rm_trend(self, dim='time', nan_policy='none'):
+    def rm_trend(self, dim="time", nan_policy="none"):
         """Removes a linear trend from ``array`` regressed onto ``dim`.
 
         .. note::
@@ -159,7 +159,7 @@ class StatsAccessor:
         """
         return rm_trend(self._obj, dim=dim, nan_policy=nan_policy)
 
-    def polyfit(self, order=1, dim='time', nan_policy='none'):
+    def polyfit(self, order=1, dim="time", nan_policy="none"):
         """Returns the fitted polynomial line of ``array`` regressed onto ``dim``.
 
         .. note::
@@ -188,7 +188,7 @@ class StatsAccessor:
         """
         return polyfit(self._obj, dim=dim, nan_policy=nan_policy)
 
-    def rm_poly(self, order=1, dim='time', nan_policy='none'):
+    def rm_poly(self, order=1, dim="time", nan_policy="none"):
         """Removes a polynomial fit from ``array`` regressed onto ``dim`.
 
         .. note::
