@@ -1,6 +1,7 @@
 name: esmtools-minimum-tests
 channels:
   - conda-forge
+  - numba/label/dev
 dependencies:
   - cftime
   - coveralls
