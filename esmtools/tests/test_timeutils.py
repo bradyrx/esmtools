@@ -62,4 +62,4 @@ def test_return_numeric_time_datetime(gridded_da_datetime):
 def test_return_numeric_time_cftime(gridded_da_cftime):
     """Tests that cftimes are properly converted to numeric time by timeutils."""
     data = gridded_da_cftime()["time"]
-    assert data.timeutils.return_numeric_time().dtype == "float64"
+    assert data.timeutils.return_numeric_time().dtype == "int64"
